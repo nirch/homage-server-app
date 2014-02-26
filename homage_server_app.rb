@@ -339,13 +339,16 @@ post '/render' do
 
 		if is_ready then
 			# Synchronizing the actual rendering (because we cannot have more than 1 rendering in parallel)
-			if settings.rendering_semaphore.locked? then
-				logger.info "Rendering for remake " + remake_id.to_s + " waiting for other threads to finish rendering"
-			else
-				logger.debug "Rendering is going to start for remake " + remake_id.to_s
-			end	
+			# if settings.rendering_semaphore.locked? then
+			# 	logger.info "Rendering for remake " + remake_id.to_s + " waiting for other threads to finish rendering"
+			# else
+			# 	logger.debug "Rendering is going to start for remake " + remake_id.to_s
+			# end	
+
 			logger.info "Calling homage-server-render"
 			response = Net::HTTP.post_form(settings.homage_server_render_uri, {"remake_id" => remake_id.to_s})
+			logger.info "homage-server-render " + response.to_s
+
 			# settings.rendering_semaphore.synchronize{
 			# 	render_video remake_id
 			# }
@@ -431,8 +434,8 @@ get '/play/:remake_id' do
 	erb :video
 end
 
-get '/test/remote' do
-	logger.info "Calling homage-server-foreground"
-	response = Net::HTTP.post_form(settings.homage_server_foreground_uri, {"remake_id" => "5307a627c5c06a105c000025", "scene_id" => "3"})
-	logger.debug "Response from homage-server-foreground" + response.to_s
+get '/test/crash' do
+	logger.info "Going to crash..."
+	settings.not_exist
+	logget.info "Shouldn't reach here!!!"
 end
