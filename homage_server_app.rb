@@ -5,12 +5,17 @@ require 'uri'
 require 'json'
 require 'open-uri'
 require 'logger'
+require 'net/http'
 
 configure do
 	# Setting db connection param
 	db_connection = Mongo::MongoClient.from_uri("mongodb://Homage:homageIt12@paulo.mongohq.com:10008/Homage")
 	set :db, db_connection.db()
 	set :logging, Logger::DEBUG
+
+	set :homage_server_foreground_uri, URI.parse("http://54.235.111.163:4567/footage")
+	set :homage_server_render_uri, URI.parse("http://54.235.111.163:4567/render")
+
 
 	# Setting folders param
 	#set :aeProjectsFolder, "C:/Users/Administrator/Documents/AE Projects/"
@@ -292,7 +297,10 @@ def new_footage (remake_id, scene_id)
 		# Running the foreground extraction algorithm
 		#foreground_extraction remake_id, scene_id
 		### Call honage-server-foreground
+
 		logger.info "Calling homage-server-foreground"
+		response = Net::HTTP.post_form(settings.homage_server_foreground_uri, {"remake_id" => remake_id.to_s, "scene_id" => scene_id.to_s})
+		logger.debug "Response from homage-server-foreground" + response.to_s
 	}
 end
 
@@ -337,6 +345,7 @@ post '/render' do
 				logger.debug "Rendering is going to start for remake " + remake_id.to_s
 			end	
 			logger.info "Calling homage-server-render"
+			response = Net::HTTP.post_form(settings.homage_server_render_uri, {"remake_id" => remake_id.to_s})
 			# settings.rendering_semaphore.synchronize{
 			# 	render_video remake_id
 			# }
@@ -420,4 +429,10 @@ get '/play/:remake_id' do
 		"X-Frame-Options"   => "ALLOW-FROM http://play.homage.it/"
 
 	erb :video
+end
+
+get '/test/remote' do
+	logger.info "Calling homage-server-foreground"
+	response = Net::HTTP.post_form(settings.homage_server_foreground_uri, {"remake_id" => "5307a627c5c06a105c000025", "scene_id" => "3"})
+	logger.debug "Response from homage-server-foreground" + response.to_s
 end
