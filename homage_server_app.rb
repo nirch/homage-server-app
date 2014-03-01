@@ -12,48 +12,17 @@ configure do
 	db_connection = Mongo::MongoClient.from_uri("mongodb://Homage:homageIt12@paulo.mongohq.com:10008/Homage")
 	set :db, db_connection.db()
 	set :logging, Logger::DEBUG
-
-	set :homage_server_foreground_uri, URI.parse("http://54.235.111.163:4567/footage")
-	set :homage_server_render_uri, URI.parse("http://54.235.111.163:4567/render")
-
-
-	# Setting folders param
-	#set :aeProjectsFolder, "C:/Users/Administrator/Documents/AE Projects/"
-	#set :aerenderPath, "C:/Program Files/Adobe/Adobe After Effects CS6/Support Files/aerender.exe"
-	#set :outputFolder, "C:/Users/Administrator/Documents/AE Output/"
-	#set :ffmpeg_path, "C:/Development/ffmpeg/ffmpeg-20131202-git-e3d7a39-win64-static/bin/ffmpeg.exe"
-	#set :algo_path, "C:/Development/Algo/v-14-02-06/UniformMattingCA.exe"
-	#set :remakes_folder, "C:/Users/Administrator/Documents/Remakes/"
-	#set :roi_path, "C:/Development/Algo/Full.ebox"
-	#set :cdn_path, "http://d293iqusjtyr94.cloudfront.net/"
-	#set :s3_bucket_path, "https://homageapp.s3.amazonaws.com/"
-	#set :rendering_semaphore, Mutex.new
-
-
-	# AWS Connection
-	#aws_config = {access_key_id: "AKIAJTPGKC25LGKJUCTA", secret_access_key: "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"}
-	#AWS.config(aws_config)
-
-	# Logger
-
-  	# Logging the routes both to console (STDOUT/STDERR) and filw
-	#logger_file = File.new("#{settings.root}/log/#{settings.environment}.log", 'a+')
- 	#logger_file.sync = true
-  	#use Rack::CommonLogger, logger_file
- 	#set :logging, Logger::DEBUG
-
-  	# Logging everything to file (instead of console)
-  	#log_file = File.new("sinatra.log", "a+")
-  	#log_file.sync = true
- 	#$stdout.reopen(log_file)
-  	#$stderr.reopen(log_file)
 end
 
-# Logging logger to file (instead of console)
-#before do
-#	logger.level
-#	env['rack.logger'] = Logger.new('sinatra.log', 'weekly')
-#end
+configure :production do
+	set :homage_server_foreground_uri, URI.parse("http://54.235.111.163:4567/footage")
+	set :homage_server_render_uri, URI.parse("http://54.235.111.163:4567/render")
+end
+
+configure :test do
+	set :homage_server_foreground_uri, URI.parse("http://54.83.32.172:4567/footage")
+	set :homage_server_render_uri, URI.parse("http://54.83.32.172:4567/render")
+end
 
 module RemakeStatus
   New = 0
