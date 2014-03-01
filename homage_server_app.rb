@@ -17,11 +17,13 @@ end
 configure :production do
 	set :homage_server_foreground_uri, URI.parse("http://54.235.111.163:4567/footage")
 	set :homage_server_render_uri, URI.parse("http://54.235.111.163:4567/render")
+	puts "PRODUCTION!!!"
 end
 
 configure :test do
 	set :homage_server_foreground_uri, URI.parse("http://54.83.32.172:4567/footage")
 	set :homage_server_render_uri, URI.parse("http://54.83.32.172:4567/render")
+	puts "TEST!!!"
 end
 
 module RemakeStatus
@@ -404,5 +406,5 @@ get '/play/:remake_id' do
 end
 
 get '/test/env' do
-	x = settings.homage_server_foreground_uri.to_s
+	x = ENV['RACK_ENV']
 end
