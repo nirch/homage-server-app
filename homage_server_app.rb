@@ -403,8 +403,6 @@ get '/play/:remake_id' do
 	erb :video
 end
 
-get '/test/crash' do
-	logger.info "Going to crash..."
-	settings.not_exist
-	logget.info "Shouldn't reach here!!!"
+get '/test/env' do
+	x = settings.homage_server_foreground_uri.to_s
 end
