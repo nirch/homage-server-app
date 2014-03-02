@@ -8,22 +8,32 @@ require 'logger'
 require 'net/http'
 
 configure do
-	# Setting db connection param
-	db_connection = Mongo::MongoClient.from_uri("mongodb://Homage:homageIt12@paulo.mongohq.com:10008/Homage")
-	set :db, db_connection.db()
-	set :logging, Logger::DEBUG
+	# Global configuration (regardless of the environment)
+
 end
 
 configure :production do
+	# Production DB connection
+	db_connection = Mongo::MongoClient.from_uri("mongodb://Homage:homageIt12@troup.mongohq.com:10057/Homage_Prod")
+	set :db, db_connection.db()
+
+	# Production AE server connection
 	set :homage_server_foreground_uri, URI.parse("http://54.235.111.163:4567/footage")
 	set :homage_server_render_uri, URI.parse("http://54.235.111.163:4567/render")
-	puts "PRODUCTION!!!"
+
+	set :logging, Logger::INFO
 end
 
 configure :test do
+	# Test DB connection
+	db_connection = Mongo::MongoClient.from_uri("mongodb://Homage:homageIt12@paulo.mongohq.com:10008/Homage")
+	set :db, db_connection.db()
+
+	# Test AE server connection
 	set :homage_server_foreground_uri, URI.parse("http://54.83.32.172:4567/footage")
 	set :homage_server_render_uri, URI.parse("http://54.83.32.172:4567/render")
-	puts "TEST!!!"
+
+	set :logging, Logger::DEBUG
 end
 
 module RemakeStatus
