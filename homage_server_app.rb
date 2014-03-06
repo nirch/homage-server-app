@@ -98,6 +98,28 @@ post '/user' do
 	result = user.to_json
 end
 
+# Updating user details
+put '/user' do
+	# input
+	user_id_email = params[:user_id]
+	is_public = params[:is_public]
+
+	logger.info "Updating user with email <" + user_id_email + ">"
+	users = settings.db.collection("Users")
+
+	if is_public == "true" then
+		is_public = true
+	elsif is_public == "false" then
+		is_public = false
+	end
+
+	users.update({_id: user_id_email}, {"$set" => {is_public: is_public}})
+	
+	# Returning the updated remake
+	user = users.find_one(_id: user_id_email).to_json
+end
+
+
 # Creating a new remake (params are: story_id, user_id)
 post '/remake' do
 	# input
