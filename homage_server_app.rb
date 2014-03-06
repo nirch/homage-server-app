@@ -101,15 +101,16 @@ end
 # Updating user details
 put '/user' do
 	# input
+	logger.debug "params for put /user: " + params.to_s 
 	user_id_email = params[:user_id]
 	is_public = params[:is_public]
 
 	logger.info "Updating user with email <" + user_id_email + ">"
 	users = settings.db.collection("Users")
 
-	if is_public == "true" then
+	if is_public == "YES" then
 		is_public = true
-	elsif is_public == "false" then
+	elsif is_public == "NO" then
 		is_public = false
 	end
 
