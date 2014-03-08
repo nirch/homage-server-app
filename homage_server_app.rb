@@ -231,14 +231,23 @@ get '/remakes/user/:user_id' do
 	remakes = "[" + remakes_json_array.join(",") + "]"
 end
 
-# Returns all the remakes of a given story
+# Returns all the public remakes of a given story
 get '/remakes/story/:story_id' do
 	# input
 	story_id = BSON::ObjectId.from_string(params[:story_id])
 
 	logger.info "Getting remakes for story " + story_id.to_s
 
-	remakes_docs = settings.db.collection("Remakes").find({story_id: story_id, status: RemakeStatus::Done});
+	# Getting all the public users
+	public_users_cursor = settings.db.collection("Users").find({is_public:true})
+	public_users = Array.new
+
+	for user in public_users_cursor do
+		public_users.push(user["_id"])
+	end
+
+	# Getting all the completed remakes of the public users
+	remakes_docs = settings.db.collection("Remakes").find({story_id: story_id, status: RemakeStatus::Done, user_id:{"$in" => public_users}});
 
 	remakes_json_array = Array.new
 	for remake_doc in remakes_docs do

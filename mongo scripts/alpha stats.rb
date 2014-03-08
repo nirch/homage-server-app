@@ -11,7 +11,7 @@ user_testing_users = Set.new ["shaharburg@gmail.com", "ran.turgeman@gmail.com", 
 
 biased_users = Set.new ["zivchannes@gmail.com"]
 
-db = Mongo::MongoClient.from_uri("mongodb://Homage:homageIt12@paulo.mongohq.com:10008/Homage").db
+db = Mongo::MongoClient.from_uri("mongodb://Homage:homageIt12@troup.mongohq.com:10057/Homage_Prod").db
 users_collection = db.collection("Users")
 remakes_collection = db.collection("Remakes")
 users = users_collection.find({})
