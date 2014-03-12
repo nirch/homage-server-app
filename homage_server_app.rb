@@ -76,6 +76,9 @@ end
 post '/user' do
 	# input
 	user_id_email = params[:user_id]
+
+	# downcasing the emails (to avoid issues of uppercase/lowercase emails)
+	user_id_email.downcase!
 	
 	logger.info "Creating a new user with email <" + user_id_email + ">"
 
