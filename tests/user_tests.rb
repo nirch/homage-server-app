@@ -1,32 +1,34 @@
 require File.expand_path '../test_helper.rb', __FILE__
 
 class UserTest < MiniTest::Unit::TestCase
-  include Rack::Test::Methods
+	include Rack::Test::Methods
 
-  def app
-    puts "App..."
-    Sinatra::Application
+	def app
+		Sinatra::Application
+	end
+
+	def setup
+    @delete_user = nil
   end
 
-  def setup
-  	puts "Setup..."
+  def test_update_user
+    put '/user', { :user_id => "nir@homage.it", :is_public => "true" }
+    #assert_equal "nir@homage.it", last_response.body
+    json_rep = last_response.body.to_json
+    puts json_rep.class
   end
 
   def test_env
-  	puts "Start-Testing..."
-  	puts GLOBAL
     get '/test/env'
     assert_equal 'test', last_response.body
-  	puts "End-Testing..."
   end
 
-def test_stories
-	get '/stories'
-	puts last_response.body
-end
-
   def teardown
-  	puts "Tearing-down..."
+    if @delete_user then
+      #puts "delete user: " + @delete_user.to_s
+    else
+      #puts "no user to delete"
+    end
   end
 
   # def test_with_params
