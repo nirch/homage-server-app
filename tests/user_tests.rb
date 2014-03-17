@@ -1,10 +1,6 @@
-ENV['RACK_ENV'] = 'test'
+require File.expand_path '../test_helper.rb', __FILE__
 
-require '../homage_server_app'
-require 'test/unit'
-require 'rack/test'
-
-class UserTest < Test::Unit::TestCase
+class UserTest < MiniTest::Unit::TestCase
   include Rack::Test::Methods
 
   def app
@@ -13,19 +9,23 @@ class UserTest < Test::Unit::TestCase
   end
 
   def setup
-  	super
   	puts "Setup..."
   end
 
   def test_env
   	puts "Start-Testing..."
+  	puts GLOBAL
     get '/test/env'
     assert_equal 'test', last_response.body
   	puts "End-Testing..."
   end
 
+def test_stories
+	get '/stories'
+	puts last_response.body
+end
+
   def teardown
-  	super
   	puts "Tearing-down..."
   end
 
