@@ -4,4 +4,4 @@ require 'minitest/autorun'
 require 'rack/test'
 require '../homage_server_app'
 
-GLOBAL = "nir"
+DB = Mongo::MongoClient.from_uri("mongodb://Homage:homageIt12@paulo.mongohq.com:10008/Homage").db()
