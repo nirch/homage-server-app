@@ -11,11 +11,18 @@ class UserTest < MiniTest::Unit::TestCase
     @delete_user = nil
   end
 
-  def test_update_user
-    put '/user', { :user_id => "nir@homage.it", :is_public => "true" }
-    #assert_equal "nir@homage.it", last_response.body
-    json_rep = last_response.body.to_json
-    puts json_rep.class
+  def test_update_user_public_true
+    put '/user', { :user_id => "nir@homage.it", :is_public => "YES" }
+    json_response = JSON.parse(last_response.body)
+    assert_equal "nir@homage.it", json_response["_id"]
+    assert_equal true, json_response["is_public"]
+  end
+
+   def test_update_user_public_false
+    put '/user', { :user_id => "nir@homage.it", :is_public => "NO" }
+    json_response = JSON.parse(last_response.body)
+    assert_equal "nir@homage.it", json_response["_id"]
+    assert_equal false, json_response["is_public"]
   end
 
   def test_env
