@@ -453,3 +453,8 @@ end
 get '/test/env' do
 	x = ENV['RACK_ENV']
 end
+
+get '/test/error' do
+	hash = { :message => 'good error', :error_code => 12345 }
+	[500, [hash.to_json]]
+end
