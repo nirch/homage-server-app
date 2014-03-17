@@ -27,13 +27,38 @@ class UserTest < MiniTest::Unit::TestCase
     assert_equal false, json_response["is_public"]
   end
 
-  def test_create_user
+  def test_create_user_guest
+    guest_user = { :is_public => "YES", :device => {:name => "Nir's iPhone", :system_name => "iPhone", :system_version => "7.1", :model => "5s" } }
+    post '/user', guest_user
+
+    json_response = JSON.parse(last_response.body)
+    assert json_response["_id"]["$oid"]
+    user_id = BSON::ObjectId.from_string(json_response["_id"]["$oid"])
+    assert_equal true, json_response["is_public"]
+    assert json_response["device"]
+    assert_nil json_response["facebook"]
+
+    user = USERS.find_one(user_id)
+    assert user
+
+    # deleting the user
+    USERS.remove({_id: user_id})
+    user = USERS.find_one(user_id)
+    assert_nil user
+  end
+
+  def test_create_user_old
     user_id = "delete@test.com"
-    post '/user', { :user_id =>  user_id}
-    @delete_user = user_id
+    post '/user_old', { :user_id =>  user_id}
+    #@delete_user = user_id
     json_response = JSON.parse(last_response.body)
     assert_equal user_id, json_response["_id"]
     assert_equal true, json_response["is_public"]
+
+    # deleting the user
+    USERS.remove({_id: user_id})
+    user = USERS.find_one({_id: user_id})
+    assert_nil(user)
   end
 
   def test_env
@@ -44,7 +69,7 @@ class UserTest < MiniTest::Unit::TestCase
   def teardown
     if @delete_user then
       #puts "Deleting user: " + @delete_user
-      USERS.remove({_id: @delete_user})
+      #USERS.remove({_id: @delete_user})
     else
       #puts "no user to delete"
     end

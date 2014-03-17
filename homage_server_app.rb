@@ -75,6 +75,27 @@ end
 
 post '/user' do
 	# input
+	new_user = params
+
+	if new_user["is_public"] then
+		new_user["is_public"] = to_boolean new_user["is_public"]
+	else
+		new_user["is_public"] = false
+	end
+
+	logger.info "Creating a new user with params <" + params.to_s + ">"
+
+	users = settings.db.collection("Users")
+	new_user_id = users.save(new_user)	
+
+	user = users.find_one(new_user_id)
+
+	# Returning the user
+	result = user.to_json
+end
+
+post '/user_old' do
+	# input
 	user_id_email = params[:user_id]
 
 	# downcasing the emails (to avoid issues of uppercase/lowercase emails)
@@ -294,6 +315,11 @@ post '/footage' do
 	# Returning the remake after the DB update
 	remake = settings.db.collection("Remakes").find_one(remake_id).to_json
 end
+
+def to_boolean(str)
+	!!(str =~ /^(true|t|yes|y|1)$/i)
+end
+
 
 def new_footage (remake_id, scene_id)
 	logger.info "New footage for scene " + scene_id.to_s + " for remake " + remake_id.to_s
