@@ -73,7 +73,7 @@ get '/test/user' do
 	erb form
 end
 
-post '/user' do
+post '/user/v2' do
 	# input
 	new_user = params
 
@@ -94,7 +94,7 @@ post '/user' do
 	result = user.to_json
 end
 
-post '/user_old' do
+post '/user' do
 	# input
 	user_id_email = params[:user_id]
 
