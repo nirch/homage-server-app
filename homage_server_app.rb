@@ -73,22 +73,50 @@ get '/test/user' do
 	erb form
 end
 
+def handle_facebook_login(user)
+	# Facebook user, starting with a check if this is a signup or login
+	facebook_id = user["facebook"]["id"]
+
+	users = settings.db.collection("Users")
+	user_exists = users.find_one({"facebook.id" => facebook_id})
+
+	if user_exists then
+		logger.info "Facebook user exists with id <" + user_exists.to_s + ">. returning existing user"
+		return user_exists
+	else
+		new_user_id = users.save(user)	
+		logger.info "New facebook user saved in the DB with user_id <" + new_user_id.to_s + ">"
+		new_user = users.find_one(new_user_id)
+		return new_user
+	end
+end
+
+def handle_guest_login(user)
+	users = settings.db.collection("Users")
+	new_user_id = users.save(user)
+	logger.info "New guest user saved in the DB with user_id <" + new_user_id.to_s + ">"
+	new_user = users.find_one(new_user_id)
+end
+
 post '/user/v2' do
 	# input
 	new_user = params
 
+	logger.info "POST /user with params <" + params.to_s + ">"
+
+	# Converting is_public to boolean (default is false)
 	if new_user["is_public"] then
 		new_user["is_public"] = to_boolean new_user["is_public"]
 	else
 		new_user["is_public"] = false
 	end
 
-	logger.info "Creating a new user with params <" + params.to_s + ">"
-
-	users = settings.db.collection("Users")
-	new_user_id = users.save(new_user)	
-
-	user = users.find_one(new_user_id)
+	# Handeling the differnet logins: facebook; email; guest
+	if new_user["facebook"] then
+		user = handle_facebook_login new_user
+	else
+		user = handle_guest_login new_user
+	end
 
 	# Returning the user
 	result = user.to_json
