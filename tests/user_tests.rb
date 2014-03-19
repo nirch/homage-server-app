@@ -5,10 +5,16 @@ class UserTest < MiniTest::Unit::TestCase
 
   USERS = DB.collection("Users")
 
-  FACEBOOK_USER = { :email => "unit@test.com",
-                  :is_public => "YES", 
+  FACEBOOK_USER = { :email => "unit_facebook@test.com",
+                    :is_public => "YES", 
+                    :device => { :name => "Nir's iPhone", :system_name => "iPhone", :system_version => "7.1", :model => "5s" }, 
+                    :facebook => { :id => "929292929299", :name => "Bla Bla", :first_name => "Nir" }
+                  }
+
+  EMAIL_USER = {  :email => "unit_email@test.com",
+                  :password => "qwerty123",
+                  :is_public => "NO", 
                   :device => { :name => "Nir's iPhone", :system_name => "iPhone", :system_version => "7.1", :model => "5s" }, 
-                  :facebook => { :id => "929292929299", :name => "Bla Bla", :first_name => "Nir" }
                 }
 
 
@@ -101,10 +107,41 @@ class UserTest < MiniTest::Unit::TestCase
     assert_nil user
   end
 
-  # def test_create_user_password_new
+  def test_create_user_password_new
+    post '/user/v2', EMAIL_USER
+
+    # checking the response
+    json_response = JSON.parse(last_response.body)
+    assert json_response["_id"]["$oid"]
+    user_id = BSON::ObjectId.from_string(json_response["_id"]["$oid"])
+    assert_equal false, json_response["is_public"]
+    assert json_response["device"]
+    assert_equal "unit_email@test.com", json_response["email"]
+    assert json_response["password_hash"]
+    assert_nil json_response["password"]
+
+    # checking that the user exists in the DB
+    user = USERS.find_one(user_id)
+    assert user
+    assert_equal false, user["is_public"]
+    assert user["device"]
+    assert_equal "unit_email@test.com", user["email"]
+    assert user["password_hash"]
+    assert_nil user["password"]
+
+    # deleting the user
+    USERS.remove({_id: user_id})
+    user = USERS.find_one(user_id)
+    assert_nil user
+  end
+
+  # def test_create_user_password_login_successful
   # end
 
-  # def test_create_user_password_login
+  # def test_create_user_password_login_401
+  # end
+
+  # def test_facebook_login_update_info
   # end
 
   # def test_guest_to_facebook
@@ -123,6 +160,9 @@ class UserTest < MiniTest::Unit::TestCase
   # end
 
   # def test_add_device_password
+  # end
+
+  # def test_empty_password
   # end
 
 

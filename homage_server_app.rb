@@ -6,6 +6,7 @@ require 'json'
 require 'open-uri'
 require 'logger'
 require 'net/http'
+require 'sinatra/security'
 
 configure do
 	# Global configuration (regardless of the environment)
@@ -52,6 +53,11 @@ module FootageStatus
   Ready = 3
 end
 
+module ErrorCodes
+	InvalidPassword = 1001
+end
+
+
 # Get all stories
 get '/stories' do
 	stories_collection = settings.db.collection("Stories")
@@ -74,20 +80,19 @@ get '/test/user' do
 end
 
 def handle_facebook_login(user)
-	# Facebook user, starting with a check if this is a signup or login
 	facebook_id = user["facebook"]["id"]
 
 	users = settings.db.collection("Users")
 	user_exists = users.find_one({"facebook.id" => facebook_id})
 
 	if user_exists then
-		logger.info "Facebook user exists with id <" + user_exists.to_s + ">. returning existing user"
-		return user_exists
+		logger.info "Facebook user <" + user["facebook"]["name"] + "> exists with id <" + user_exists.to_s + ">. returning existing user"
+		return user_exists, nil
 	else
 		new_user_id = users.save(user)	
-		logger.info "New facebook user saved in the DB with user_id <" + new_user_id.to_s + ">"
+		logger.info "New facebook user <" + user["facebook"]["name"] + "> saved in the DB with user_id <" + new_user_id.to_s + ">"
 		new_user = users.find_one(new_user_id)
-		return new_user
+		return new_user, nil
 	end
 end
 
@@ -96,6 +101,37 @@ def handle_guest_login(user)
 	new_user_id = users.save(user)
 	logger.info "New guest user saved in the DB with user_id <" + new_user_id.to_s + ">"
 	new_user = users.find_one(new_user_id)
+	return new_user, nil
+end
+
+def handle_password_login(user)
+	email = user["email"]
+
+	# Checking if this is a signup or login attempt
+	users = settings.db.collection("Users")
+	user_exists = users.find_one({"email" => email})
+	if user_exists then
+		logger.info "Attempt to login with email <" + email + ">"
+
+		authenticated = Sinatra::Security::Password::Hashing.check(user["password"], user_exists["password_hash"])
+		if authenticated then
+			logger.info "User <" + email + "> successfully authenticated"
+			return user_exists
+		else
+			logger.info "Authentication failed for user <" + email + ">"
+			error_hash = { :message => 'Authentication failes, invalid password', :error_code => ErrorCodes::InvalidPassword }
+			return nil, [401, [error_hash.to_json]]
+		end
+	else
+		# Encrypt password (hash + salt)
+		password_hash = Sinatra::Security::Password::Hashing.encrypt(user["password"])
+		user["password_hash"] = password_hash
+		user.delete("password")
+		new_user_id = users.save(user)
+		logger.info "New email user <" + user["email"] + "> saved in the DB with user_id <" + new_user_id.to_s + ">"
+		new_user = users.find_one(new_user_id)
+		return new_user, nil
+	end
 end
 
 post '/user/v2' do
@@ -113,13 +149,19 @@ post '/user/v2' do
 
 	# Handeling the differnet logins: facebook; email; guest
 	if new_user["facebook"] then
-		user = handle_facebook_login new_user
+		user, error = handle_facebook_login new_user
+	elsif new_user["password"] then
+		user, error = handle_password_login new_user
 	else
-		user = handle_guest_login new_user
+		user, error = handle_guest_login new_user
 	end
 
-	# Returning the user
-	result = user.to_json
+	# Returning either the user or an error
+	if user then
+		response = user.to_json
+	else
+		response = error
+	end 
 end
 
 post '/user' do
