@@ -55,6 +55,16 @@ end
 
 module ErrorCodes
 	InvalidPassword = 1001
+	InvalidUserID = 1002
+	FacebookToGuestForbidden = 1003
+	FacebookToEmailForbidden = 1004
+	EmailToGuestForbidden = 1005
+end
+
+module UserType
+	GuestUser = 0
+	FacebookUser = 1
+	EmailUser = 2
 end
 
 
@@ -89,6 +99,19 @@ def handle_facebook_login(user)
 		logger.info "Facebook user <" + user["facebook"]["name"] + "> exists with id <" + user_exists.to_s + ">. returning existing user"
 		return user_exists, nil
 	else
+		# checking if the user exists with an email
+		if user["email"] then
+			email_exists = users.find_one({"email" => user["email"]})
+			if email_exists then
+				# This is an existing user which previously had an email login and now has a facebook login
+				update_user_id = email_exists["_id"]
+				logger.info "updating Email to Facebook for user " + update_user_id.to_s
+				users.update({_id: update_user_id}, {"$set" => {facebook: user["facebook"]}})
+				updated_user = users.find_one(update_user_id)
+				return updated_user, nil
+			end
+		end
+
 		new_user_id = users.save(user)	
 		logger.info "New facebook user <" + user["facebook"]["name"] + "> saved in the DB with user_id <" + new_user_id.to_s + ">"
 		new_user = users.find_one(new_user_id)
@@ -111,6 +134,13 @@ def handle_password_login(user)
 	users = settings.db.collection("Users")
 	user_exists = users.find_one({"email" => email})
 	if user_exists then
+
+		if user_type(user_exists) == UserType::FacebookUser then
+			logger.warn "An existing facebook user cannot login with email, connect with facebook"
+			error_hash = { :message => "An existing facebook user cannot login with email, connect with facebook", :error_code => ErrorCodes::FacebookToEmailForbidden }
+			return nil, [403, [error_hash.to_json]]			
+		end
+
 		logger.info "Attempt to login with email <" + email + ">"
 
 		authenticated = Sinatra::Security::Password::Hashing.check(user["password"], user_exists["password_hash"])
@@ -119,7 +149,7 @@ def handle_password_login(user)
 			return user_exists
 		else
 			logger.info "Authentication failed for user <" + email + ">"
-			error_hash = { :message => 'Authentication failes, invalid password', :error_code => ErrorCodes::InvalidPassword }
+			error_hash = { :message => 'Authentication failed, invalid password', :error_code => ErrorCodes::InvalidPassword }
 			return nil, [401, [error_hash.to_json]]
 		end
 	else
@@ -134,23 +164,32 @@ def handle_password_login(user)
 	end
 end
 
+def handle_user_params(user)
+	# Converting is_public to boolean (default is false)
+	if user["is_public"] then
+		user["is_public"] = to_boolean(user["is_public"])
+	end
+
+	# downcasing the emails (to avoid issues of uppercase/lowercase emails)
+	if user["email"] then
+		user["email"].downcase!
+	end
+end
+
 post '/user/v2' do
 	# input
 	new_user = params
 
 	logger.info "POST /user with params <" + params.to_s + ">"
 
-	# Converting is_public to boolean (default is false)
-	if new_user["is_public"] then
-		new_user["is_public"] = to_boolean new_user["is_public"]
-	else
-		new_user["is_public"] = false
-	end
+	handle_user_params(new_user)
+
+	new_user_type = user_type(new_user)
 
 	# Handeling the differnet logins: facebook; email; guest
-	if new_user["facebook"] then
+	if new_user_type == UserType::FacebookUser then
 		user, error = handle_facebook_login new_user
-	elsif new_user["password"] then
+	elsif new_user_type == UserType::EmailUser then
 		user, error = handle_password_login new_user
 	else
 		user, error = handle_guest_login new_user
@@ -162,6 +201,74 @@ post '/user/v2' do
 	else
 		response = error
 	end 
+end
+
+def user_type(user)
+	if user["facebook"] then
+		return UserType::FacebookUser
+	elsif user["email"] then
+		return UserType::EmailUser
+	else
+		return UserType::GuestUser
+	end
+end
+
+put '/user/v2' do
+	logger.info "params for put /user/v2: " + params.to_s
+
+	update_user_id = BSON::ObjectId.from_string(params[:user_id])
+
+	users = settings.db.collection("Users")
+	existing_user = users.find_one(update_user_id)
+
+	if !existing_user then
+		# returning an error
+		logger.warn "Trying to update a user that doesn't exist with id " + update_user_id.to_s
+		error_hash = { :message => "User with id " + update_user_id.to_s + " doesn't exist", :error_code => ErrorCodes::InvalidUserID }
+		return [404, [error_hash.to_json]]
+	end
+
+	handle_user_params(params)
+
+	update_user_type = user_type(params)
+	existing_user_type = user_type(existing_user)
+
+	if existing_user_type == update_user_type then
+		# Simple update of user data
+		logger.info "updating data for user " + update_user_id.to_s
+		users.update({_id: update_user_id}, {"$set" => {is_public: params[:is_public]}})
+	elsif existing_user_type == UserType::GuestUser and update_user_type == UserType::FacebookUser
+		# Guest to Facebook user
+		logger.info "updating Guest to Facebook for user " + update_user_id.to_s
+		users.update({_id: update_user_id}, {"$set" => {facebook: params[:facebook], email: params[:email], is_public: params[:is_public]}})
+	elsif existing_user_type == UserType::GuestUser and update_user_type == UserType::EmailUser
+		# Guest to Email user
+		logger.info "updating Guest to Email for user " + update_user_id.to_s
+		password_hash = Sinatra::Security::Password::Hashing.encrypt(params["password"])
+		users.update({_id: update_user_id}, {"$set" => {email: params[:email], password_hash: password_hash, is_public: params[:is_public]}})
+	elsif existing_user_type == UserType::FacebookUser and update_user_type == UserType::GuestUser
+		# Error - Facebook to Guest user
+		logger.warn "cannot downgrade a facebook user to a guest user"
+		error_hash = { :message => "cannot downgrade a facebook user to a guest user", :error_code => ErrorCodes::FacebookToGuestForbidden }
+		return [403, [error_hash.to_json]]
+	elsif existing_user_type == UserType::FacebookUser and update_user_type == UserType::EmailUser
+		# Error - Facebook to Email user
+		logger.warn "cannot downgrade a facebook user to an email user"
+		error_hash = { :message => "cannot downgrade a facebook user to an email user", :error_code => ErrorCodes::FacebookToEmailForbidden }
+		return [403, [error_hash.to_json]]
+	elsif existing_user_type == UserType::EmailUser and update_user_type == UserType::GuestUser
+		# Error - Email to Guest user
+		logger.warn "cannot downgrade an email user to a guest user"
+		error_hash = { :message => "cannot downgrade an email user to a guest user", :error_code => ErrorCodes::EmailToGuestForbidden }
+		return [403, [error_hash.to_json]]
+	elsif existing_user_type == UserType::EmailUser and update_user_type == UserType::FacebookUser
+		# Email to Facebook user
+		logger.warn "updating email user to facebook user should be done with POST not PUT"
+		error_hash = { :message => "updating email user to facebook user should be done with POST not PUT", :error_code => ErrorCodes::FacebookToEmailForbidden }
+		return [403, [error_hash.to_json]]
+	end
+
+	return users.find_one(_id: update_user_id).to_json
 end
 
 post '/user' do
@@ -554,3 +661,5 @@ get '/test/error' do
 	hash = { :message => 'good error', :error_code => 12345 }
 	[500, [hash.to_json]]
 end
+
+

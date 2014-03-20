@@ -10,13 +10,17 @@ prod_remakes = prod_db.collection("Remakes")
 
 
 
-good_remakes = prod_remakes.find({demo:true})
-for remake in good_remakes do
-	user_exist = prod_users.find_one({_id:remake["user_id"]})
-	if !user_exist then
-		puts remake["_id"].to_s + "; " + remake["user_id"]
-	end
-end
+user = remakes.find_one({"user_id" => "nir@homage.it"})
+puts user
+
+
+# good_remakes = prod_remakes.find({demo:true})
+# for remake in good_remakes do
+# 	user_exist = prod_users.find_one({_id:remake["user_id"]})
+# 	if !user_exist then
+# 		puts remake["_id"].to_s + "; " + remake["user_id"]
+# 	end
+# end
 
 
 
