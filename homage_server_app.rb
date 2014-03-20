@@ -213,6 +213,23 @@ def user_type(user)
 	end
 end
 
+# Merging user a into user b and deleting user a
+def merge_users(user_a, user_b)
+	users = settings.db.collection("Users")
+	remakes = settings.db.collection("Remakes")
+
+	# Moving user_a remakes to user_b
+	user_a_remakes = remakes.find({user_id: user_a["_id"]})
+	for remake in user_a_remakes do
+		remake[:user_id] = user_b["_id"]
+	end
+
+	# What about the devices?????
+
+	# removing this user
+	users.remove({_id: user_a["_id"]})
+end
+
 put '/user/v2' do
 	logger.info "params for put /user/v2: " + params.to_s
 
@@ -239,13 +256,40 @@ put '/user/v2' do
 		users.update({_id: update_user_id}, {"$set" => {is_public: params[:is_public]}})
 	elsif existing_user_type == UserType::GuestUser and update_user_type == UserType::FacebookUser
 		# Guest to Facebook user
-		logger.info "updating Guest to Facebook for user " + update_user_id.to_s
-		users.update({_id: update_user_id}, {"$set" => {facebook: params[:facebook], email: params[:email], is_public: params[:is_public]}})
+
+		# Checking if there is another facebook user with the same ID
+		facebook_user_exists = users.find_one({"facebook.id" => params[:facebook][:id]})
+		if facebook_user_exists then
+			logger.info "facebook id already exists, merging guest user " + update_user_id.to_s + " into facebook user " + facebook_user_exists["_id"].to_s
+			merge_users(existing_user, facebook_user_exists)
+			update_user_id = facebook_user_exists["_id"]
+		else
+			logger.info "updating Guest to Facebook for user " + update_user_id.to_s
+			users.update({_id: update_user_id}, {"$set" => {facebook: params[:facebook], email: params[:email], is_public: params[:is_public]}})
+		end
 	elsif existing_user_type == UserType::GuestUser and update_user_type == UserType::EmailUser
 		# Guest to Email user
-		logger.info "updating Guest to Email for user " + update_user_id.to_s
-		password_hash = Sinatra::Security::Password::Hashing.encrypt(params["password"])
-		users.update({_id: update_user_id}, {"$set" => {email: params[:email], password_hash: password_hash, is_public: params[:is_public]}})
+
+		# Checking if there is another user with the same email
+		email_user_exists = users.find_one({email: params[:email]})
+		if email_user_exists then
+			logger.info "User with email " + params[:email] + " already exists, attempt to authenticate"
+			# Attempting to authenticate the user
+			authenticated = Sinatra::Security::Password::Hashing.check(params["password"], email_user_exists["password_hash"])
+			if authenticated then
+				logger.info "authentication succeeded, merging guest user " + update_user_id.to_s + " into email user " + email_user_exists["_id"].to_s
+				merge_users(existing_user, email_user_exists)
+				update_user_id = email_user_exists["_id"]
+			else
+				logger.info "Authentication failed for user <" + params[:email] + ">"
+				error_hash = { :message => 'Authentication failed, invalid password', :error_code => ErrorCodes::InvalidPassword }
+				return [401, [error_hash.to_json]]
+			end
+		else
+			logger.info "updating Guest to Email for user " + update_user_id.to_s
+			password_hash = Sinatra::Security::Password::Hashing.encrypt(params["password"])
+			users.update({_id: update_user_id}, {"$set" => {email: params[:email], password_hash: password_hash, is_public: params[:is_public]}})
+		end
 	elsif existing_user_type == UserType::FacebookUser and update_user_type == UserType::GuestUser
 		# Error - Facebook to Guest user
 		logger.warn "cannot downgrade a facebook user to a guest user"

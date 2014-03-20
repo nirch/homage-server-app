@@ -225,6 +225,42 @@ class UserTest < MiniTest::Unit::TestCase
     assert_nil user
   end
 
+  # There is an existing facebook user in the DB. A new guest user upgrades to the same existing facebook user => the guest user should merge into the existing facebook user
+  def test_guest_to_existing_facebook
+    post '/user/v2', FACEBOOK_USER
+
+    json_response = JSON.parse(last_response.body)
+    assert json_response["_id"]["$oid"]
+    facebook_user_id = BSON::ObjectId.from_string(json_response["_id"]["$oid"])
+
+    post '/user/v2', GUEST_USER
+
+    json_response = JSON.parse(last_response.body)
+    assert json_response["_id"]["$oid"]
+    guest_user_id = BSON::ObjectId.from_string(json_response["_id"]["$oid"])
+
+    guest_to_facebook_user = FACEBOOK_USER.clone
+    guest_to_facebook_user[:user_id] = guest_user_id.to_s
+    put '/user/v2', guest_to_facebook_user
+
+    json_response = JSON.parse(last_response.body)
+    assert json_response["_id"]["$oid"]
+    guest_to_facebook_user_id = BSON::ObjectId.from_string(json_response["_id"]["$oid"])
+
+    assert_equal facebook_user_id, guest_to_facebook_user_id
+
+    # Guest user should already be deleted
+    user = USERS.find_one(guest_user_id)
+    assert_nil user
+
+    # deleting the user, and checking that both ids (which is the same id) doesn;t exist in the DB
+    USERS.remove({_id: facebook_user_id})
+    user = USERS.find_one(facebook_user_id)
+    assert_nil user
+    user = USERS.find_one(guest_to_facebook_user_id)
+    assert_nil user
+  end
+
   def test_guest_to_password
     post '/user/v2', GUEST_USER
 
@@ -257,6 +293,74 @@ class UserTest < MiniTest::Unit::TestCase
     assert_nil user
     user = USERS.find_one(email_user_id)
     assert_nil user    
+  end
+
+  # There is an existing email user in the DB. A new guest user upgrades to the same existing facebook user => the guest user should merge into the existing facebook user
+  def test_guest_to_existing_passoword_success
+    post '/user/v2', EMAIL_USER
+
+    json_response = JSON.parse(last_response.body)
+    assert json_response["_id"]["$oid"]
+    email_user_id = BSON::ObjectId.from_string(json_response["_id"]["$oid"])
+
+    post '/user/v2', GUEST_USER
+
+    json_response = JSON.parse(last_response.body)
+    assert json_response["_id"]["$oid"]
+    guest_user_id = BSON::ObjectId.from_string(json_response["_id"]["$oid"])
+
+    guest_to_email_user = EMAIL_USER.clone
+    guest_to_email_user[:user_id] = guest_user_id.to_s
+    put '/user/v2', guest_to_email_user
+
+    json_response = JSON.parse(last_response.body)
+    assert json_response["_id"]["$oid"]
+    guest_to_email_user_id = BSON::ObjectId.from_string(json_response["_id"]["$oid"])
+
+    assert_equal email_user_id, guest_to_email_user_id
+
+    # Guest user should already be deleted
+    user = USERS.find_one(guest_user_id)
+    assert_nil user
+
+    # deleting the user, and checking that both ids (which is the same id) doesn't exist in the DB
+    USERS.remove({_id: email_user_id})
+    user = USERS.find_one(email_user_id)
+    assert_nil user
+    user = USERS.find_one(guest_to_email_user_id)
+    assert_nil user
+  end
+
+  def test_guest_to_existing_passoword_401
+    post '/user/v2', EMAIL_USER
+
+    json_response = JSON.parse(last_response.body)
+    assert json_response["_id"]["$oid"]
+    email_user_id = BSON::ObjectId.from_string(json_response["_id"]["$oid"])
+
+    post '/user/v2', GUEST_USER
+
+    json_response = JSON.parse(last_response.body)
+    assert json_response["_id"]["$oid"]
+    guest_user_id = BSON::ObjectId.from_string(json_response["_id"]["$oid"])
+
+    guest_to_email_user_401 = EMAIL_USER.clone
+    guest_to_email_user_401[:user_id] = guest_user_id.to_s
+    guest_to_email_user_401[:password] = "123qwerty"
+    put '/user/v2', guest_to_email_user_401
+
+    assert_equal 401, last_response.status
+    json_response = JSON.parse(last_response.body)
+    assert_equal 1001, json_response["error_code"]
+
+    USERS.remove({_id: email_user_id})
+    user = USERS.find_one(email_user_id)
+    assert_nil user
+    user = USERS.find_one(guest_user_id)
+    assert user
+    USERS.remove({_id: guest_user_id})
+    user = USERS.find_one(guest_user_id)
+    assert_nil user
   end
 
   def test_facebook_to_password
