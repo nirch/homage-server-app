@@ -89,6 +89,21 @@ get '/test/user' do
 	erb form
 end
 
+# This methods recieves a source user and adds his device to the destination user (if the devices)
+def add_devices(users, source_user, destination_user, destination_id)
+	destination_devices = Set.new
+	for device in destination_user["devices"]
+		destination_devices.add(device["identifier_for_vendor"])
+	end
+
+	for device in source_user["devices"]
+		if !destination_devices.include?(device["identifier_for_vendor"]) then
+			users.update({_id: destination_id}, {"$push" => {devices: device} })
+		end
+	end
+end
+
+
 def handle_facebook_login(user)
 	facebook_id = user["facebook"]["id"]
 
@@ -97,6 +112,7 @@ def handle_facebook_login(user)
 
 	if user_exists then
 		logger.info "Facebook user <" + user["facebook"]["name"] + "> exists with id <" + user_exists.to_s + ">. returning existing user"
+		add_devices(users, user, user_exists, user_exists["_id"])
 		return user_exists, nil
 	else
 		# checking if the user exists with an email
@@ -146,6 +162,7 @@ def handle_password_login(user)
 		authenticated = Sinatra::Security::Password::Hashing.check(user["password"], user_exists["password_hash"])
 		if authenticated then
 			logger.info "User <" + email + "> successfully authenticated"
+			add_devices(users, user, user_exists, user_exists["_id"])
 			return user_exists
 		else
 			logger.info "Authentication failed for user <" + email + ">"
@@ -173,6 +190,13 @@ def handle_user_params(user)
 	# downcasing the emails (to avoid issues of uppercase/lowercase emails)
 	if user["email"] then
 		user["email"].downcase!
+	end
+
+	if user["device"] then
+		devices = Array.new
+		devices.push(user["device"])
+		user["devices"] = devices
+		user.delete("device")
 	end
 end
 

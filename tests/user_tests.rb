@@ -6,20 +6,20 @@ class UserTest < MiniTest::Unit::TestCase
   USERS = DB.collection("Users")
 
   GUEST_USER =  {  :is_public => "YES", 
-                   :device => {:name => "Nir's iPhone", :system_name => "iPhone", :system_version => "7.1", :model => "5s" } 
+                   :device => {:identifier_for_vendor => "3DACF253-C0B7-4F4C-843E-435A43699715", :name => "Nir's iPhone", :system_name => "iPhone", :system_version => "7.1", :model => "5s" } 
                 }
 
 
   FACEBOOK_USER = { :email => "unit_facebook@test.com",
                     :is_public => "YES", 
-                    :device => { :name => "Nir's iPhone", :system_name => "iPhone", :system_version => "7.1", :model => "5s" }, 
+                    :device => { :identifier_for_vendor => "3DACF253-C0B7-4F4C-843E-435A43612084", :name => "Nir's iPhone", :system_name => "iPhone", :system_version => "7.1", :model => "5s" }, 
                     :facebook => { :id => "929292929299", :name => "Bla Bla", :first_name => "Nir" }
                   }
 
   EMAIL_USER = {  :email => "unit_email@test.com",
                   :password => "qwerty123",
                   :is_public => "NO", 
-                  :device => { :name => "Nir's iPhone", :system_name => "iPhone", :system_version => "7.1", :model => "5s" }, 
+                  :device => { :identifier_for_vendor => "3DACF253-C0B7-4F4C-843E-435A436A1932", :name => "Nir's iPhone", :system_name => "iPhone", :system_version => "7.1", :model => "5s" }, 
                 }
 
 
@@ -52,7 +52,7 @@ class UserTest < MiniTest::Unit::TestCase
     assert json_response["_id"]["$oid"]
     user_id = BSON::ObjectId.from_string(json_response["_id"]["$oid"])
     assert_equal true, json_response["is_public"]
-    assert json_response["device"]
+    assert json_response["devices"]
     assert_nil json_response["facebook"]
 
     user = USERS.find_one(user_id)
@@ -72,7 +72,7 @@ class UserTest < MiniTest::Unit::TestCase
     assert json_response["_id"]["$oid"]
     user_id = BSON::ObjectId.from_string(json_response["_id"]["$oid"])
     assert_equal true, json_response["is_public"]
-    assert json_response["device"]
+    assert json_response["devices"]
     assert json_response["facebook"]
 
     # checking that the user exists in the DB
@@ -117,7 +117,7 @@ class UserTest < MiniTest::Unit::TestCase
     assert json_response["_id"]["$oid"]
     user_id = BSON::ObjectId.from_string(json_response["_id"]["$oid"])
     assert_equal false, json_response["is_public"]
-    assert json_response["device"]
+    assert json_response["devices"]
     assert_equal "unit_email@test.com", json_response["email"]
     assert json_response["password_hash"]
     assert_nil json_response["password"]
@@ -126,7 +126,7 @@ class UserTest < MiniTest::Unit::TestCase
     user = USERS.find_one(user_id)
     assert user
     assert_equal false, user["is_public"]
-    assert user["device"]
+    assert user["devices"]
     assert_equal "unit_email@test.com", user["email"]
     assert user["password_hash"]
     assert_nil user["password"]
@@ -416,10 +416,129 @@ class UserTest < MiniTest::Unit::TestCase
     assert_nil user    
   end
 
-  # def test_add_device_facebook
+  def test_add_devices
+    post '/user/v2', GUEST_USER
+
+    guest_user_1 = JSON.parse(last_response.body)
+    assert guest_user_1["_id"]["$oid"]
+    guest_user_id_1 = BSON::ObjectId.from_string(guest_user_1["_id"]["$oid"])
+
+    guest_user_another_device = GUEST_USER.clone
+    guest_user_another_device[:device][:identifier_for_vendor] = "3DACF253-C0B7-4F4C-843E-435A436AAA12"
+    post '/user/v2', guest_user_another_device
+
+    guest_user_2 = JSON.parse(last_response.body)
+    assert guest_user_2["_id"]["$oid"]
+    guest_user_id_2 = BSON::ObjectId.from_string(guest_user_2["_id"]["$oid"])
+
+    add_devices(USERS, guest_user_1, guest_user_2, guest_user_id_2)
+
+    guest_user_1 = USERS.find_one(guest_user_id_1)
+    guest_user_2 = USERS.find_one(guest_user_id_2)
+    assert_equal 1, guest_user_1["devices"].count
+    assert_equal 2, guest_user_2["devices"].count
+
+    USERS.remove({_id: guest_user_id_1})
+    user = USERS.find_one(guest_user_id_1)
+    assert_nil user
+    USERS.remove({_id: guest_user_id_2})
+    user = USERS.find_one(guest_user_id_2)
+    assert_nil user
+  end
+
+  def test_add_devices_same_device
+    post '/user/v2', GUEST_USER
+
+    guest_user_1 = JSON.parse(last_response.body)
+    assert guest_user_1["_id"]["$oid"]
+    guest_user_id_1 = BSON::ObjectId.from_string(guest_user_1["_id"]["$oid"])
+
+    post '/user/v2', GUEST_USER
+
+    guest_user_2 = JSON.parse(last_response.body)
+    assert guest_user_2["_id"]["$oid"]
+    guest_user_id_2 = BSON::ObjectId.from_string(guest_user_2["_id"]["$oid"])
+
+    add_devices(USERS, guest_user_1, guest_user_2, guest_user_id_2)
+
+    guest_user_1 = USERS.find_one(guest_user_id_1)
+    guest_user_2 = USERS.find_one(guest_user_id_2)
+    assert_equal 1, guest_user_1["devices"].count
+    assert_equal 1, guest_user_2["devices"].count
+
+    USERS.remove({_id: guest_user_id_1})
+    user = USERS.find_one(guest_user_id_1)
+    assert_nil user
+    USERS.remove({_id: guest_user_id_2})
+    user = USERS.find_one(guest_user_id_2)
+    assert_nil user
+  end
+
+  def test_add_device_facebook
+    post '/user/v2', FACEBOOK_USER
+
+    facebook_user_1 = JSON.parse(last_response.body)
+    assert facebook_user_1["_id"]["$oid"]
+    facebook_user_1_id = BSON::ObjectId.from_string(facebook_user_1["_id"]["$oid"])
+
+    facebook_user_another_device = FACEBOOK_USER.clone
+    facebook_user_another_device[:device][:identifier_for_vendor] = "3DACF253-C0B7-4F4C-843E-435A436AAA12"
+    post '/user/v2', facebook_user_another_device
+
+    facebook_user_2 = JSON.parse(last_response.body)
+    assert facebook_user_2["_id"]["$oid"]
+    facebook_user_2_id = BSON::ObjectId.from_string(facebook_user_2["_id"]["$oid"])
+
+    # checking that that the new user and the loged-in user both have the same user id
+    assert_equal facebook_user_1_id, facebook_user_2_id
+
+    user = USERS.find_one(facebook_user_1_id)
+    assert_equal 2, user["devices"].count
+
+    # deleting the user, and checking that both ids (which is the same id) doesn;t exist in the DB
+    USERS.remove({_id: facebook_user_1_id})
+    user = USERS.find_one(facebook_user_1_id)
+    assert_nil user
+    user = USERS.find_one(facebook_user_2_id)
+    assert_nil user
+  end
+
+  def test_add_device_password
+    post '/user/v2', EMAIL_USER
+
+    email_user_1 = JSON.parse(last_response.body)
+    assert email_user_1["_id"]["$oid"]
+    email_user_1_id = BSON::ObjectId.from_string(email_user_1["_id"]["$oid"])
+
+    email_user_another_device = EMAIL_USER.clone
+    email_user_another_device[:device][:identifier_for_vendor] = "3DACF253-C0B7-4F4C-843E-435A436AAA12"
+    post '/user/v2', email_user_another_device
+
+    email_user_2 = JSON.parse(last_response.body)
+    assert email_user_2["_id"]["$oid"]
+    email_user_2_id = BSON::ObjectId.from_string(email_user_2["_id"]["$oid"])
+
+    # checking that that the new user and the loged-in user both have the same user id
+    assert_equal email_user_1_id, email_user_2_id
+
+    user = USERS.find_one(email_user_1_id)
+    assert_equal 2, user["devices"].count
+
+    # deleting the user, and checking that both ids (which is the same id) doesn;t exist in the DB
+    USERS.remove({_id: email_user_1_id})
+    user = USERS.find_one(email_user_1_id)
+    assert_nil user
+    user = USERS.find_one(email_user_2_id)
+    assert_nil user  
+  end
+
+  # def test_add_device_facebook_from_guest
   # end
 
-  # def test_add_device_password
+  # def test_add_device_facebook_from_email
+  # end
+
+  # def test_add_device_merge_users
   # end
 
   # def test_empty_password
