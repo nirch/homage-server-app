@@ -183,6 +183,7 @@ post '/user/v2' do
 	logger.info "POST /user with params <" + params.to_s + ">"
 
 	handle_user_params(new_user)
+	new_user["created_at"] = Time.now
 
 	new_user_type = user_type(new_user)
 
@@ -250,8 +251,8 @@ put '/user/v2' do
 	update_user_type = user_type(params)
 	existing_user_type = user_type(existing_user)
 
-	if existing_user_type == update_user_type then
-		# Simple update of user data
+	if update_user_type == UserType::GuestUser or existing_user_type == update_user_type then
+		# if it is the same type of user, or the updates user looks like guest, then this is a simple update of user data
 		logger.info "updating data for user " + update_user_id.to_s
 		users.update({_id: update_user_id}, {"$set" => {is_public: params[:is_public]}})
 	elsif existing_user_type == UserType::GuestUser and update_user_type == UserType::FacebookUser
@@ -290,20 +291,10 @@ put '/user/v2' do
 			password_hash = Sinatra::Security::Password::Hashing.encrypt(params["password"])
 			users.update({_id: update_user_id}, {"$set" => {email: params[:email], password_hash: password_hash, is_public: params[:is_public]}})
 		end
-	elsif existing_user_type == UserType::FacebookUser and update_user_type == UserType::GuestUser
-		# Error - Facebook to Guest user
-		logger.warn "cannot downgrade a facebook user to a guest user"
-		error_hash = { :message => "cannot downgrade a facebook user to a guest user", :error_code => ErrorCodes::FacebookToGuestForbidden }
-		return [403, [error_hash.to_json]]
 	elsif existing_user_type == UserType::FacebookUser and update_user_type == UserType::EmailUser
 		# Error - Facebook to Email user
 		logger.warn "cannot downgrade a facebook user to an email user"
 		error_hash = { :message => "cannot downgrade a facebook user to an email user", :error_code => ErrorCodes::FacebookToEmailForbidden }
-		return [403, [error_hash.to_json]]
-	elsif existing_user_type == UserType::EmailUser and update_user_type == UserType::GuestUser
-		# Error - Email to Guest user
-		logger.warn "cannot downgrade an email user to a guest user"
-		error_hash = { :message => "cannot downgrade an email user to a guest user", :error_code => ErrorCodes::EmailToGuestForbidden }
 		return [403, [error_hash.to_json]]
 	elsif existing_user_type == UserType::EmailUser and update_user_type == UserType::FacebookUser
 		# Email to Facebook user
