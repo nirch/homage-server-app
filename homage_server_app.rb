@@ -113,7 +113,7 @@ def handle_facebook_login(user)
 	if user_exists then
 		logger.info "Facebook user <" + user["facebook"]["name"] + "> exists with id <" + user_exists.to_s + ">. returning existing user"
 		add_devices(users, user, user_exists, user_exists["_id"])
-		return user_exists, nil
+		return user_exists["_id"], nil
 	else
 		# checking if the user exists with an email
 		if user["email"] then
@@ -123,15 +123,13 @@ def handle_facebook_login(user)
 				update_user_id = email_exists["_id"]
 				logger.info "updating Email to Facebook for user " + update_user_id.to_s
 				users.update({_id: update_user_id}, {"$set" => {facebook: user["facebook"]}})
-				updated_user = users.find_one(update_user_id)
-				return updated_user, nil
+				return update_user_id, nil
 			end
 		end
 
 		new_user_id = users.save(user)	
 		logger.info "New facebook user <" + user["facebook"]["name"] + "> saved in the DB with user_id <" + new_user_id.to_s + ">"
-		new_user = users.find_one(new_user_id)
-		return new_user, nil
+		return new_user_id, nil
 	end
 end
 
@@ -139,8 +137,7 @@ def handle_guest_login(user)
 	users = settings.db.collection("Users")
 	new_user_id = users.save(user)
 	logger.info "New guest user saved in the DB with user_id <" + new_user_id.to_s + ">"
-	new_user = users.find_one(new_user_id)
-	return new_user, nil
+	return new_user_id, nil
 end
 
 def handle_password_login(user)
@@ -163,7 +160,7 @@ def handle_password_login(user)
 		if authenticated then
 			logger.info "User <" + email + "> successfully authenticated"
 			add_devices(users, user, user_exists, user_exists["_id"])
-			return user_exists
+			return user_exists["_id"]
 		else
 			logger.info "Authentication failed for user <" + email + ">"
 			error_hash = { :message => 'Authentication failed, invalid password', :error_code => ErrorCodes::InvalidPassword }
@@ -176,8 +173,7 @@ def handle_password_login(user)
 		user.delete("password")
 		new_user_id = users.save(user)
 		logger.info "New email user <" + user["email"] + "> saved in the DB with user_id <" + new_user_id.to_s + ">"
-		new_user = users.find_one(new_user_id)
-		return new_user, nil
+		return new_user_id, nil
 	end
 end
 
@@ -213,15 +209,17 @@ post '/user/v2' do
 
 	# Handeling the differnet logins: facebook; email; guest
 	if new_user_type == UserType::FacebookUser then
-		user, error = handle_facebook_login new_user
+		user_id, error = handle_facebook_login new_user
 	elsif new_user_type == UserType::EmailUser then
-		user, error = handle_password_login new_user
+		user_id, error = handle_password_login new_user
 	else
-		user, error = handle_guest_login new_user
+		user_id, error = handle_guest_login new_user
 	end
 
 	# Returning either the user or an error
-	if user then
+	if user_id then
+		users = settings.db.collection("Users")
+		user = users.find_one(user_id)
 		response = user.to_json
 	else
 		response = error
@@ -250,6 +248,7 @@ def merge_users(user_a, user_b)
 	end
 
 	# What about the devices?????
+	add_devices(users, user_a, user_b, user_b["_id"])
 
 	# removing this user
 	users.remove({_id: user_a["_id"]})
@@ -385,13 +384,17 @@ end
 post '/remake' do
 	# input
 	story_id = BSON::ObjectId.from_string(params[:story_id])
-	user_id = params[:user_id]
+	if BSON::ObjectId.legal?(params[:user_id]) then
+		user_id = BSON::ObjectId.from_string(params[:user_id])
+	else
+		user_id = params[:user_id]
+	end
 
 	remakes = settings.db.collection("Remakes")
 	story = settings.db.collection("Stories").find_one(story_id)
 	remake_id = BSON::ObjectId.new
 	
-	logger.info "Creating a new remake for story <" + story["name"] + "> for user <" + user_id + "> with remake_id <" + remake_id.to_s + ">"
+	logger.info "Creating a new remake for story <" + story["name"] + "> for user <" + user_id.to_s + "> with remake_id <" + remake_id.to_s + ">"
 
 	s3_folder = "Remakes" + "/" + remake_id.to_s + "/"
 	s3_video = s3_folder + story["name"] + "_" + remake_id.to_s + ".mp4"
@@ -474,9 +477,13 @@ end
 # Returns all the remakes of a given user_id
 get '/remakes/user/:user_id' do
 	# input
-	user_id = params[:user_id];
+	if BSON::ObjectId.legal?(params[:user_id]) then
+		user_id = BSON::ObjectId.from_string(params[:user_id])
+	else
+		user_id = params[:user_id]
+	end
 
-	logger.info "Getting remakes for user " + user_id
+	logger.info "Getting remakes for user " + user_id.to_s
 
 	# Returning all the remakes of the given user and those with status inProgress, Rendering, Done and Timeout
 	remakes_docs = settings.db.collection("Remakes").find({user_id: user_id, status: {"$in" => [RemakeStatus::InProgress, RemakeStatus::Rendering, RemakeStatus::Done, RemakeStatus::Timeout]}});

@@ -474,6 +474,54 @@ class UserTest < MiniTest::Unit::TestCase
     assert_nil user
   end
 
+  def test_add_devices_3
+    post '/user/v2', GUEST_USER
+
+    guest_user_1 = JSON.parse(last_response.body)
+    assert guest_user_1["_id"]["$oid"]
+    guest_user_id_1 = BSON::ObjectId.from_string(guest_user_1["_id"]["$oid"])
+
+    guest_user_another_device = GUEST_USER.clone
+    guest_user_another_device[:device][:identifier_for_vendor] = "3DACF253-C0B7-4F4C-843E-435A436CCC12"
+    post '/user/v2', guest_user_another_device
+
+    guest_user_2 = JSON.parse(last_response.body)
+    assert guest_user_2["_id"]["$oid"]
+    guest_user_id_2 = BSON::ObjectId.from_string(guest_user_2["_id"]["$oid"])
+
+    add_devices(USERS, guest_user_1, guest_user_2, guest_user_id_2)
+
+    guest_user_1 = USERS.find_one(guest_user_id_1)
+    guest_user_2 = USERS.find_one(guest_user_id_2)
+    assert_equal 1, guest_user_1["devices"].count
+    assert_equal 2, guest_user_2["devices"].count
+
+    guest_user_another_device = GUEST_USER.clone
+    guest_user_another_device[:device][:identifier_for_vendor] = "3DACF253-C0B7-4F4C-843E-435A436BBB12"
+    post '/user/v2', guest_user_another_device
+
+    guest_user_3 = JSON.parse(last_response.body)
+    assert guest_user_3["_id"]["$oid"]
+    guest_user_id_3 = BSON::ObjectId.from_string(guest_user_3["_id"]["$oid"])
+
+    add_devices(USERS, guest_user_2, guest_user_3, guest_user_id_3)
+
+    guest_user_2 = USERS.find_one(guest_user_id_2)
+    guest_user_3 = USERS.find_one(guest_user_id_3)
+    assert_equal 2, guest_user_2["devices"].count
+    assert_equal 3, guest_user_3["devices"].count
+
+    USERS.remove({_id: guest_user_id_1})
+    user = USERS.find_one(guest_user_id_1)
+    assert_nil user
+    USERS.remove({_id: guest_user_id_2})
+    user = USERS.find_one(guest_user_id_2)
+    assert_nil user
+    USERS.remove({_id: guest_user_id_3})
+    user = USERS.find_one(guest_user_id_3)
+    assert_nil user
+  end
+
   def test_add_device_facebook
     post '/user/v2', FACEBOOK_USER
 
@@ -532,11 +580,81 @@ class UserTest < MiniTest::Unit::TestCase
     assert_nil user  
   end
 
-  # def test_add_device_facebook_from_guest
-  # end
+  def test_add_device_facebook_from_guest
+    post '/user/v2', FACEBOOK_USER
 
-  # def test_add_device_facebook_from_email
-  # end
+    json_response = JSON.parse(last_response.body)
+    assert json_response["_id"]["$oid"]
+    facebook_user_id = BSON::ObjectId.from_string(json_response["_id"]["$oid"])
+
+    post '/user/v2', GUEST_USER
+
+    json_response = JSON.parse(last_response.body)
+    assert json_response["_id"]["$oid"]
+    guest_user_id = BSON::ObjectId.from_string(json_response["_id"]["$oid"])
+
+    guest_to_facebook_user = FACEBOOK_USER.clone
+    guest_to_facebook_user[:user_id] = guest_user_id.to_s
+    put '/user/v2', guest_to_facebook_user
+
+    json_response = JSON.parse(last_response.body)
+    assert json_response["_id"]["$oid"]
+    guest_to_facebook_user_id = BSON::ObjectId.from_string(json_response["_id"]["$oid"])
+
+    assert_equal facebook_user_id, guest_to_facebook_user_id
+
+    # Guest user should already be deleted
+    user = USERS.find_one(guest_user_id)
+    assert_nil user
+
+    user = USERS.find_one(facebook_user_id)
+    assert_equal 2, user["devices"].count
+
+    # deleting the user, and checking that both ids (which is the same id) doesn;t exist in the DB
+    USERS.remove({_id: facebook_user_id})
+    user = USERS.find_one(facebook_user_id)
+    assert_nil user
+    user = USERS.find_one(guest_to_facebook_user_id)
+    assert_nil user
+  end
+
+  def test_add_device_facebook_from_email
+    post '/user/v2', EMAIL_USER
+
+    json_response = JSON.parse(last_response.body)
+    assert json_response["_id"]["$oid"]
+    email_user_id = BSON::ObjectId.from_string(json_response["_id"]["$oid"])
+
+    post '/user/v2', GUEST_USER
+
+    json_response = JSON.parse(last_response.body)
+    assert json_response["_id"]["$oid"]
+    guest_user_id = BSON::ObjectId.from_string(json_response["_id"]["$oid"])
+
+    guest_to_email_user = EMAIL_USER.clone
+    guest_to_email_user[:user_id] = guest_user_id.to_s
+    put '/user/v2', guest_to_email_user
+
+    json_response = JSON.parse(last_response.body)
+    assert json_response["_id"]["$oid"]
+    guest_to_email_user_id = BSON::ObjectId.from_string(json_response["_id"]["$oid"])
+
+    assert_equal email_user_id, guest_to_email_user_id
+
+    # Guest user should already be deleted
+    user = USERS.find_one(guest_user_id)
+    assert_nil user
+
+    user = USERS.find_one(email_user_id)
+    assert_equal 2, user["devices"].count
+    
+    # deleting the user, and checking that both ids (which is the same id) doesn't exist in the DB
+    USERS.remove({_id: email_user_id})
+    user = USERS.find_one(email_user_id)
+    assert_nil user
+    user = USERS.find_one(guest_to_email_user_id)
+    assert_nil user    
+  end
 
   # def test_add_device_merge_users
   # end
