@@ -244,7 +244,7 @@ def merge_users(user_a, user_b)
 	# Moving user_a remakes to user_b
 	user_a_remakes = remakes.find({user_id: user_a["_id"]})
 	for remake in user_a_remakes do
-		remake[:user_id] = user_b["_id"]
+		remakes.update({_id: remake[:_id]}, {"$set" => {user_id: user_b["_id"]}})
 	end
 
 	# What about the devices?????
