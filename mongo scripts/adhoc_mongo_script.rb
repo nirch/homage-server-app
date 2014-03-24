@@ -4,14 +4,20 @@ test_db = Mongo::MongoClient.from_uri("mongodb://Homage:homageIt12@paulo.mongohq
 users = test_db.collection("Users")
 remakes = test_db.collection("Remakes")
 
-prod_db = Mongo::MongoClient.from_uri("mongodb://Homage:homageIt12@troup.mongohq.com:10057/Homage_Prod").db
-prod_users = prod_db.collection("Users")
-prod_remakes = prod_db.collection("Remakes")
+# prod_db = Mongo::MongoClient.from_uri("mongodb://Homage:homageIt12@troup.mongohq.com:10057/Homage_Prod").db
+# prod_users = prod_db.collection("Users")
+# prod_remakes = prod_db.collection("Remakes")
 
 
 
-user = remakes.find_one({"user_id" => "nir@homage.it"})
-puts user
+
+date = Time.utc(2014,3,23)
+delete_users = users.find({"created_at" => {"$gte" => date}})
+
+for delete_user in delete_users
+	users.remove({_id: delete_user["_id"]})
+end
+
 
 
 # good_remakes = prod_remakes.find({demo:true})

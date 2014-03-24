@@ -98,6 +98,7 @@ def add_devices(users, source_user, destination_user, destination_id)
 
 	for device in source_user["devices"]
 		if !destination_devices.include?(device["identifier_for_vendor"]) then
+			logger.info "Adding to user " + destination_id.to_s + " device " + device.to_s 
 			users.update({_id: destination_id}, {"$push" => {devices: device} })
 		end
 	end
@@ -244,13 +245,14 @@ def merge_users(user_a, user_b)
 	# Moving user_a remakes to user_b
 	user_a_remakes = remakes.find({user_id: user_a["_id"]})
 	for remake in user_a_remakes do
+		logger.info "Moving remake " + remake[:_id].to_s + " from user " + user_a["_id"].to_s + " to user " + user_b["_id"].to_s
 		remakes.update({_id: remake[:_id]}, {"$set" => {user_id: user_b["_id"]}})
 	end
 
-	# What about the devices?????
 	add_devices(users, user_a, user_b, user_b["_id"])
 
 	# removing this user
+	logger.info "Deleting user " + user_a["_id"].to_s
 	users.remove({_id: user_a["_id"]})
 end
 
