@@ -111,7 +111,7 @@ def handle_facebook_login(user)
 	user_exists = users.find_one({"facebook.id" => facebook_id})
 
 	if user_exists then
-		logger.info "Facebook user <" + user["facebook"]["name"] + "> exists with id <" + user_exists.to_s + ">. returning existing user"
+		logger.info "Facebook user <" + user["facebook"]["name"] + "> exists with id <" + user_exists["_id"].to_s + ">. returning existing user"
 		add_devices(users, user, user_exists, user_exists["_id"])
 		return user_exists["_id"], nil
 	else
