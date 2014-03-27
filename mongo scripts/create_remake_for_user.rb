@@ -6,13 +6,13 @@ remakes = test_db.collection("Remakes")
 stories = test_db.collection("Stories")
 
 # ************ Change the user_id here *****************************
-user_id = BSON::ObjectId.from_string("5332aca9f52d5c7edf000032")
+user_id = BSON::ObjectId.from_string("5333eeb6f52d5c3ae5000004")
 user = users.find_one(user_id)
 	
 remake_id = BSON::ObjectId.new
 
 # *********** Change the story_id to get different stories (thumbnails)
-story_id = BSON::ObjectId.from_string("52de83db8bc427751c000305") # Dive School
+ story_id = BSON::ObjectId.from_string("52de83db8bc427751c000305") # Dive School
 # story_id = BSON::ObjectId.from_string("52ee613cab557ec484000021") # The Oscars
 # story_id = BSON::ObjectId.from_string("52cddaf80fad07c3290001aa") # Star Wars
 # story_id = BSON::ObjectId.from_string("52c18c569f372005e0000286") # Test
