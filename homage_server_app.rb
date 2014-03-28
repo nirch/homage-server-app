@@ -452,6 +452,21 @@ post '/remake' do
 	result = remake.to_json
 end
 
+# Reporting this 
+post '/remake/report' do
+	# input
+	remake_id = BSON::ObjectId.from_string(params[:remake_id])
+	user_id = BSON::ObjectId.from_string(params[:user_id])
+
+	remakes = settings.db.collection("Remakes")
+
+	report = {reported_at: Time.now, user_id: user_id}
+	remakes.update({_id: remake_id}, {"$push" => {reports: report}})
+
+	# returning the remake object
+	result = remakes.find_one(remake_id).to_json
+end
+
 # Deletes a given remake
 delete '/remake/:remake_id' do
 	# input

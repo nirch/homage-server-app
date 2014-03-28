@@ -9,14 +9,18 @@ remakes = test_db.collection("Remakes")
 # prod_remakes = prod_db.collection("Remakes")
 
 
+remake_id = BSON::ObjectId.from_string("533312f9f52d5c1ec2000020")
+user_id = BSON::ObjectId.from_string("5333eeb6f52d5c3ae5000004")
+report = {reported_at: Time.now, user_id: user_id}
+response = remakes.update({_id: remake_id}, {"$push" => {reports: report}})
+puts response
 
+# date = Time.utc(2014,3,23)
+# delete_users = users.find({"created_at" => {"$gte" => date}})
 
-date = Time.utc(2014,3,23)
-delete_users = users.find({"created_at" => {"$gte" => date}})
-
-for delete_user in delete_users
-	users.remove({_id: delete_user["_id"]})
-end
+# for delete_user in delete_users
+# 	users.remove({_id: delete_user["_id"]})
+# end
 
 
 
