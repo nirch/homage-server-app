@@ -32,21 +32,21 @@ class UserTest < MiniTest::Unit::TestCase
   end
 
   def test_update_user_public_true
-    put '/user', { :user_id => "nir@homage.it", :is_public => "YES" }
+    put '/user/old', { :user_id => "nir@homage.it", :is_public => "YES" }
     json_response = JSON.parse(last_response.body)
     assert_equal "nir@homage.it", json_response["_id"]
     assert_equal true, json_response["is_public"]
   end
 
   def test_update_user_public_false
-    put '/user', { :user_id => "nir@homage.it", :is_public => "NO" }
+    put '/user/old', { :user_id => "nir@homage.it", :is_public => "NO" }
     json_response = JSON.parse(last_response.body)
     assert_equal "nir@homage.it", json_response["_id"]
     assert_equal false, json_response["is_public"]
   end
 
   def test_create_user_guest
-    post '/user/v2', GUEST_USER
+    post '/user', GUEST_USER
 
     json_response = JSON.parse(last_response.body)
     assert json_response["_id"]["$oid"]
@@ -65,7 +65,7 @@ class UserTest < MiniTest::Unit::TestCase
   end
 
   def test_create_user_facebook_new
-    post '/user/v2', FACEBOOK_USER
+    post '/user', FACEBOOK_USER
 
     # checking the response
     json_response = JSON.parse(last_response.body)
@@ -86,13 +86,13 @@ class UserTest < MiniTest::Unit::TestCase
   end
 
   def test_create_user_facebook_login  
-    post '/user/v2', FACEBOOK_USER
+    post '/user', FACEBOOK_USER
 
     json_response = JSON.parse(last_response.body)
     assert json_response["_id"]["$oid"]
     new_user_id = BSON::ObjectId.from_string(json_response["_id"]["$oid"])
 
-    post '/user/v2', FACEBOOK_USER
+    post '/user', FACEBOOK_USER
 
     json_response = JSON.parse(last_response.body)
     assert json_response["_id"]["$oid"]
@@ -110,7 +110,7 @@ class UserTest < MiniTest::Unit::TestCase
   end
 
   def test_create_user_password_new
-    post '/user/v2', EMAIL_USER
+    post '/user', EMAIL_USER
 
     # checking the response
     json_response = JSON.parse(last_response.body)
@@ -138,13 +138,13 @@ class UserTest < MiniTest::Unit::TestCase
   end
 
   def test_create_user_password_login_successful
-    post '/user/v2', EMAIL_USER
+    post '/user', EMAIL_USER
 
     json_response = JSON.parse(last_response.body)
     assert json_response["_id"]["$oid"]
     new_user_id = BSON::ObjectId.from_string(json_response["_id"]["$oid"])
 
-    post '/user/v2', EMAIL_USER
+    post '/user', EMAIL_USER
 
     json_response = JSON.parse(last_response.body)
     assert json_response["_id"]["$oid"]
@@ -162,7 +162,7 @@ class UserTest < MiniTest::Unit::TestCase
   end
 
   def test_create_user_password_login_401
-    post '/user/v2', EMAIL_USER
+    post '/user', EMAIL_USER
 
     json_response = JSON.parse(last_response.body)
     assert json_response["_id"]["$oid"]
@@ -170,7 +170,7 @@ class UserTest < MiniTest::Unit::TestCase
 
     wrong_password_user = EMAIL_USER.clone
     wrong_password_user[:password] = "123qwerty"
-    post '/user/v2', wrong_password_user
+    post '/user', wrong_password_user
 
     assert_equal 401, last_response.status
     json_response = JSON.parse(last_response.body)
@@ -194,7 +194,7 @@ class UserTest < MiniTest::Unit::TestCase
   # end
 
   def test_guest_to_facebook
-    post '/user/v2', GUEST_USER
+    post '/user', GUEST_USER
 
     json_response = JSON.parse(last_response.body)
     assert json_response["_id"]["$oid"]
@@ -203,7 +203,7 @@ class UserTest < MiniTest::Unit::TestCase
 
     guest_to_facebook_user = FACEBOOK_USER.clone
     guest_to_facebook_user[:user_id] = guest_user_id.to_s
-    put '/user/v2', guest_to_facebook_user
+    put '/user', guest_to_facebook_user
 
     json_response = JSON.parse(last_response.body)
     assert json_response["_id"]["$oid"]
@@ -227,13 +227,13 @@ class UserTest < MiniTest::Unit::TestCase
 
   # There is an existing facebook user in the DB. A new guest user upgrades to the same existing facebook user => the guest user should merge into the existing facebook user
   def test_guest_to_existing_facebook
-    post '/user/v2', FACEBOOK_USER
+    post '/user', FACEBOOK_USER
 
     json_response = JSON.parse(last_response.body)
     assert json_response["_id"]["$oid"]
     facebook_user_id = BSON::ObjectId.from_string(json_response["_id"]["$oid"])
 
-    post '/user/v2', GUEST_USER
+    post '/user', GUEST_USER
 
     json_response = JSON.parse(last_response.body)
     assert json_response["_id"]["$oid"]
@@ -241,7 +241,7 @@ class UserTest < MiniTest::Unit::TestCase
 
     guest_to_facebook_user = FACEBOOK_USER.clone
     guest_to_facebook_user[:user_id] = guest_user_id.to_s
-    put '/user/v2', guest_to_facebook_user
+    put '/user', guest_to_facebook_user
 
     json_response = JSON.parse(last_response.body)
     assert json_response["_id"]["$oid"]
@@ -262,7 +262,7 @@ class UserTest < MiniTest::Unit::TestCase
   end
 
   def test_guest_to_password
-    post '/user/v2', GUEST_USER
+    post '/user', GUEST_USER
 
     json_response = JSON.parse(last_response.body)
     assert json_response["_id"]["$oid"]
@@ -271,7 +271,7 @@ class UserTest < MiniTest::Unit::TestCase
 
     guest_to_email_user = EMAIL_USER.clone
     guest_to_email_user[:user_id] = guest_user_id.to_s
-    put '/user/v2', guest_to_email_user
+    put '/user', guest_to_email_user
 
     json_response = JSON.parse(last_response.body)
     assert json_response["_id"]["$oid"]
@@ -297,13 +297,13 @@ class UserTest < MiniTest::Unit::TestCase
 
   # There is an existing email user in the DB. A new guest user upgrades to the same existing facebook user => the guest user should merge into the existing facebook user
   def test_guest_to_existing_passoword_success
-    post '/user/v2', EMAIL_USER
+    post '/user', EMAIL_USER
 
     json_response = JSON.parse(last_response.body)
     assert json_response["_id"]["$oid"]
     email_user_id = BSON::ObjectId.from_string(json_response["_id"]["$oid"])
 
-    post '/user/v2', GUEST_USER
+    post '/user', GUEST_USER
 
     json_response = JSON.parse(last_response.body)
     assert json_response["_id"]["$oid"]
@@ -311,7 +311,7 @@ class UserTest < MiniTest::Unit::TestCase
 
     guest_to_email_user = EMAIL_USER.clone
     guest_to_email_user[:user_id] = guest_user_id.to_s
-    put '/user/v2', guest_to_email_user
+    put '/user', guest_to_email_user
 
     json_response = JSON.parse(last_response.body)
     assert json_response["_id"]["$oid"]
@@ -332,13 +332,13 @@ class UserTest < MiniTest::Unit::TestCase
   end
 
   def test_guest_to_existing_passoword_401
-    post '/user/v2', EMAIL_USER
+    post '/user', EMAIL_USER
 
     json_response = JSON.parse(last_response.body)
     assert json_response["_id"]["$oid"]
     email_user_id = BSON::ObjectId.from_string(json_response["_id"]["$oid"])
 
-    post '/user/v2', GUEST_USER
+    post '/user', GUEST_USER
 
     json_response = JSON.parse(last_response.body)
     assert json_response["_id"]["$oid"]
@@ -347,7 +347,7 @@ class UserTest < MiniTest::Unit::TestCase
     guest_to_email_user_401 = EMAIL_USER.clone
     guest_to_email_user_401[:user_id] = guest_user_id.to_s
     guest_to_email_user_401[:password] = "123qwerty"
-    put '/user/v2', guest_to_email_user_401
+    put '/user', guest_to_email_user_401
 
     assert_equal 401, last_response.status
     json_response = JSON.parse(last_response.body)
@@ -364,7 +364,7 @@ class UserTest < MiniTest::Unit::TestCase
   end
 
   def test_facebook_to_password
-    post '/user/v2', FACEBOOK_USER
+    post '/user', FACEBOOK_USER
 
     json_response = JSON.parse(last_response.body)
     assert json_response["_id"]["$oid"]
@@ -372,7 +372,7 @@ class UserTest < MiniTest::Unit::TestCase
 
     facebook_to_email_user = EMAIL_USER.clone
     facebook_to_email_user[:email] = FACEBOOK_USER[:email]
-    post '/user/v2', facebook_to_email_user
+    post '/user', facebook_to_email_user
 
     assert_equal 403, last_response.status
     json_response = JSON.parse(last_response.body)
@@ -384,7 +384,7 @@ class UserTest < MiniTest::Unit::TestCase
   end
 
   def test_password_to_facebook
-    post '/user/v2', EMAIL_USER
+    post '/user', EMAIL_USER
 
     json_response = JSON.parse(last_response.body)
     assert json_response["_id"]["$oid"]
@@ -393,7 +393,7 @@ class UserTest < MiniTest::Unit::TestCase
 
     email_to_facebook_user = FACEBOOK_USER.clone
     email_to_facebook_user[:email] = EMAIL_USER[:email]
-    post '/user/v2', email_to_facebook_user
+    post '/user', email_to_facebook_user
 
     json_response = JSON.parse(last_response.body)
     assert json_response["_id"]["$oid"]
@@ -417,7 +417,7 @@ class UserTest < MiniTest::Unit::TestCase
   end
 
   def test_add_devices
-    post '/user/v2', GUEST_USER
+    post '/user', GUEST_USER
 
     guest_user_1 = JSON.parse(last_response.body)
     assert guest_user_1["_id"]["$oid"]
@@ -425,7 +425,7 @@ class UserTest < MiniTest::Unit::TestCase
 
     guest_user_another_device = GUEST_USER.clone
     guest_user_another_device[:device][:identifier_for_vendor] = "3DACF253-C0B7-4F4C-843E-435A436AAA12"
-    post '/user/v2', guest_user_another_device
+    post '/user', guest_user_another_device
 
     guest_user_2 = JSON.parse(last_response.body)
     assert guest_user_2["_id"]["$oid"]
@@ -447,13 +447,13 @@ class UserTest < MiniTest::Unit::TestCase
   end
 
   def test_add_devices_same_device
-    post '/user/v2', GUEST_USER
+    post '/user', GUEST_USER
 
     guest_user_1 = JSON.parse(last_response.body)
     assert guest_user_1["_id"]["$oid"]
     guest_user_id_1 = BSON::ObjectId.from_string(guest_user_1["_id"]["$oid"])
 
-    post '/user/v2', GUEST_USER
+    post '/user', GUEST_USER
 
     guest_user_2 = JSON.parse(last_response.body)
     assert guest_user_2["_id"]["$oid"]
@@ -475,7 +475,7 @@ class UserTest < MiniTest::Unit::TestCase
   end
 
   def test_add_devices_3
-    post '/user/v2', GUEST_USER
+    post '/user', GUEST_USER
 
     guest_user_1 = JSON.parse(last_response.body)
     assert guest_user_1["_id"]["$oid"]
@@ -483,7 +483,7 @@ class UserTest < MiniTest::Unit::TestCase
 
     guest_user_another_device = GUEST_USER.clone
     guest_user_another_device[:device][:identifier_for_vendor] = "3DACF253-C0B7-4F4C-843E-435A436CCC12"
-    post '/user/v2', guest_user_another_device
+    post '/user', guest_user_another_device
 
     guest_user_2 = JSON.parse(last_response.body)
     assert guest_user_2["_id"]["$oid"]
@@ -498,7 +498,7 @@ class UserTest < MiniTest::Unit::TestCase
 
     guest_user_another_device = GUEST_USER.clone
     guest_user_another_device[:device][:identifier_for_vendor] = "3DACF253-C0B7-4F4C-843E-435A436BBB12"
-    post '/user/v2', guest_user_another_device
+    post '/user', guest_user_another_device
 
     guest_user_3 = JSON.parse(last_response.body)
     assert guest_user_3["_id"]["$oid"]
@@ -523,7 +523,7 @@ class UserTest < MiniTest::Unit::TestCase
   end
 
   def test_add_device_facebook
-    post '/user/v2', FACEBOOK_USER
+    post '/user', FACEBOOK_USER
 
     facebook_user_1 = JSON.parse(last_response.body)
     assert facebook_user_1["_id"]["$oid"]
@@ -531,7 +531,7 @@ class UserTest < MiniTest::Unit::TestCase
 
     facebook_user_another_device = FACEBOOK_USER.clone
     facebook_user_another_device[:device][:identifier_for_vendor] = "3DACF253-C0B7-4F4C-843E-435A436AAA12"
-    post '/user/v2', facebook_user_another_device
+    post '/user', facebook_user_another_device
 
     facebook_user_2 = JSON.parse(last_response.body)
     assert facebook_user_2["_id"]["$oid"]
@@ -552,7 +552,7 @@ class UserTest < MiniTest::Unit::TestCase
   end
 
   def test_add_device_password
-    post '/user/v2', EMAIL_USER
+    post '/user', EMAIL_USER
 
     email_user_1 = JSON.parse(last_response.body)
     assert email_user_1["_id"]["$oid"]
@@ -560,7 +560,7 @@ class UserTest < MiniTest::Unit::TestCase
 
     email_user_another_device = EMAIL_USER.clone
     email_user_another_device[:device][:identifier_for_vendor] = "3DACF253-C0B7-4F4C-843E-435A436AAA12"
-    post '/user/v2', email_user_another_device
+    post '/user', email_user_another_device
 
     email_user_2 = JSON.parse(last_response.body)
     assert email_user_2["_id"]["$oid"]
@@ -581,13 +581,13 @@ class UserTest < MiniTest::Unit::TestCase
   end
 
   def test_add_device_facebook_from_guest
-    post '/user/v2', FACEBOOK_USER
+    post '/user', FACEBOOK_USER
 
     json_response = JSON.parse(last_response.body)
     assert json_response["_id"]["$oid"]
     facebook_user_id = BSON::ObjectId.from_string(json_response["_id"]["$oid"])
 
-    post '/user/v2', GUEST_USER
+    post '/user', GUEST_USER
 
     json_response = JSON.parse(last_response.body)
     assert json_response["_id"]["$oid"]
@@ -595,7 +595,7 @@ class UserTest < MiniTest::Unit::TestCase
 
     guest_to_facebook_user = FACEBOOK_USER.clone
     guest_to_facebook_user[:user_id] = guest_user_id.to_s
-    put '/user/v2', guest_to_facebook_user
+    put '/user', guest_to_facebook_user
 
     json_response = JSON.parse(last_response.body)
     assert json_response["_id"]["$oid"]
@@ -619,13 +619,13 @@ class UserTest < MiniTest::Unit::TestCase
   end
 
   def test_add_device_facebook_from_email
-    post '/user/v2', EMAIL_USER
+    post '/user', EMAIL_USER
 
     json_response = JSON.parse(last_response.body)
     assert json_response["_id"]["$oid"]
     email_user_id = BSON::ObjectId.from_string(json_response["_id"]["$oid"])
 
-    post '/user/v2', GUEST_USER
+    post '/user', GUEST_USER
 
     json_response = JSON.parse(last_response.body)
     assert json_response["_id"]["$oid"]
@@ -633,7 +633,7 @@ class UserTest < MiniTest::Unit::TestCase
 
     guest_to_email_user = EMAIL_USER.clone
     guest_to_email_user[:user_id] = guest_user_id.to_s
-    put '/user/v2', guest_to_email_user
+    put '/user', guest_to_email_user
 
     json_response = JSON.parse(last_response.body)
     assert json_response["_id"]["$oid"]
@@ -665,7 +665,7 @@ class UserTest < MiniTest::Unit::TestCase
 
   def test_create_user_old
     user_id = "delete@test.com"
-    post '/user', { :user_id =>  user_id}
+    post '/user/old', { :user_id =>  user_id}
     json_response = JSON.parse(last_response.body)
     assert_equal user_id, json_response["_id"]
     assert_equal true, json_response["is_public"]

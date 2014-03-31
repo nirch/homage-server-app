@@ -19,6 +19,11 @@ configure :production do
 	db_connection = Mongo::MongoClient.from_uri("mongodb://Homage:homageIt12@troup.mongohq.com:10057/Homage_Prod")
 	set :db, db_connection.db()
 
+	# Push notification certificate
+	APN = Houston::Client.production
+	APN.certificate = File.read(File.expand_path("../certificates/homage_push_notification_prod.pem", __FILE__))
+	APN.passphrase = "homage"
+
 	# Production AE server connection
 	set :homage_server_foreground_uri, URI.parse("http://54.235.111.163:4567/footage")
 	set :homage_server_render_uri, URI.parse("http://54.235.111.163:4567/render")
@@ -108,7 +113,7 @@ def add_devices(users, source_user, destination_user, destination_id)
 
 	for device in source_user["devices"]
 		if !destination_devices.include?(device["identifier_for_vendor"]) then
-			logger.info "Adding to user " + destination_id.to_s + " device " + device.to_s 
+			#logger.info "Adding to user " + destination_id.to_s + " device " + device.to_s 
 			users.update({_id: destination_id}, {"$push" => {devices: device} })
 		end
 	end
@@ -207,7 +212,7 @@ def handle_user_params(user)
 	end
 end
 
-post '/user/v2' do
+post '/user' do
 	# input
 	new_user = params
 
@@ -266,7 +271,7 @@ def merge_users(user_a, user_b)
 	users.remove({_id: user_a["_id"]})
 end
 
-put '/user/v2' do
+put '/user' do
 	logger.info "params for put /user/v2: " + params.to_s
 
 	update_user_id = BSON::ObjectId.from_string(params[:user_id])
@@ -341,7 +346,7 @@ put '/user/v2' do
 	return users.find_one(_id: update_user_id).to_json
 end
 
-post '/user' do
+post '/user/old' do
 	# input
 	user_id_email = params[:user_id]
 
@@ -370,7 +375,7 @@ post '/user' do
 end
 
 # Updating user details
-put '/user' do
+put '/user/old' do
 	# input
 	logger.debug "params for put /user: " + params.to_s 
 	user_id_email = params[:user_id]
@@ -807,8 +812,8 @@ get '/test/error' do
 	[500, [hash.to_json]]
 end
 
-get '/test/push' do
-	user_id = BSON::ObjectId.from_string("53306186f52d5c6a14000006")
+get '/test/push/:user_id' do
+	user_id = BSON::ObjectId.from_string(params[:user_id])
 	alert = "How many notifications?"
 	custom_data = {type: 0, remake_id: "kjfdkjf333kj3kj3kj3"}
 	
