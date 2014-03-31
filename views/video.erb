@@ -38,7 +38,13 @@
 
 	<div class="container">
 		<h1>
-			<%= @remake["user_id"].split("@")[0].slice(0,1).capitalize + @remake["user_id"].split("@")[0].slice(1..-1) %>'s remake for <%= @story["name"]%>
+			<% if @user["facebook"] then %>
+				<%= @user["facebook"]["first_name"] %>'s remake for <%= @story["name"]%>
+			<% elsif @user["email"] then %>
+				<%= @user["email"].split("@")[0].slice(0,1).capitalize + @user["email"].split("@")[0].slice(1..-1) %>'s remake for <%= @story["name"]%>
+			<% else %>
+				Remake for <%= @story["name"]%>
+			<% end %>
 		</h1>
 
 		<video id="0" class="sublime" poster=<%= @remake["thumbnail"]%> data-sharing-url=<%= @remake["share_link"]%> data-sharing-image='poster' data-sharing-text='Check out the cool video i created with #HomageApp' width="640" height="360" data-uid="0" preload="none">
