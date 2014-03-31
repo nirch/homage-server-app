@@ -314,17 +314,23 @@ put '/user' do
 		# Checking if there is another user with the same email
 		email_user_exists = users.find_one({email: params[:email]})
 		if email_user_exists then
-			logger.info "User with email " + params[:email] + " already exists, attempt to authenticate"
-			# Attempting to authenticate the user
-			authenticated = Sinatra::Security::Password::Hashing.check(params["password"], email_user_exists["password_hash"])
-			if authenticated then
-				logger.info "authentication succeeded, merging guest user " + update_user_id.to_s + " into email user " + email_user_exists["_id"].to_s
-				merge_users(existing_user, email_user_exists)
-				update_user_id = email_user_exists["_id"]
+			if user_type(email_user_exists) == UserType::FacebookUser then
+				logger.warn "cannot downgrade a facebook user to an email user"
+				error_hash = { :message => "cannot downgrade a facebook user to an email user", :error_code => ErrorCodes::FacebookToEmailForbidden }
+				return [403, [error_hash.to_json]]				
 			else
-				logger.info "Authentication failed for user <" + params[:email] + ">"
-				error_hash = { :message => 'Authentication failed, invalid password', :error_code => ErrorCodes::InvalidPassword }
-				return [401, [error_hash.to_json]]
+				logger.info "User with email " + params[:email] + " already exists, attempt to authenticate"
+				# Attempting to authenticate the user
+				authenticated = Sinatra::Security::Password::Hashing.check(params["password"], email_user_exists["password_hash"])
+				if authenticated then
+					logger.info "authentication succeeded, merging guest user " + update_user_id.to_s + " into email user " + email_user_exists["_id"].to_s
+					merge_users(existing_user, email_user_exists)
+					update_user_id = email_user_exists["_id"]
+				else
+					logger.info "Authentication failed for user <" + params[:email] + ">"
+					error_hash = { :message => 'Authentication failed, invalid password', :error_code => ErrorCodes::InvalidPassword }
+					return [401, [error_hash.to_json]]
+				end
 			end
 		else
 			logger.info "updating Guest to Email for user " + update_user_id.to_s
@@ -745,7 +751,7 @@ get '/test/render' do
 end
 
 get '/test/foreground' do
-	form = '<form action="/test/foreground" method="post" enctype="multipart/form-data"> Remake ID: <input type="text" name="remake_id"> Scene ID: <input type="text" name="scene_id"> <input type="submit" value="Upload!"> </form>'
+	form = '<form action="/footage" method="post" enctype="multipart/form-data"> Remake ID: <input type="text" name="remake_id"> Scene ID: <input type="text" name="scene_id"> <input type="submit" value="Upload!"> </form>'
 	erb form
 end
 
