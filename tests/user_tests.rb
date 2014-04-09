@@ -656,6 +656,84 @@ class UserTest < MiniTest::Unit::TestCase
     assert_nil user    
   end
 
+  def test_first_use_facebook_true
+    post '/user', FACEBOOK_USER
+
+    json_response = JSON.parse(last_response.body)
+    assert json_response["_id"]["$oid"]
+    facebook_user_id = BSON::ObjectId.from_string(json_response["_id"]["$oid"])
+
+    assert_equal true, json_response["first_use"]
+
+    USERS.remove({_id: facebook_user_id})
+    user = USERS.find_one(facebook_user_id)
+    assert_nil user
+  end
+
+  def test_first_use_facebook_false
+    post '/user', FACEBOOK_USER
+
+    json_response = JSON.parse(last_response.body)
+    assert json_response["_id"]["$oid"]
+    facebook_user_id = BSON::ObjectId.from_string(json_response["_id"]["$oid"])
+
+    assert_equal true, json_response["first_use"]
+
+    post '/user', FACEBOOK_USER
+
+    json_response = JSON.parse(last_response.body)
+    assert json_response["_id"]["$oid"]
+    facebook_user_id_2 = BSON::ObjectId.from_string(json_response["_id"]["$oid"])
+
+    assert_equal false, json_response["first_use"]
+
+    # deleting the user, and checking that both ids (which is the same id) doesn;t exist in the DB
+    USERS.remove({_id: facebook_user_id})
+    user = USERS.find_one(facebook_user_id)
+    assert_nil user
+    user = USERS.find_one(facebook_user_id_2)
+    assert_nil user
+  end
+
+  def test_first_use_email_true
+    post '/user', EMAIL_USER
+
+    json_response = JSON.parse(last_response.body)
+    assert json_response["_id"]["$oid"]
+    email_user_id = BSON::ObjectId.from_string(json_response["_id"]["$oid"])
+
+    assert_equal true, json_response["first_use"]
+
+    USERS.remove({_id: email_user_id})
+    user = USERS.find_one(email_user_id)
+    assert_nil user
+  end
+
+  def test_first_use_facebook_false
+    post '/user', EMAIL_USER
+
+    json_response = JSON.parse(last_response.body)
+    assert json_response["_id"]["$oid"]
+    email_user_id = BSON::ObjectId.from_string(json_response["_id"]["$oid"])
+
+    assert_equal true, json_response["first_use"]
+
+    post '/user', EMAIL_USER
+
+    json_response = JSON.parse(last_response.body)
+    assert json_response["_id"]["$oid"]
+    email_user_id2 = BSON::ObjectId.from_string(json_response["_id"]["$oid"])
+
+    assert_equal false, json_response["first_use"]
+
+    # deleting the user, and checking that both ids (which is the same id) doesn;t exist in the DB
+    USERS.remove({_id: email_user_id})
+    user = USERS.find_one(email_user_id)
+    assert_nil user
+    user = USERS.find_one(email_user_id2)
+    assert_nil user
+  end
+
   # def test_add_device_merge_users
   # end
 

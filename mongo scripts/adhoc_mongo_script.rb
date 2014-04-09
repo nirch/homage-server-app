@@ -8,12 +8,17 @@ remakes = test_db.collection("Remakes")
 # prod_users = prod_db.collection("Users")
 # prod_remakes = prod_db.collection("Remakes")
 
+x = 790347410996750/1000000000
+puts x
+x = x/60/60
+puts x
 
-remake_id = BSON::ObjectId.from_string("533312f9f52d5c1ec2000020")
-user_id = BSON::ObjectId.from_string("5333eeb6f52d5c3ae5000004")
-report = {reported_at: Time.now, user_id: user_id}
-response = remakes.update({_id: remake_id}, {"$push" => {reports: report}})
-puts response
+
+# remake_id = BSON::ObjectId.from_string("533312f9f52d5c1ec2000020")
+# user_id = BSON::ObjectId.from_string("5333eeb6f52d5c3ae5000004")
+# report = {reported_at: Time.now, user_id: user_id}
+# response = remakes.update({_id: remake_id}, {"$push" => {reports: report}})
+# puts response
 
 # date = Time.utc(2014,3,23)
 # delete_users = users.find({"created_at" => {"$gte" => date}})

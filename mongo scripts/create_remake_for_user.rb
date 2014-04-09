@@ -1,12 +1,15 @@
 require 'mongo'
 
-test_db = Mongo::MongoClient.from_uri("mongodb://Homage:homageIt12@paulo.mongohq.com:10008/Homage").db
-users = test_db.collection("Users")
-remakes = test_db.collection("Remakes")
-stories = test_db.collection("Stories")
+
+db = Mongo::MongoClient.from_uri("mongodb://Homage:homageIt12@troup.mongohq.com:10057/Homage_Prod").db
+#db = Mongo::MongoClient.from_uri("mongodb://Homage:homageIt12@paulo.mongohq.com:10008/Homage").db
+
+users = db.collection("Users")
+remakes = db.collection("Remakes")
+stories = db.collection("Stories")
 
 # ************ Change the user_id here *****************************
-user_id = BSON::ObjectId.from_string("5333eeb6f52d5c3ae5000004")
+user_id = BSON::ObjectId.from_string("53392ea0f5900b02a5000001")
 user = users.find_one(user_id)
 	
 remake_id = BSON::ObjectId.new

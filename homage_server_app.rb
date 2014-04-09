@@ -129,7 +129,7 @@ def handle_facebook_login(user)
 	if user_exists then
 		logger.info "Facebook user <" + user["facebook"]["name"] + "> exists with id <" + user_exists["_id"].to_s + ">. returning existing user"
 		add_devices(users, user, user_exists, user_exists["_id"])
-		return user_exists["_id"], nil
+		return user_exists["_id"], nil, false
 	else
 		# checking if the user exists with an email
 		if user["email"] then
@@ -139,13 +139,13 @@ def handle_facebook_login(user)
 				update_user_id = email_exists["_id"]
 				logger.info "updating Email to Facebook for user " + update_user_id.to_s
 				users.update({_id: update_user_id}, {"$set" => {facebook: user["facebook"]}})
-				return update_user_id, nil
+				return update_user_id, nil, false
 			end
 		end
 
 		new_user_id = users.save(user)	
 		logger.info "New facebook user <" + user["facebook"]["name"] + "> saved in the DB with user_id <" + new_user_id.to_s + ">"
-		return new_user_id, nil
+		return new_user_id, nil, true
 	end
 end
 
@@ -153,7 +153,7 @@ def handle_guest_login(user)
 	users = settings.db.collection("Users")
 	new_user_id = users.save(user)
 	logger.info "New guest user saved in the DB with user_id <" + new_user_id.to_s + ">"
-	return new_user_id, nil
+	return new_user_id, nil, true
 end
 
 def handle_password_login(user)
@@ -167,7 +167,7 @@ def handle_password_login(user)
 		if user_type(user_exists) == UserType::FacebookUser then
 			logger.warn "An existing facebook user cannot login with email, connect with facebook"
 			error_hash = { :message => "An existing facebook user cannot login with email, connect with facebook", :error_code => ErrorCodes::FacebookToEmailForbidden }
-			return nil, [403, [error_hash.to_json]]			
+			return nil, [403, [error_hash.to_json]], nil	
 		end
 
 		logger.info "Attempt to login with email <" + email + ">"
@@ -176,11 +176,11 @@ def handle_password_login(user)
 		if authenticated then
 			logger.info "User <" + email + "> successfully authenticated"
 			add_devices(users, user, user_exists, user_exists["_id"])
-			return user_exists["_id"]
+			return user_exists["_id"], nil, false
 		else
 			logger.info "Authentication failed for user <" + email + ">"
 			error_hash = { :message => 'Authentication failed, invalid password', :error_code => ErrorCodes::InvalidPassword }
-			return nil, [401, [error_hash.to_json]]
+			return nil, [401, [error_hash.to_json]], nil
 		end
 	else
 		# Encrypt password (hash + salt)
@@ -189,7 +189,7 @@ def handle_password_login(user)
 		user.delete("password")
 		new_user_id = users.save(user)
 		logger.info "New email user <" + user["email"] + "> saved in the DB with user_id <" + new_user_id.to_s + ">"
-		return new_user_id, nil
+		return new_user_id, nil, true
 	end
 end
 
@@ -225,17 +225,18 @@ post '/user' do
 
 	# Handeling the differnet logins: facebook; email; guest
 	if new_user_type == UserType::FacebookUser then
-		user_id, error = handle_facebook_login new_user
+		user_id, error, first_use = handle_facebook_login new_user
 	elsif new_user_type == UserType::EmailUser then
-		user_id, error = handle_password_login new_user
+		user_id, error, first_use = handle_password_login new_user
 	else
-		user_id, error = handle_guest_login new_user
+		user_id, error, first_use = handle_guest_login new_user
 	end
 
 	# Returning either the user or an error
 	if user_id then
 		users = settings.db.collection("Users")
 		user = users.find_one(user_id)
+		user[:first_use] = first_use
 		response = user.to_json
 	else
 		response = error
