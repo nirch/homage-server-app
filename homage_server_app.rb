@@ -598,7 +598,9 @@ post '/footage' do
 		take_id = ""
 	end
 
-	new_footage remake_id, scene_id, take_id
+	logger.debug "Footage " + scene_id.to_s + " of Remake " + remake_id.to_s + " with take id " + take_id + " uploaded and now will be processed"
+
+	new_footage(remake_id, scene_id, take_id)
 
 	# Returning the remake after the DB update
 	remake = settings.db.collection("Remakes").find_one(remake_id).to_json
