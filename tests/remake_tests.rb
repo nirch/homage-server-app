@@ -5,6 +5,7 @@ class RemakeTest < MiniTest::Unit::TestCase
 
 	REMAKES = DB.collection("Remakes")
 	USERS = DB.collection("Users")
+	STORIES = DB.collection("Stories")
 	
 	DIVE_SCHOOL = BSON::ObjectId.from_string("52de83db8bc427751c000305") # Dive School
  	THE_OSCARS = BSON::ObjectId.from_string("52ee613cab557ec484000021") # The Oscars
@@ -67,6 +68,25 @@ class RemakeTest < MiniTest::Unit::TestCase
 	    updated_remake = REMAKES.find_one(remake_id)
 	    assert_equal FootageStatus::Uploaded, updated_remake["footages"][scene_id - 1]["status"]
 	end
+
+	def test_delete_remake
+		delete  '/remake/' + @remake["_id"].to_s
+
+		# testing that the deleted status is in the response
+		json_response = JSON.parse(last_response.body)
+		assert_equal RemakeStatus::Deleted, json_response["status"]
+
+		# testing that the deleted status is in the DB
+	    remake_id = BSON::ObjectId.from_string(json_response["_id"]["$oid"])
+	    updated_remake = REMAKES.find_one(remake_id)
+		assert_equal RemakeStatus::Deleted, updated_remake["status"]
+
+		# testing that the story for this remake has number of remakes property
+		story_id = updated_remake["story_id"]
+		story = STORIES.find_one(story_id)
+		assert story["remakes_num"]
+	end
+
 
   	def teardown
   		if @user then
