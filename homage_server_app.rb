@@ -87,7 +87,7 @@ end
 # Get all stories
 get '/stories' do
 	stories_collection = settings.db.collection("Stories")
-	stories_docs = stories_collection.find({active: true}, {fields: {after_effects: 0}}).sort({order_id: 1})
+	stories_docs = stories_collection.find({}, {fields: {after_effects: 0}}).sort({order_id: 1})
 
 	stories_json_array = Array.new
 	for story_doc in stories_docs do
