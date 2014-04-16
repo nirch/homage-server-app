@@ -59,11 +59,13 @@ class RemakeTest < MiniTest::Unit::TestCase
 		# testing that the take_id is in the response
 		json_response = JSON.parse(last_response.body)
 		assert_equal take_id, json_response["footages"][scene_id - 1]["take_id"]
+		assert_equal FootageStatus::Uploaded, json_response["footages"][scene_id - 1]["status"]
+
 
 		# testing that the take_id is in the DB
 	    remake_id = BSON::ObjectId.from_string(json_response["_id"]["$oid"])
 	    updated_remake = REMAKES.find_one(remake_id)
-	    assert_equal take_id, updated_remake["footages"][scene_id - 1]["take_id"]
+	    assert_equal FootageStatus::Uploaded, updated_remake["footages"][scene_id - 1]["status"]
 	end
 
   	def teardown
