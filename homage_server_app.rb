@@ -61,6 +61,7 @@ module FootageStatus
   Uploaded = 1
   Processing = 2
   Ready = 3
+  Uploading = 4
 end
 
 module ErrorCodes
@@ -591,8 +592,29 @@ post '/footage' do
 	# input
 	remake_id = BSON::ObjectId.from_string(params[:remake_id])
 	scene_id = params[:scene_id].to_i
+	take_id = params[:take_id]
 
-	new_footage remake_id, scene_id
+	if !take_id then
+		take_id = ""
+	end
+
+	new_footage remake_id, scene_id, take_id
+
+	# Returning the remake after the DB update
+	remake = settings.db.collection("Remakes").find_one(remake_id).to_json
+end
+
+put '/footage' do
+	# input
+	remake_id = BSON::ObjectId.from_string(params[:remake_id])
+	scene_id = params[:scene_id].to_i
+	take_id = params[:take_id]
+
+	remakes = settings.db.collection("Remakes")
+
+	# Updating the the new take id
+	result = remakes.update({_id: remake_id, "footages.scene_id" => scene_id}, {"$set" => {"footages.$.take_id" => take_id}})
+	logger.info "Update for remake <" + remake_id.to_s + ">, footage <" + scene_id.to_s + "> with new take_id <" + take_id + ">"  
 
 	# Returning the remake after the DB update
 	remake = settings.db.collection("Remakes").find_one(remake_id).to_json
@@ -603,8 +625,8 @@ def to_boolean(str)
 end
 
 
-def new_footage (remake_id, scene_id)
-	logger.info "New footage for scene " + scene_id.to_s + " for remake " + remake_id.to_s
+def new_footage (remake_id, scene_id, take_id)
+	logger.info "New footage for scene " + scene_id.to_s + " for remake " + remake_id.to_s + " with take_id " + take_id
 
 	# Fetching the remake for this footage
 	remakes = settings.db.collection("Remakes")
@@ -623,7 +645,7 @@ def new_footage (remake_id, scene_id)
 		### Call honage-server-foreground
 
 		logger.info "Calling homage-server-foreground"
-		response = Net::HTTP.post_form(settings.homage_server_foreground_uri, {"remake_id" => remake_id.to_s, "scene_id" => scene_id.to_s})
+		response = Net::HTTP.post_form(settings.homage_server_foreground_uri, {"remake_id" => remake_id.to_s, "scene_id" => scene_id.to_s, "take_id" => take_id})
 		logger.debug "Response from homage-server-foreground" + response.to_s
 	}
 end

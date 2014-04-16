@@ -3,7 +3,7 @@ require File.expand_path '../test_helper.rb', __FILE__
 class RemakeTest < MiniTest::Unit::TestCase
 	include Rack::Test::Methods
 
-	REMAKES = DB.collection("Users")
+	REMAKES = DB.collection("Remakes")
 	USERS = DB.collection("Users")
 	
 	DIVE_SCHOOL = BSON::ObjectId.from_string("52de83db8bc427751c000305") # Dive School
@@ -25,7 +25,7 @@ class RemakeTest < MiniTest::Unit::TestCase
 
 	def setup
 		# Creating a user for the testing (deleting him in the teardown)
-   		post '/user/v2', GUEST_USER
+   		post '/user', GUEST_USER
 	    json_response = JSON.parse(last_response.body)
 	    assert json_response["_id"]["$oid"]
 	    user_id = BSON::ObjectId.from_string(json_response["_id"]["$oid"])
@@ -47,6 +47,24 @@ class RemakeTest < MiniTest::Unit::TestCase
 		assert @remake
 	end
 
+	def test_put_footage
+		# params
+		remake_id = @remake["_id"].to_s
+		scene_id = 1
+		take_id = "vbf3332s"
+
+		# updating the footage with take id
+		put '/footage', {:remake_id => remake_id, :scene_id => scene_id, :take_id => take_id}
+
+		# testing that the take_id is in the response
+		json_response = JSON.parse(last_response.body)
+		assert_equal take_id, json_response["footages"][scene_id - 1]["take_id"]
+
+		# testing that the take_id is in the DB
+	    remake_id = BSON::ObjectId.from_string(json_response["_id"]["$oid"])
+	    updated_remake = REMAKES.find_one(remake_id)
+	    assert_equal take_id, updated_remake["footages"][scene_id - 1]["take_id"]
+	end
 
   	def teardown
   		if @user then
@@ -56,8 +74,8 @@ class RemakeTest < MiniTest::Unit::TestCase
 	    end
 
 	    if @remake then
-	   		USERS.remove({_id: @remake["_id"]})
-	    	remake = USERS.find_one(@remake["_id"])
+	   		REMAKES.remove({_id: @remake["_id"]})
+	    	remake = REMAKES.find_one(@remake["_id"])
 	    	assert_nil remake
 	    end
     end
