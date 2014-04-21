@@ -8,9 +8,14 @@ remakes = test_db.collection("Remakes")
 # prod_users = prod_db.collection("Users")
 # prod_remakes = prod_db.collection("Remakes")
 
-DIVE_SCHOOL = BSON::ObjectId.from_string("52de83db8bc427751c000305") # Dive School
-x = remakes.count({query: {story_id: DIVE_SCHOOL, status: 3}})
-puts x
+story_id = BSON::ObjectId.from_string("530dd1e5784380a058000602")
+story_remakes = remakes.count({query: {story_id: story_id, status: 3}})
+puts story_remakes
+
+
+# DIVE_SCHOOL = BSON::ObjectId.from_string("52de83db8bc427751c000305") # Dive School
+# x = remakes.count({query: {story_id: DIVE_SCHOOL, status: 3}})
+# puts x
 
 
 # remake_id = BSON::ObjectId.from_string("533312f9f52d5c1ec2000020")
