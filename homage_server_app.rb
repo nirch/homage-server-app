@@ -37,8 +37,12 @@ configure :test do
 	set :db, db_connection.db()
 
 	# Push notification certificate
-	APN = Houston::Client.development
-	APN.certificate = File.read(File.expand_path("../certificates/homage_push_notification_dev.pem", __FILE__))
+	# APN = Houston::Client.development
+	# APN.certificate = File.read(File.expand_path("../certificates/homage_push_notification_dev.pem", __FILE__))
+	APN = Houston::Client.production
+	APN.certificate = File.read(File.expand_path("../certificates/homage_push_notification_prod.pem", __FILE__))
+	APN.passphrase = "homage"
+
 
 	# Test AE server connection
 	set :homage_server_foreground_uri, URI.parse("http://54.83.32.172:4567/footage")
