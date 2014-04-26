@@ -47,7 +47,7 @@
 			<% end %>
 		</h1>
 
-		<video id="0" class="sublime" poster=<%= @remake["thumbnail"]%> data-sharing-url=<%= @remake["share_link"]%> data-sharing-image='poster' data-sharing-text='Check out the cool video i created with #HomageApp' width="640" height="360" data-uid="0" preload="none">
+		<video id="0" class="sublime" title=<%= @story["name"]%> data-uid=<%= @remake["_id"]%> poster=<%= @remake["thumbnail"]%> data-sharing-url=<%= @remake["share_link"]%> data-sharing-image='poster' data-sharing-text='Check out this cool video by #HomageApp' width="640" height="360" data-uid="0" preload="none" data-google-analytics-enable='true' data-google-analytics-account='UA-46293158-1'>
 		  <source src=<%= @remake["video"]%> data-quality="hd" />
 		</video>
 
