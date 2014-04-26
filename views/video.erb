@@ -24,6 +24,80 @@
 		}
 	</style>
 
+
+	<!-- Google Analytics (only if in production) -->
+	<% if ENV['RACK_ENV'] == "production" then %>
+		<script>
+			(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+			(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+			m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+			})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+			ga('create', 'UA-46293158-1', 'auto');
+			ga('send', 'pageview');
+		</script>
+
+		<script>
+			sublime.ready(function() {
+			  sublime.player('0').on({
+			    start: trackVideoStart,
+			    end:   trackVideoEnd
+			  });
+			});
+			 
+			function trackVideoStart(player) {
+			  ga('send', 'event', 'Videos', 'Started', videoName(player));
+			}
+			 
+			function trackVideoEnd(player) {
+			  ga('send', 'event', 'Videos', 'Ended', videoName(player));
+			}
+			 
+			function videoName(player) {
+			  return player.videoElement().getAttribute('title');
+			}
+		</script>
+	<% end %>
+
+<!-- End Google Analytics -->
+
+<!-- Google Analytics ga
+	<script type="text/javascript">
+
+	  var _gaq = _gaq || [];
+	  _gaq.push(['_setAccount', 'UA-46293158-1']);
+	  _gaq.push(['_trackPageview']);
+
+	  (function() {
+	    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+	    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+	    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+	  })();
+
+	</script>
+
+	<script type="text/javascript">
+		sublime.ready(function() {
+		  sublime.player('0').on({
+		    start: trackVideoStart,
+		    end:   trackVideoEnd
+		  });
+		});
+		 
+		function trackVideoStart(player) {
+		  _gaq.push(["_trackEvent", "Videos", "Started", videoName(player)]);
+		}
+		 
+		function trackVideoEnd(player) {
+		  _gaq.push(["_trackEvent", "Videos", "Ended", videoName(player)]);
+		}
+		 
+		function videoName(player) {
+		  return player.videoElement().getAttribute('title');
+		}
+	</script>
+-->
+
 </head>
 
 <body>
@@ -47,7 +121,7 @@
 			<% end %>
 		</h1>
 
-		<video id="0" class="sublime" title=<%= @story["name"]%> data-uid=<%= @remake["_id"]%> poster=<%= @remake["thumbnail"]%> data-sharing-url=<%= @remake["share_link"]%> data-sharing-image='poster' data-sharing-text='Check out this cool video by #HomageApp' width="640" height="360" data-uid="0" preload="none" data-google-analytics-enable='true' data-google-analytics-account='UA-46293158-1'>
+		<video id="0" class="sublime" title="<%= @story["name"] + " - " + @remake["_id"].to_s%>" poster=<%= @remake["thumbnail"]%> data-sharing-url=<%= @remake["share_link"]%> data-sharing-image='poster' data-sharing-text='Check out this cool video by #HomageApp' width="640" height="360" data-uid="0" preload="none">
 		  <source src=<%= @remake["video"]%> data-quality="hd" />
 		</video>
 
