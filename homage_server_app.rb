@@ -25,8 +25,8 @@ configure :production do
 	APN.passphrase = "homage"
 
 	# Production AE server connection
-	set :homage_server_foreground_uri, URI.parse("http://54.235.111.163:4567/footage")
-	set :homage_server_render_uri, URI.parse("http://54.235.111.163:4567/render")
+	set :homage_server_foreground_uri, URI.parse("http://homage-render-prod-elb-882305239.us-east-1.elb.amazonaws.com:4567/footage")
+	set :homage_server_render_uri, URI.parse("http://homage-render-prod-elb-882305239.us-east-1.elb.amazonaws.com:4567/render")
 
 	set :logging, Logger::INFO
 end
@@ -748,7 +748,7 @@ post '/render' do
 
 	# Updating the DB that the process has started
 	remakes = settings.db.collection("Remakes")
-	remakes.update({_id: remake_id}, {"$set" => {status: RemakeStatus::Rendering}})
+	remakes.update({_id: remake_id}, {"$set" => {status: RemakeStatus::Rendering, render_start:Time.now}})
 
 	Thread.new{
 		# Waiting until this remake is ready for rendering (or there is a timout)

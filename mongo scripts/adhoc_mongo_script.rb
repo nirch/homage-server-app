@@ -8,9 +8,26 @@ remakes = test_db.collection("Remakes")
 # prod_users = prod_db.collection("Users")
 # prod_remakes = prod_db.collection("Remakes")
 
-story_id = BSON::ObjectId.from_string("530dd1e5784380a058000602")
-story_remakes = remakes.count({query: {story_id: story_id, status: 3}})
-puts story_remakes
+
+remake_id = BSON::ObjectId.from_string("535e4010d6c4ec273f000243")
+#x = remakes.update({_id: remake_id}, {"$set" => {status: 3, render_start: Time.now}})
+#x = remakes.update({_id: remake_id}, {"$set" => {status: 3, render_end: Time.now}})
+remake = remakes.find_one(remake_id)
+x = Time.now - remake["render_start"]
+puts x
+
+
+# start_date = Time.now
+# sleep 10
+# end_date = Time.now
+# delta_date = end_date - start_date
+# puts delta_date
+
+# date = Time.utc(2014,4,22)
+# x = remakes.find({"created_at" => {"$gte" => date}, "status" => 3})
+# for remake in x do
+# 	puts remake["share_link"]
+# end
 
 
 # DIVE_SCHOOL = BSON::ObjectId.from_string("52de83db8bc427751c000305") # Dive School
