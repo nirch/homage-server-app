@@ -16,6 +16,14 @@
 		nav {
 			background-color: #ff7d5f !important;
 		}
+		#links {
+			text-align: center;
+		}
+		#links a {
+			display:inline-block;
+			text-decoration:none;
+			color:black;
+		}
 		#links a img {
 			margin: 3px 1px;
 		}
@@ -75,7 +83,8 @@
 			<% for remake in @remakes do %>
 			    <a href=<%= remake["video"] %> title="<%= remake["_id"].to_s %>" type="video/mp4" data-poster=<%= remake["thumbnail"] %> data-gallery>
 			        <img src=<%= remake["thumbnail"] %> width=320 height=180 alt="<%= remake["title"] %>">
-			    </a>				
+			        <div class="caption"><%= remake["_id"].to_s %></div>
+			    </a>
 			<% end %>
 
 <!-- 		    <a href="http://d293iqusjtyr94.cloudfront.net/Remakes/5300c3dec5c06a0c80000001/Dive%20School_5300c3dec5c06a0c80000001.mp4" title="Nir Channes" type="video/mp4" data-poster="http://d293iqusjtyr94.cloudfront.net/Remakes/5300c3dec5c06a0c80000001/Dive%20School_5300c3dec5c06a0c80000001.jpg" data-gallery>
