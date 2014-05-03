@@ -1,20 +1,28 @@
 require 'mongo'
+require 'date'
+require 'time'
 
 test_db = Mongo::MongoClient.from_uri("mongodb://Homage:homageIt12@paulo.mongohq.com:10008/Homage").db
 users = test_db.collection("Users")
 remakes = test_db.collection("Remakes")
 
-# prod_db = Mongo::MongoClient.from_uri("mongodb://Homage:homageIt12@troup.mongohq.com:10057/Homage_Prod").db
-# prod_users = prod_db.collection("Users")
-# prod_remakes = prod_db.collection("Remakes")
+prod_db = Mongo::MongoClient.from_uri("mongodb://Homage:homageIt12@troup.mongohq.com:10057/Homage_Prod").db
+prod_users = prod_db.collection("Users")
+prod_remakes = prod_db.collection("Remakes")
+
+date_input = "20140430"
+from_date = Time.parse(date_input)
+remakes_from_date = prod_remakes.find(created_at:{"$gte"=>from_date}, status:3)
+puts from_date.strftime("Remakes from %d/%m/%Y and on")
+puts remakes_from_date.count
 
 
-remake_id = BSON::ObjectId.from_string("535e4010d6c4ec273f000243")
-#x = remakes.update({_id: remake_id}, {"$set" => {status: 3, render_start: Time.now}})
-#x = remakes.update({_id: remake_id}, {"$set" => {status: 3, render_end: Time.now}})
-remake = remakes.find_one(remake_id)
-x = Time.now - remake["render_start"]
-puts x
+# remake_id = BSON::ObjectId.from_string("535e4010d6c4ec273f000243")
+# #x = remakes.update({_id: remake_id}, {"$set" => {status: 3, render_start: Time.now}})
+# #x = remakes.update({_id: remake_id}, {"$set" => {status: 3, render_end: Time.now}})
+# remake = remakes.find_one(remake_id)
+# x = Time.now - remake["render_start"]
+# puts x
 
 
 # start_date = Time.now

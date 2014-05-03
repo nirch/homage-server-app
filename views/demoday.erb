@@ -73,7 +73,7 @@
 
 		<div id="links">
 			<% for remake in @remakes do %>
-			    <a href=<%= remake["video"] %> title="<%= remake["title"] %>" type="video/mp4" data-poster=<%= remake["thumbnail"] %> data-gallery>
+			    <a href=<%= remake["video"] %> title="<%= remake["_id"].to_s %>" type="video/mp4" data-poster=<%= remake["thumbnail"] %> data-gallery>
 			        <img src=<%= remake["thumbnail"] %> width=320 height=180 alt="<%= remake["title"] %>">
 			    </a>				
 			<% end %>

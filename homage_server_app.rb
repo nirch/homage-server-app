@@ -8,6 +8,7 @@ require 'logger'
 require 'net/http'
 require 'sinatra/security'
 require 'houston'
+require 'time'
 
 configure do
 	# Global configuration (regardless of the environment)
@@ -845,6 +846,18 @@ get %r{^/play/diveschool/?$}i do
 	@heading = "Dive School"
 	erb :demoday
 end 
+
+get '/play/date/:from_date' do
+	from_date = Time.parse(params[:from_date])
+
+	@remakes = settings.db.collection("Remakes").find(created_at:{"$gte"=>from_date}, status:3)
+	@heading = from_date.strftime("Remakes from %d/%m/%Y and on")
+
+	headers \
+		"X-Frame-Options"   => "ALLOW-FROM http://play.homage.it/"
+
+	erb :demoday
+end
 
 get '/play/:remake_id' do
 	remake_id = BSON::ObjectId.from_string(params[:remake_id])
