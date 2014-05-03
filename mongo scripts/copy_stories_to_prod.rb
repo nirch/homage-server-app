@@ -13,8 +13,13 @@ dive_school_id = BSON::ObjectId.from_string("530dd1e5784380a058000601")
 aliens_id = BSON::ObjectId.from_string("53206e5514b2ecc477000241")
 monster_attack_id = BSON::ObjectId.from_string("532f058a3f13af9af80001bb")
 oscar_id = BSON::ObjectId.from_string("534fc5b9924daff68b0000e9")
+dumb_n_helpless_id = BSON::ObjectId.from_string("53565aa49c5200617200017a")
+turbo_ski_id = BSON::ObjectId.from_string("5356dc94ebad7c3bf100015d")
+superior_man_id = BSON::ObjectId.from_string("535e8fc981360cd22f0003d4")
+the_interpreter_id = BSON::ObjectId.from_string("535704b5c133e52ecb00016d")
 
-stories_to_copy = Set.new [dive_school_id, aliens_id, monster_attack_id, oscar_id]
+
+stories_to_copy = Set.new [dive_school_id, aliens_id, monster_attack_id, oscar_id, dumb_n_helpless_id, turbo_ski_id, superior_man_id, the_interpreter_id]
 
 for story_id in stories_to_copy do
 	# Getting the story from test to copy
