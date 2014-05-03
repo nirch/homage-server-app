@@ -13,7 +13,7 @@ prod_remakes = prod_db.collection("Remakes")
 date_input = "20140430"
 from_date = Time.parse(date_input)
 remakes_from_date = prod_remakes.find(created_at:{"$gte"=>from_date}, status:3)
-puts from_date.strftime("Remakes from %d/%m/%Y and on")
+puts remakes_from_date.count.to_s + " Remakes from " + from_date.strftime("%d/%m/%Y")
 puts remakes_from_date.count
 
 

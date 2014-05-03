@@ -851,7 +851,7 @@ get '/play/date/:from_date' do
 	from_date = Time.parse(params[:from_date])
 
 	@remakes = settings.db.collection("Remakes").find(created_at:{"$gte"=>from_date}, status:3)
-	@heading = from_date.strftime("Remakes from %d/%m/%Y and on")
+	@heading = @remakes.count.to_s + " Remakes from " + from_date.strftime("%d/%m/%Y")
 
 	headers \
 		"X-Frame-Options"   => "ALLOW-FROM http://play.homage.it/"
