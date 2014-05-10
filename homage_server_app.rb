@@ -859,6 +859,19 @@ get '/play/date/:from_date' do
 	erb :demoday
 end
 
+get '/play/deleted/date/:from_date' do
+	from_date = Time.parse(params[:from_date])
+
+	@remakes = settings.db.collection("Remakes").find(created_at:{"$gte"=>from_date}, status:5).sort(created_at:-1)
+	@heading = @remakes.count.to_s + " Remakes from " + from_date.strftime("%d/%m/%Y")
+
+	headers \
+		"X-Frame-Options"   => "ALLOW-FROM http://play.homage.it/"
+
+	erb :demoday
+end
+
+
 get '/play/:remake_id' do
 	remake_id = BSON::ObjectId.from_string(params[:remake_id])
 
