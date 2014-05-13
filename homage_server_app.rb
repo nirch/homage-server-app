@@ -883,6 +883,9 @@ get '/play/stories' do
 
 	@stories = settings.db.collection("Stories").find(active:true)
 
+	headers \
+		"X-Frame-Options"   => "ALLOW-FROM http://play.homage.it/"
+
 	erb :stories
 end
 
@@ -899,6 +902,9 @@ get '/play/story/:story_id' do
 	@remakes = settings.db.collection("Remakes").find(story_id:story_id, status:RemakeStatus::Done, grade:{"$gte"=>1}, user_id:{"$in" => public_users}).sort(grade:-1)
 
 	@heading = settings.db.collection("Stories").find_one(story_id)["name"]
+
+	headers \
+		"X-Frame-Options"   => "ALLOW-FROM http://play.homage.it/"
 
 	erb :demoday
 end
