@@ -871,6 +871,38 @@ get '/play/deleted/date/:from_date' do
 	erb :demoday
 end
 
+get '/play/stories' do
+	superior_man_id = BSON::ObjectId.from_string("535e8fc981360cd22f0003d4")
+
+	# Getting all the public users
+	public_users_cursor = settings.db.collection("Users").find({is_public:true})
+	public_users = Array.new
+	for user in public_users_cursor do
+		public_users.push(user["_id"])
+	end
+
+	@stories = settings.db.collection("Stories").find(active:true)
+
+	erb :stories
+end
+
+get '/play/story/:story_id' do
+	story_id = BSON::ObjectId.from_string(params[:story_id])
+
+	# Getting all the public users
+	public_users_cursor = settings.db.collection("Users").find({is_public:true})
+	public_users = Array.new
+	for user in public_users_cursor do
+		public_users.push(user["_id"])
+	end
+
+	@remakes = settings.db.collection("Remakes").find(story_id:story_id, status:RemakeStatus::Done, grade:{"$gte"=>1}, user_id:{"$in" => public_users}).sort(grade:-1)
+
+	@heading = settings.db.collection("Stories").find_one(story_id)["name"]
+
+	erb :demoday
+end
+
 
 get '/play/:remake_id' do
 	remake_id = BSON::ObjectId.from_string(params[:remake_id])
@@ -893,6 +925,7 @@ get '/play/:remake_id' do
 
 	erb :video
 end
+
 
 get '/test/env' do
 	x = ENV['RACK_ENV']

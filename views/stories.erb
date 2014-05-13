@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<head>
+	<title>Homage - Stories</title>
+
+	<link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
+
+	<style type="text/css">
+		html, body {
+			height: 100%;
+		}
+		body {
+			background-color:#f8f8f8;
+		}
+		nav {
+			background-color: #ff7d5f !important;
+		}
+		#links {
+			text-align: center;
+		}
+		#links a {
+			display:inline-block;
+			text-decoration:none;
+			color:black;
+		}
+		#links a img {
+			margin: 3px 1px;
+		}
+	</style>
+</head>
+
+<body>
+	<nav class="navbar navbar-default" role="navigation">
+	  <div class="container">
+		    <!-- Brand and toggle get grouped for better mobile display -->
+		    <div class="navbar-header">
+		      <a class="navbar-brand" href="http://www.homage.it"> <img src="https://s3.amazonaws.com/homageapp/Intro/Homage_Logo.png" height="24" width="117"> </a>
+		    </div>
+	    </div>
+	</nav>
+
+
+	<div class="container"> 
+		Select a Story
+		<select onchange="location = this.options[this.selectedIndex].value;">
+		  <option value=""></option>
+		  <% for story in @stories do %>
+		  	<option value="<%= "/play/story/" + story["_id"].to_s %>"><%= story["name"] %></option>
+		  <% end %>
+		</select>
+	</div>
+
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+	<script src="http://netdna.bootstrapcdn.com/bootstrap/3.0.2/js/bootstrap.min.js"></script>
+
+</body>
