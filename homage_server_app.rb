@@ -844,6 +844,8 @@ get %r{^/play/diveschool/?$}i do
 	#@remakes = settings.db.collection("Remakes").find({story_id: dive_school_story_id, status:RemakeStatus::Done})
 	@remakes = settings.db.collection("Remakes").find({story_id: dive_school_story_id, demo:true}).sort(_id: 1)
 	@heading = "Dive School"
+	@grade = false
+
 	erb :demoday
 end 
 
@@ -852,6 +854,7 @@ get '/play/date/:from_date' do
 
 	@remakes = settings.db.collection("Remakes").find(created_at:{"$gte"=>from_date}, status:3).sort(created_at:-1)
 	@heading = @remakes.count.to_s + " Remakes from " + from_date.strftime("%d/%m/%Y")
+	@grade = true
 
 	headers \
 		"X-Frame-Options"   => "ALLOW-FROM http://play.homage.it/"
@@ -859,11 +862,24 @@ get '/play/date/:from_date' do
 	erb :demoday
 end
 
+post '/update/grade' do
+	remake_id = BSON::ObjectId.from_string(params[:remake_id])
+	grade = params[:grade].to_i
+
+	logger.info "updating grade for remake " + remake_id.to_s + " to grade " + grade.to_s
+
+	remakes = settings.db.collection("Remakes")
+	remakes.update({_id: remake_id}, {"$set" => {grade: grade}})
+
+	redirect back
+end
+
 get '/play/deleted/date/:from_date' do
 	from_date = Time.parse(params[:from_date])
 
 	@remakes = settings.db.collection("Remakes").find(created_at:{"$gte"=>from_date}, status:5).sort(created_at:-1)
 	@heading = @remakes.count.to_s + " Remakes from " + from_date.strftime("%d/%m/%Y")
+	@grade = false
 
 	headers \
 		"X-Frame-Options"   => "ALLOW-FROM http://play.homage.it/"
@@ -902,6 +918,8 @@ get '/play/story/:story_id' do
 	@remakes = settings.db.collection("Remakes").find(story_id:story_id, status:RemakeStatus::Done, grade:{"$gte"=>1}, user_id:{"$in" => public_users}).sort(grade:-1)
 
 	@heading = settings.db.collection("Stories").find_one(story_id)["name"]
+
+	@grade = false
 
 	headers \
 		"X-Frame-Options"   => "ALLOW-FROM http://play.homage.it/"
