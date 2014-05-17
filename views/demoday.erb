@@ -28,6 +28,7 @@
 			margin: 3px 1px;
 		}
 	</style>
+
 </head>
 
 <body>
@@ -80,10 +81,19 @@
 		</div>
 
 		<div id="links">
-			<% for remake in @remakes do %>
+			<% for remake in @remakes do %>	
 			    <a href=<%= remake["video"] %> title="<%= remake["_id"].to_s %>" type="video/mp4" data-poster=<%= remake["thumbnail"] %> data-gallery>
 			        <img src=<%= remake["thumbnail"] %> width=320 height=180 alt="<%= remake["title"] %>">
-			        <div class="caption"><%= remake["_id"].to_s %></div>
+			    	<% if @grade then %>
+				        <div class="caption">
+				        	<%= remake["_id"].to_s %>
+				        </div>
+				       	<form action="/update/grade" method="post" style='z-index: 1000;' class="grade_form">
+					    	Grade: <input type="text" value=<% if remake["grade"] then %> <%= remake["grade"] %> <% else %> "0" <% end %> name="grade">
+					       	<input type="submit" value="Update">
+					       	<input type="hidden" name="remake_id" value=<%= remake["_id"].to_s %>>
+					     </form>
+					<% end %>
 			    </a>
 			<% end %>
 
@@ -107,6 +117,28 @@
 	<script src="http://netdna.bootstrapcdn.com/bootstrap/3.0.2/js/bootstrap.min.js"></script>
 	<script src="http://blueimp.github.io/Gallery/js/jquery.blueimp-gallery.min.js"></script>
 	<script src="/js/bootstrap-image-gallery.min.js"></script>
+
+	<script>
+		$(document).ready(function(){
+			$("body").on("click", ".grade_form", function(e){
+				e.stopPropagation();
+				e.preventDefault();
+				
+			});
+
+			$("body").on("click", ".caption", function(e){
+				e.stopPropagation();
+				e.preventDefault();
+				
+			});
+
+			$("body").on("click", ".grade_form input[type='submit']", function(e){
+				e.stopPropagation();
+				e.preventDefault();
+				$(this).closest("form").submit();
+			})
+		})
+	</script>
 	<!-- <script src="/js/blueimp-gallery-video.js"></script> -->
 
 </body>
