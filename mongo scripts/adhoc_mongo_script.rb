@@ -49,7 +49,7 @@ AWS.config(aws_config)
 s3 = AWS::S3.new
 s3_bucket = s3.buckets['homageapp']
 
-date_input = "20140517"
+date_input = "20140518"
 from_date = Time.parse(date_input)
 unfinished_remakes = prod_remakes.find(created_at:{"$gte"=>from_date}, status:4)
 puts "unfinished_remakes = " + unfinished_remakes.count.to_s
