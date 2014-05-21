@@ -862,6 +862,29 @@ get '/play/date/:from_date' do
 	erb :demoday
 end
 
+get '/play/public/date/:from_date' do
+	from_date = Time.parse(params[:from_date])
+
+	# Getting all the public users
+	public_users_cursor = settings.db.collection("Users").find({is_public:true})
+	public_users = Array.new
+
+	for user in public_users_cursor do
+		public_users.push(user["_id"])
+	end
+
+	# Getting all the completed remakes of the public users
+	@remakes = settings.db.collection("Remakes").find({created_at:{"$gte"=>from_date}, status: RemakeStatus::Done, user_id:{"$in" => public_users}}).sort(created_at:-1)
+	@heading = @remakes.count.to_s + " Public Remakes from " + from_date.strftime("%d/%m/%Y")
+	@grade = true
+
+	headers \
+		"X-Frame-Options"   => "ALLOW-FROM http://play.homage.it/"
+
+	erb :demoday
+end
+
+
 post '/update/grade' do
 	remake_id = BSON::ObjectId.from_string(params[:remake_id])
 	grade = params[:grade].to_i
