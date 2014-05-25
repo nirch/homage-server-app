@@ -43,35 +43,35 @@ prod_remakes = prod_db.collection("Remakes")
 # 	end
 # end
 
-# AWS Connection
-aws_config = {access_key_id: "AKIAJTPGKC25LGKJUCTA", secret_access_key: "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"}
-AWS.config(aws_config)
-s3 = AWS::S3.new
-s3_bucket = s3.buckets['homageapp']
+# # AWS Connection
+# aws_config = {access_key_id: "AKIAJTPGKC25LGKJUCTA", secret_access_key: "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"}
+# AWS.config(aws_config)
+# s3 = AWS::S3.new
+# s3_bucket = s3.buckets['homageapp']
 
-date_input = "20140518"
-from_date = Time.parse(date_input)
-unfinished_remakes = prod_remakes.find(created_at:{"$gte"=>from_date}, status:4)
-puts "unfinished_remakes = " + unfinished_remakes.count.to_s
-for remake in unfinished_remakes do
-	raw_scene_prefix = "Remakes/" + remake["_id"].to_s + "/raw_scene"
-	s3_objects = s3_bucket.objects.with_prefix(raw_scene_prefix)
+# date_input = "20140518"
+# from_date = Time.parse(date_input)
+# unfinished_remakes = prod_remakes.find(created_at:{"$gte"=>from_date}, status:4)
+# puts "unfinished_remakes = " + unfinished_remakes.count.to_s
+# for remake in unfinished_remakes do
+# 	raw_scene_prefix = "Remakes/" + remake["_id"].to_s + "/raw_scene"
+# 	s3_objects = s3_bucket.objects.with_prefix(raw_scene_prefix)
 
-	if s3_objects.count == remake["footages"].count then
-		puts remake["_id"].to_s + " All scenes uploaded!!!"
+# 	if s3_objects.count == remake["footages"].count then
+# 		puts remake["_id"].to_s + " All scenes uploaded!!!"
 
-		processed_scene_prefix = "Remakes/" + remake["_id"].to_s + "/processed_scene"
-		s3_processed_objects = s3_bucket.objects.with_prefix(processed_scene_prefix)
-		if s3_processed_objects.count == remake["footages"].count then
-			puts "All scenes processed!!!"
-		else
-			puts "Not all scenes processed..."
-		end
-	else
-		puts remake["_id"].to_s + " not ready... only " + s3_objects.count.to_s + " out of " + remake["footages"].count.to_s
-	end
-	#s3_object = bucket.objects[s3_key]
-end
+# 		processed_scene_prefix = "Remakes/" + remake["_id"].to_s + "/processed_scene"
+# 		s3_processed_objects = s3_bucket.objects.with_prefix(processed_scene_prefix)
+# 		if s3_processed_objects.count == remake["footages"].count then
+# 			puts "All scenes processed!!!"
+# 		else
+# 			puts "Not all scenes processed..."
+# 		end
+# 	else
+# 		puts remake["_id"].to_s + " not ready... only " + s3_objects.count.to_s + " out of " + remake["footages"].count.to_s
+# 	end
+# 	#s3_object = bucket.objects[s3_key]
+# end
 
 
 # for remake in remakes_from_date do
