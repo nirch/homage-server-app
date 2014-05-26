@@ -422,6 +422,7 @@ post '/remake' do
 	else
 		user_id = params[:user_id]
 	end
+	resolution = params[:resolution]
 
 	remakes = settings.db.collection("Remakes")
 	story = settings.db.collection("Stories").find_one(story_id)
@@ -458,6 +459,10 @@ post '/remake' do
 			text_inputs.push(text_input)
 		end
 		remake[:texts] = text_inputs
+	end
+
+	if resolution then
+		remake[:resolution] = resolution
 	end
 
 	# Creating a new remake document in the DB
