@@ -6,7 +6,7 @@ prod_db = Mongo::MongoClient.from_uri("mongodb://Homage:homageIt12@troup.mongohq
 prod_users = prod_db.collection("Users")
 prod_remakes = prod_db.collection("Remakes")
 
-remake_id = BSON::ObjectId.from_string("5379c8e10be04423be00000f")
+remake_id = BSON::ObjectId.from_string("53792bcb0be04458f8000016")
 
 remake = prod_remakes.find_one(remake_id)
 user = prod_users.find_one(remake["user_id"])
