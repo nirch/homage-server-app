@@ -49,7 +49,8 @@ end
 
 puts
 
-default_root_download_folder = "C:/Development/Homage/Remakes/"
+#default_root_download_folder = "C:/Development/Homage/Remakes/"
+default_root_download_folder = "/Users/tomer/Desktop/Delete/Remakes/"
 puts "Enter download folder (blank for default " + default_root_download_folder + "):"
 input_root_download_folder = gets.chomp
 if input_root_download_folder.length > 0 then

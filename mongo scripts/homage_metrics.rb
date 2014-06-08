@@ -72,6 +72,7 @@ puts total_users_num.to_s + " total logged in users"
 facebook_users = 0
 email_users = 0
 guest_users = 0
+push_tokens = 0
 for user in total_users do
 	if user["facebook"] then
 		facebook_users += 1
@@ -80,13 +81,25 @@ for user in total_users do
 	else
 		guest_users +=1
 	end
+
+	if user["devices"] then
+		for device in user["devices"] do
+			if device["push_token"] then
+				push_tokens += 1
+				break
+			end
+		end
+	end
 end
 facebook_percentage = facebook_users.to_f / total_users_num.to_f * 100
 email_percentage = email_users.to_f / total_users_num.to_f * 100
 guest_percentage = guest_users.to_f / total_users_num.to_f * 100
+push_percentage = push_tokens.to_f / total_users_num.to_f * 100
 puts facebook_percentage.round.to_s + "% facebook (" + facebook_users.to_s + " users)"
 puts email_percentage.round.to_s + "% email (" + email_users.to_s + " users)"
 puts guest_percentage.round.to_s + "% guest (" + guest_users.to_s + " users)"
+puts push_percentage.round.to_s + "% of the users with push token (" + push_tokens.to_s + " users)"
+
 
 # Users clicked 'Create Movie'
 start_render_users = map_remakes_to_users(start_render_remakes)
