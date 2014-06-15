@@ -998,6 +998,8 @@ get '/play/:remake_id' do
 	erb :video
 end
 
+get '/health/check' do
+end
 
 get '/test/env' do
 	x = ENV['RACK_ENV']
