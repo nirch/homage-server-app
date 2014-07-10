@@ -17,9 +17,19 @@ dumb_n_helpless_id = BSON::ObjectId.from_string("53565aa49c5200617200017a")
 turbo_ski_id = BSON::ObjectId.from_string("5356dc94ebad7c3bf100015d")
 superior_man_id = BSON::ObjectId.from_string("535e8fc981360cd22f0003d4")
 the_interpreter_id = BSON::ObjectId.from_string("535704b5c133e52ecb00016d")
+world_cup_brazil_id = BSON::ObjectId.from_string("53b540d3123459d5aa000253")
 
 
-stories_to_copy = Set.new [dive_school_id, aliens_id, monster_attack_id, oscar_id, dumb_n_helpless_id, turbo_ski_id, superior_man_id, the_interpreter_id]
+stories_to_copy = Set.new [
+	# dive_school_id, 
+	# aliens_id, 
+	# monster_attack_id, 
+	# oscar_id, 
+	# dumb_n_helpless_id, 
+	# turbo_ski_id, 
+	# superior_man_id, 
+	# the_interpreter_id,
+    world_cup_brazil_id]
 
 for story_id in stories_to_copy do
 	# Getting the story from test to copy

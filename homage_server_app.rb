@@ -108,6 +108,25 @@ get '/stories' do
 	# stories = JSON[stories_docs]
 end
 
+# Returns a given story id
+get '/story/:story_id' do
+	# input
+	story_id = BSON::ObjectId.from_string(params[:story_id])
+
+	logger.info "Getting story with id " + story_id.to_s
+
+	# Fetching the story
+	stories = settings.db.collection("Stories")
+	story = stories.find_one(story_id)
+
+	if story then
+		story.to_json
+	else
+		status 404
+	end
+end
+
+
 get '/test/user' do
 	form = '<form action="/user" method="post" enctype="multipart/form-data"> e-mail: <input type="text" name="user_id"> <input type="submit" value="Create User"> </form>'
 	erb form
