@@ -538,6 +538,8 @@ end
 
 # Returns a given remake id
 get '/remake/:remake_id' do
+	cache_control :no_cache
+
 	# input
 	remake_id = BSON::ObjectId.from_string(params[:remake_id])
 
