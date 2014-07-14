@@ -1,8 +1,14 @@
 <!DOCTYPE html>
 <head>
 	<title>Homage</title>
-	<script type="text/javascript" src="//cdn.sublimevideo.net/js/w5ui0013.js"></script>
+	<!-- <script type="text/javascript" src="//cdn.sublimevideo.net/js/w5ui0013.js"></script> -->
 
+	<link href="//vjs.zencdn.net/4.6/video-js.css" rel="stylesheet">
+	<script src="//vjs.zencdn.net/4.6/video.js"></script>
+	<style type="text/css">
+  		.vjs-default-skin { color: #FF7D57; }
+	</style>
+	
 	<!-- Latest compiled and minified CSS -->
 	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
 
@@ -121,16 +127,27 @@
 			<% end %>
 		</h1>
 
-		<video id="0" class="sublime" title="<%= @story["name"] + " - " + @remake["_id"].to_s%>" poster=<%= @remake["thumbnail"]%> data-sharing-url=<%= @remake["share_link"]%> data-sharing-image='poster' data-sharing-text='Check out this cool video by #HomageApp' width="640" height="360" data-uid="0" preload="none">
+<!-- 		<video id="0" class="sublime" title="<%= @story["name"] + " - " + @remake["_id"].to_s%>" poster=<%= @remake["thumbnail"]%> data-sharing-url=<%= @remake["share_link"]%> data-sharing-image='poster' data-sharing-text='Check out this cool video by #HomageApp' width="640" height="360" data-uid="0" preload="none">
 		  <source src=<%= @remake["video"]%> data-quality="hd" />
+		</video> -->
+
+		<video id="0" class="video-js vjs-default-skin vjs-big-play-centered"
+			controls preload="auto" width="640" height="360"
+			poster=<%= @remake["thumbnail"]%>
+			data-setup='{"example_option":true}'>
+			<source src=<%= @remake["video"]%> type='video/mp4' />
+			<p class="vjs-no-js">To view this video please enable JavaScript, and consider upgrading to a web browser that <a href="http://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a></p>
 		</video>
 
-		<!-- 
-		<div class="row">
+<!-- 		<div class="row">
 			<div class="col-sm-8">
-				<video id="0" class="sublime" poster=<%= @remake["thumbnail"]%> data-sharing-url=<%= @remake["share_link"]%> data-sharing-image='poster' data-sharing-text='Check out the cool video i created with #HomageApp' width="640" height="360" data-uid="0" preload="none">
-				  <source src=<%= @remake["video"]%> data-quality="hd" />
-				</video>
+		<video id="0" class="video-js vjs-default-skin vjs-big-play-centered"
+			controls preload="auto" width="640" height="360"
+			poster=<%= @remake["thumbnail"]%>
+			data-setup='{"example_option":true}'>
+			<source src=<%= @remake["video"]%> type='video/mp4' />
+			<p class="vjs-no-js">To view this video please enable JavaScript, and consider upgrading to a web browser that <a href="http://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a></p>
+		</video>
 			</div>
 
 			<div class="col-sm-4">
@@ -138,6 +155,7 @@
 				<button class="btn btn-primary btn-lg">Share</button>
 			</div>
 		</div>
-		 -->
+ -->	
+ 
 	</div>
 </body>
