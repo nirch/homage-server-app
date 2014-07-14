@@ -91,6 +91,12 @@ module PushNotifications
 	MovieTimout = 1
 end
 
+module ShareMethod
+	CopyUrlShareMethod = 0
+	FacebookShareMethod = 1
+	WhatsappShareMethod = 2
+	EmailShareMethod = 3 
+end
 
 # Get all stories
 get '/stories' do
@@ -942,6 +948,25 @@ post '/update/grade' do
 
 	redirect back
 end
+
+
+#analytics routes
+post '/remake/share' do
+	remake_id = BSON::ObjectId.from_string(params[:remake_id])
+	user_id =  BSON::ObjectId.from_string(params[:user_id])
+	share_method = params[:share_method].to_i
+
+	logger.info "creating share entity for Remake " + remake_id.to_s + " for user " + user_id.to_s
+
+	shares = settings.db.collection("Shares")
+	share = {user_id:user_id , remake_id:remake_id, share_method:share_method, created_at:Time.now }
+	share_objectId = shares.save(share)
+	logger.info "New share saved in the DB with share id " + share_objectId.to_s
+	return share.to_json
+end
+
+
+
 
 get '/play/deleted/date/:from_date' do
 	from_date = Time.parse(params[:from_date])
