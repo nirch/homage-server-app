@@ -18,6 +18,8 @@ turbo_ski_id = BSON::ObjectId.from_string("5356dc94ebad7c3bf100015d")
 superior_man_id = BSON::ObjectId.from_string("535e8fc981360cd22f0003d4")
 the_interpreter_id = BSON::ObjectId.from_string("535704b5c133e52ecb00016d")
 world_cup_brazil_id = BSON::ObjectId.from_string("53b540d3123459d5aa000253")
+world_cup_argentina_id = BSON::ObjectId.from_string("53b17db89a452198f80004a6")
+world_cup_coach_id = BSON::ObjectId.from_string("53bffcbbf0c5349d4600058f")
 
 
 stories_to_copy = Set.new [
@@ -29,7 +31,10 @@ stories_to_copy = Set.new [
 	# turbo_ski_id, 
 	# superior_man_id, 
 	# the_interpreter_id,
-    world_cup_brazil_id]
+    world_cup_brazil_id,
+	world_cup_argentina_id,
+	world_cup_coach_id
+	]
 
 for story_id in stories_to_copy do
 	# Getting the story from test to copy
