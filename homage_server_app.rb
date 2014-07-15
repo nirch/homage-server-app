@@ -91,6 +91,17 @@ module PushNotifications
 	MovieTimout = 1
 end
 
+module ShareMethod
+	CopyUrlShareMethod = 0
+	FacebookShareMethod = 1
+	WhatsappShareMethod = 2
+	EmailShareMethod = 3 
+end
+
+module PlaybackEventType
+	PlaybackEventStart = 0
+	PlaybackEventStop = 1
+end
 
 # Get all stories
 get '/stories' do
@@ -943,6 +954,125 @@ post '/update/grade' do
 	redirect back
 end
 
+#analytics routes
+post '/remake/share' do
+	remake_id = BSON::ObjectId.from_string(params[:remake_id])
+	user_id =  BSON::ObjectId.from_string(params[:user_id])
+	share_method = params[:share_method].to_i
+
+	logger.info "creating share entity for Remake " + remake_id.to_s + " for user " + user_id.to_s
+
+	shares = settings.db.collection("Shares")
+	share = {user_id:user_id , remake_id:remake_id, share_method:share_method, created_at:Time.now }
+	share_objectId = shares.save(share)
+	logger.info "New share saved in the DB with share id " + share_objectId.to_s
+	return share.to_json
+end
+
+post '/remake/view' do 
+	playback_event = params[:playback_event].to_i
+
+	views = settings.db.collection("Views")
+
+	if playback_event == PlaybackEventType::PlaybackEventStart then
+		client_generated_view_id = BSON::ObjectId.from_string(params[:view_id])
+		remake_id = BSON::ObjectId.from_string(params[:remake_id])
+		user_id =  BSON::ObjectId.from_string(params[:user_id])
+		
+		view = {_id:client_generated_view_id, user_id:user_id , remake_id:remake_id, start_time:Time.now}
+		view_objectId = views.save(view)
+		
+		logger.info "New view saved in the DB with view id " + view_objectId.to_s
+		return view.to_json
+
+	elsif playback_event = PlaybackEventType::PlaybackEventStop then
+		view_id =  BSON::ObjectId.from_string(params[:view_id])
+		remake_id = BSON::ObjectId.from_string(params[:remake_id])
+		user_id =  BSON::ObjectId.from_string(params[:user_id])
+		playback_duration = params[:playback_duration].to_i
+		total_duration = params[:total_duration].to_i
+
+		#remakes.update({_id: remake_id}, {"$set" => {grade: grade}})
+		#users.update({_id: update_user_id}, {"$set" => {facebook: params[:facebook], email: params[:email], is_public: params[:is_public]}})
+		#remakes.update({_id: remake_id}, {"$set" => {status: RemakeStatus::Rendering, render_start:Time.now}})
+		view = views.find_one(view_id)
+		if !view then
+			logger.error "No matching start event for stop event: " + view_id.to_s
+		end
+		views.update({_id: view_id},{"$set" => {playback_duration: playback_duration, total_duration: total_duration}})
+		logger.info "view updated in the DB after stop with view id " + view_id.to_s
+		view = views.find_one(view_id)
+		return view.to_json
+	end
+end
+
+post '/story/view' do 
+	playback_event = params[:playback_event].to_i
+	entity_type = params[:playback_event].to_i
+
+	views = settings.db.collection("Views")
+
+	if playback_event == PlaybackEventStart then
+		client_generated_view_id =  BSON::ObjectId.from_string(params[:view_id])
+		story_id = BSON::ObjectId.from_string(params[:story_id])
+		user_id =  BSON::ObjectId.from_string(params[:user_id])
+		
+		view = {_id:client_generated_view_id, user_id:user_id , story_id:story_id, start_time:Time.now}
+		view_objectId = views.save(view)
+		
+		logger.info "New view saved in the DB with view id " + view_objectID.to_s
+		return view.to_json
+
+	elsif playback_event = PlaybackEventStop then
+		view_id =  BSON::ObjectId.from_string(params[:view_id])
+		story_id = BSON::ObjectId.from_string(params[:story_id])
+		user_id =  BSON::ObjectId.from_string(params[:user_id])
+		playback_duration = params[:playback_duration].to_i
+		total_duration = params[:total_duration].to_i
+
+		#remakes.update({_id: remake_id}, {"$set" => {grade: grade}})
+		#users.update({_id: update_user_id}, {"$set" => {facebook: params[:facebook], email: params[:email], is_public: params[:is_public]}})
+		#remakes.update({_id: remake_id}, {"$set" => {status: RemakeStatus::Rendering, render_start:Time.now}})
+		view = views.find_one(view_id)
+		if !view then
+			logger.error "No matching start event for stop event: " + view_id.to_s
+		end
+		views.update({_id: view_id},{"$set" => {playback_duration: playback_duration, total_duration: total_duration}})
+		logger.info "view updated in the DB after stop with view id " + view_id.to_s
+		view = views.find_one(view_id)
+		return view.to_json
+	end
+end
+
+post '/user/begin' do
+	client_generated_session_id = BSON::ObjectId.from_string(params[:session_id])
+	user_id =  BSON::ObjectId.from_string(params[:user_id])
+
+	sessions = settings.db.collection("Sessions")
+
+	user_session = {_id:client_generated_session_id, user_id:user_id, start_time:Time.now}
+	user_session_objectId = sessions.save(user_session)
+		
+	logger.info "New user session saved in the DB with view id" + user_session_objectId.to_s
+	return user_session.to_json
+end
+
+post '/user/end' do
+	user_session_id = BSON::ObjectId.from_string(params[:session_id])
+	user_id =  BSON::ObjectId.from_string(params[:user_id])
+
+	sessions = settings.db.collection("Sessions")
+	user_session = sessions.find_one(user_session_id)
+	if !user_session then
+		logger.info "No matching start event for stop event: " + user_session_id.to_s
+	end
+	sessions.update({_id: user_session_id},{"$set" => {end_time: Time.now}})
+	logger.info "user session updated with session id " + user_session_id.to_s
+	user_session = sessions.find_one(user_session_id)
+	return user_session.to_json
+end
+
+#play routes
 get '/play/deleted/date/:from_date' do
 	from_date = Time.parse(params[:from_date])
 
