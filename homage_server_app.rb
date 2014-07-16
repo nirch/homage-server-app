@@ -9,6 +9,7 @@ require 'net/http'
 require 'sinatra/security'
 require 'houston'
 require 'time'
+require 'chartkick'
 
 configure do
 	# Global configuration (regardless of the environment)
@@ -96,6 +97,9 @@ module ShareMethod
 	FacebookShareMethod = 1
 	WhatsappShareMethod = 2
 	EmailShareMethod = 3 
+	MessageShareMethod = 4
+	WeiboShareMethod = 5
+	TwitterShareMethod = 6
 end
 
 module PlaybackEventType
@@ -1012,7 +1016,7 @@ post '/story/view' do
 
 	views = settings.db.collection("Views")
 
-	if playback_event == PlaybackEventStart then
+	if playback_event == PlaybackEventType::PlaybackEventStart then
 		client_generated_view_id =  BSON::ObjectId.from_string(params[:view_id])
 		story_id = BSON::ObjectId.from_string(params[:story_id])
 		user_id =  BSON::ObjectId.from_string(params[:user_id])
@@ -1020,10 +1024,10 @@ post '/story/view' do
 		view = {_id:client_generated_view_id, user_id:user_id , story_id:story_id, start_time:Time.now}
 		view_objectId = views.save(view)
 		
-		logger.info "New view saved in the DB with view id " + view_objectID.to_s
+		logger.info "New view saved in the DB with view id " + view_objectId.to_s
 		return view.to_json
 
-	elsif playback_event = PlaybackEventStop then
+	elsif playback_event = PlaybackEventType::PlaybackEventStop then
 		view_id =  BSON::ObjectId.from_string(params[:view_id])
 		story_id = BSON::ObjectId.from_string(params[:story_id])
 		user_id =  BSON::ObjectId.from_string(params[:user_id])
@@ -1147,6 +1151,11 @@ get '/play/:remake_id' do
 		"X-Frame-Options"   => "ALLOW-FROM http://play.homage.it/"
 
 	erb :video
+end
+
+get '/analytics' do
+	@data = 
+	erb :analytics
 end
 
 get '/health/check' do

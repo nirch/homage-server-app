@@ -6,7 +6,7 @@ prod_db = Mongo::MongoClient.from_uri("mongodb://Homage:homageIt12@troup.mongohq
 prod_users = prod_db.collection("Users")
 prod_remakes = prod_db.collection("Remakes")
 
-launch_date = Time.parse("20140430")
+launch_date = Time.parse("20140430Z")
 
 def map_remakes_to_users(remakes)
 	users = Hash.new
