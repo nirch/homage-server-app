@@ -2,9 +2,52 @@
 <head>
 	<script src="//www.google.com/jsapi"></script>
 	<script src="/js/chartkick.js"></script>
+
+	<title>Homage - DemoDay</title>
+	<link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
+	<link rel="stylesheet" href="http://blueimp.github.io/Gallery/css/blueimp-gallery.min.css">
+	<link rel="stylesheet" href="/css/bootstrap-image-gallery.min.css">
+
+	<style type="text/css">
+		html, body {
+			height: 100%;
+		}
+		body {
+			background-color:#f8f8f8;
+		}
+		nav {
+			background-color: #ff7d5f !important;
+		}
+		#links {
+			text-align: center;
+		}
+		#links a {
+			display:inline-block;
+			text-decoration:none;
+			color:black;
+		}
+		#links a img {
+			margin: 3px 1px;
+		}
+	</style>
 </head>
 
 <body>
-	<%= pie_chart({"Football" => 10, "Basketball" => 5}) %>
-	<%= pie_chart({"Football" => 90, "Basketball" => 10}) %>
+	<nav class="navbar navbar-default" role="navigation">
+	  <div class="container">
+		    <!-- Brand and toggle get grouped for better mobile display -->
+		    <div class="navbar-header">
+		      <a class="navbar-brand" href="http://www.homage.it"> <img src="https://s3.amazonaws.com/homageapp/Intro/Homage_Logo.png" height="24" width="117"> </a>
+		    </div>
+	    </div>
+	</nav>
+	<%= @heading1 %>
+	<%= line_chart(@data1) %>
+
+	<%= @heading2 %>
+	<%= line_chart(@data2) %>
+
+	<%= @heading3 %>
+	<%= line_chart(@data3) %>
+
 </body>

@@ -1153,8 +1153,50 @@ get '/play/:remake_id' do
 	erb :video
 end
 
+def prepare_data_for_date_range(proc,start_date,end_date)
+	puts "preparing data between: " + start_date.iso8601 + " to: " + end_date.iso8601
+	date = start_date
+	data = Hash.new 
+	while date!=end_date do
+		value = proc.call(date)
+		next_day = add_days(date,1)
+		data[date] = value
+		date = next_day
+	end
+	return data
+end
+
 get '/analytics' do
-	@data = 
+
+	START_DATE = Time.parse("20140701Z")
+	END_DATE = Time.parse("20140715Z")
+	turbo_ski_story_id = "5356dc94ebad7c3bf100015d"
+	story_id = BSON::ObjectId.from_string(turbo_ski_story_id.to_s)
+
+	get_pct_of_shared_videos_proc = Proc.new { |date| 
+		Analytics.get_pct_of_shared_videos_for_day_out_of_all_created_movies(date) 
+	}
+
+	get_pct_of_sharing_user_proc = Proc.new { |date| 
+		Analytics.get_pct_of_users_who_shared_at_list_once_for_day(date) 
+	}
+
+	get_pct_of_users_creating_videos_proc = Proc.new { |date| 
+		Analytics.get_pct_of_users_who_created_a_video_for_day(date) 
+	}
+
+	get_total_views_for_story_for_day_proc = Proc.new { |date| 
+		Analytics.get_total_views_for_story_for_day(date) 
+	}
+
+	@heading1 = "% of shared videos out of all created movies from: " + START_DATE.iso8601 + "to: " + END_DATE.iso8601
+	@heading2 = "% of users that shared at least once out of all active users from: " + START_DATE.iso8601 + "to: " + END_DATE.iso8601
+	@heading3 = "% users who made a video out of all active users from: " + START_DATE.iso8601 + "to: " + END_DATE.iso8601
+	@heading4 = "views for story: " + story_id.to_s
+	#@data1 = prepare_data_for_date_range(get_pct_of_shared_videos_proc,START_DATE,END_DATE)
+	#@data2 = prepare_data_for_date_range(get_pct_of_sharing_user_proc,START_DATE,END_DATE)
+	#@data3 = prepare_data_for_date_range(get_pct_of_users_creating_videos_proc,START_DATE,END_DATE)
+	@data4 = prepare_data_for_date_range(get_total_views_for_story_for_day_proc,START_DATE,END_DATE)
 	erb :analytics
 end
 
