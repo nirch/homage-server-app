@@ -1,8 +1,9 @@
 require File.expand_path '../Analytics.rb', __FILE__
 
 date = Time.parse("20140708Z")
-START_DATE = Time.parse("20140701Z")
-END_DATE = Time.parse("20140715Z")
+start_date = Time.parse("20140701Z")
+end_date = Time.parse("20140715Z")
+launch_date = Time.parse("20140430")
 turbo_ski_story_id = "5356dc94ebad7c3bf100015d"
 
 DB = Mongo::MongoClient.from_uri("mongodb://Homage:homageIt12@paulo.mongohq.com:10008/Homage").db()
@@ -20,24 +21,43 @@ def add_weeks(date,num_of_weeks)
 end
 
 #KPI's
-# % of shared videos out of all created movies for date
-#res = Analytics.get_pct_of_shared_videos_for_day_out_of_all_created_movies(date)
-#puts "pct of shared videos out of all videos: " + res.to_s
+#% of shared videos out of all created movies for date
+res = Analytics.get_pct_of_shared_videos_for_date_range_out_of_all_created_movies(start_date,end_date)
+#puts res
+fake_res = Hash.new
+res.each {|date, result_array|
+	if result_array.fetch(0) == 0 then
+		fake_res[date] = 0
+	else 
+		fake_res[date] = result_array.fetch(1).to_f/result_array.fetch(0).to_f
+	end
+}
+
+#puts "pct of shared videos out of all videos: " + fake_res.to_s
 #puts ""
 
 # % of users that shared at least once out of all active users for date
-#res = Analytics.get_pct_of_users_who_shared_at_list_once_for_day(date)
+#res = Analytics.get_pct_of_users_who_shared_at_list_once_for_date_range(START_DATE,END_DATE)
 #puts "pct of users sharing videos: " + res.to_s
+#puts ""
 
 # % users who made a video out of all active users for date 
 #res = Analytics.get_pct_of_users_who_created_a_video_for_day(date)
 #puts "pct of users creating movies: " + res.to_s
-#puts ""
+#puts ""x
 
 # number of views for story
-puts "Turbo ski story id: " + turbo_ski_story_id.to_s
-res = Analytics.get_total_views_for_story_for_day(date,turbo_ski_story_id.to_s)
-puts "total views for day: " + res.to_s
+#puts "Turbo ski story id: " + turbo_ski_story_id.to_s
+#res = Analytics.get_total_views_for_story_for_date_range(START_DATE,END_DATE,0)
+#puts "total views for day: " + res.to_s
+
+#distribution of movie making between users from date
+#res = Analytics.get_distribution_of_remakes_between_users_from_date(LAUNCH_DATE)
+#puts "distibution of movie making between users: " + res.to_s
+
+#avg session time for date range
+res = Analytics.get_avg_session_time_for_date_range(start_date,end_date)
+puts res
 
 get_total_views_for_story_for_day_proc = Proc.new { |date, story_id| 
 		Analytics.get_total_views_for_story_for_day(date,story_id) 
@@ -57,10 +77,10 @@ def prepare_data_for_date_range(proc,start_date,end_date)
 end
 
 #MAIN
-data = prepare_data_for_date_range(get_total_views_for_story_for_day_proc,START_DATE,END_DATE)
-data.each {|date , value|
-	puts "date: " + date.iso8601 + " value: " + value.to_s
-}
+#data = prepare_data_for_date_range(get_total_views_for_story_for_day_proc,START_DATE,END_DATE)
+#data.each {|date , value|
+#	puts "date: " + date.iso8601 + " value: " + value.to_s
+#}
 
 
 

@@ -10,6 +10,7 @@ require 'sinatra/security'
 require 'houston'
 require 'time'
 require 'chartkick'
+require File.expand_path '../mongo scripts/Analytics.rb', __FILE__
 
 configure do
 	# Global configuration (regardless of the environment)
@@ -45,11 +46,9 @@ configure :test do
 	APN.certificate = File.read(File.expand_path("../certificates/homage_push_notification_prod.pem", __FILE__))
 	APN.passphrase = "homage"
 
-
 	# Test AE server connection
 	set :homage_server_foreground_uri, URI.parse("http://54.83.32.172:4567/footage")
 	set :homage_server_render_uri, URI.parse("http://54.83.32.172:4567/render")
-
 	set :logging, Logger::DEBUG
 end
 
@@ -1070,7 +1069,11 @@ post '/user/end' do
 	if !user_session then
 		logger.info "No matching start event for stop event: " + user_session_id.to_s
 	end
-	sessions.update({_id: user_session_id},{"$set" => {end_time: Time.now}})
+	start_time = user_session["start_time"]
+	end_time = user_session["end_time"]
+	duration_in_seconds = end_time - start_time
+	duration_in_minutes = duration_in_seconds.to_f/60
+	sessions.update({_id: user_session_id},{"$set" => {duration_in_minutes: duration_in_minutes}})
 	logger.info "user session updated with session id " + user_session_id.to_s
 	user_session = sessions.find_one(user_session_id)
 	return user_session.to_json
@@ -1158,8 +1161,8 @@ def prepare_data_for_date_range(proc,start_date,end_date)
 	date = start_date
 	data = Hash.new 
 	while date!=end_date do
-		value = proc.call(date)
-		next_day = add_days(date,1)
+		value = proc.call(date,story_id)
+		next_day = Analytics.add_days(date,1)
 		data[date] = value
 		date = next_day
 	end
@@ -1168,10 +1171,12 @@ end
 
 get '/analytics' do
 
-	START_DATE = Time.parse("20140701Z")
-	END_DATE = Time.parse("20140715Z")
-	turbo_ski_story_id = "5356dc94ebad7c3bf100015d"
-	story_id = BSON::ObjectId.from_string(turbo_ski_story_id.to_s)
+	start_date = Time.parse("20140701Z")
+	end_date   = Time.parse("20140715Z")
+	launch_date = Time.parse("20140430Z")
+	story_id = "5356dc94ebad7c3bf100015d"
+	#story_id = BSON::ObjectId.from_string(turbo_ski_story_id.to_s)
+	Analytics.init_db(settings.db)
 
 	get_pct_of_shared_videos_proc = Proc.new { |date| 
 		Analytics.get_pct_of_shared_videos_for_day_out_of_all_created_movies(date) 
@@ -1185,18 +1190,41 @@ get '/analytics' do
 		Analytics.get_pct_of_users_who_created_a_video_for_day(date) 
 	}
 
-	get_total_views_for_story_for_day_proc = Proc.new { |date| 
-		Analytics.get_total_views_for_story_for_day(date) 
+	get_total_views_for_story_for_day_proc = Proc.new { |date, story_id| 
+		Analytics.get_total_views_for_story_for_day(date,story_id) 
 	}
 
-	@heading1 = "% of shared videos out of all created movies from: " + START_DATE.iso8601 + "to: " + END_DATE.iso8601
-	@heading2 = "% of users that shared at least once out of all active users from: " + START_DATE.iso8601 + "to: " + END_DATE.iso8601
-	@heading3 = "% users who made a video out of all active users from: " + START_DATE.iso8601 + "to: " + END_DATE.iso8601
-	@heading4 = "views for story: " + story_id.to_s
-	#@data1 = prepare_data_for_date_range(get_pct_of_shared_videos_proc,START_DATE,END_DATE)
-	#@data2 = prepare_data_for_date_range(get_pct_of_sharing_user_proc,START_DATE,END_DATE)
-	#@data3 = prepare_data_for_date_range(get_pct_of_users_creating_videos_proc,START_DATE,END_DATE)
-	@data4 = prepare_data_for_date_range(get_total_views_for_story_for_day_proc,START_DATE,END_DATE)
+	@heading1 = "% of shared videos out of all created movies from: " + start_date.iso8601 + "to: " + end_date.iso8601
+	@heading2 = "% of users that shared at least once out of all active users from: " + start_date.iso8601 + "to: " + end_date.iso8601
+	@heading3 = "distribution of movie making between users from date: " + launch_date.iso8601
+	@heading4 = "views for story: " 
+	@heading5 = "avg session time between dates: " + start_date.iso8601 + " - " + end_date.iso8601
+	res = Analytics.get_pct_of_shared_videos_for_date_range_out_of_all_created_movies(start_date,end_date)
+	fake_res = Hash.new
+	res.each {|date, result_array|
+		if result_array.fetch(0) == 0 then
+			fake_res[date] = 0
+		else 
+			fake_res[date] = result_array.fetch(1).to_f/result_array.fetch(0).to_f
+		end
+	}
+
+	@data1 = fake_res
+
+	res = Analytics.get_pct_of_users_who_shared_at_list_once_for_date_range(start_date,end_date)
+    fake_res = Hash.new
+	res.each {|date, result_array|
+		if result_array.fetch(0) == 0 then
+			fake_res[date] = 0
+		else 
+			fake_res[date] = result_array.fetch(1).to_f/result_array.fetch(0).to_f
+		end
+	}
+
+	@data2 = fake_res
+	@data3 = Analytics.get_distribution_of_remakes_between_users_from_date(launch_date)
+	@data4 = Analytics.get_total_views_for_story_for_date_range(start_date,end_date,0)
+	@data5 = Analytics.get_avg_session_time_for_date_range(start_date,end_date)
 	erb :analytics
 end
 

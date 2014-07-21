@@ -44,12 +44,14 @@ end
 
 def gen_session_for_user(user_id,session_start_time,session_end_time)
 	session_id = BSON::ObjectId.new
-	user_session = {_id: session_id, user_id:user_id, start_time:session_start_time, end_time: session_end_time}
+	duration_in_seconds = session_end_time - session_start_time;
+	duration_in_minutes = duration_in_seconds.to_f/60
+	user_session = {_id: session_id, user_id:user_id, start_time:session_start_time, end_time: session_end_time, duration_in_minutes: duration_in_minutes}
 	user_session_objectId = SESSIONS.save(user_session)
 end
 
 
-def gen_views_for_remake(remake_id,user_id,num_of_views_for_remake,fake_session_end)
+def gen_views_for_remake(remake_id,story_id,user_id,num_of_views_for_remake,fake_session_end)
     remake = REMAKES.find_one(_id: remake_id)
     remake_created_at = remake["created_at"]
 
@@ -60,7 +62,7 @@ def gen_views_for_remake(remake_id,user_id,num_of_views_for_remake,fake_session_
     for i in 0..num_of_views_for_remake do
     	view_start_time = Random.new.rand(remake_created_at..max_time_for_view)
     	view_id = BSON::ObjectId.new
-    	view = {_id:view_id, user_id:user_id , remake_id:remake_id, start_time:view_start_time, playback_duration: playback_duration, total_duration: total_duration}
+    	view = {_id:view_id, user_id:user_id , story_id:story_id, remake_id:remake_id, start_time:view_start_time, playback_duration: playback_duration, total_duration: total_duration}
     	view_objectId = VIEWS.save(view)
     end
 end
@@ -86,13 +88,14 @@ def gen_views_for_user(user_id,fake_session_start,fake_session_end,num_of_views)
 	
 	for remake in remakes do
 		remake_id = remake["_id"]
+		story_id = remake["story_id"]
 		if views_to_generate == 0 then
 			return #no more views to generate
 		end
 		num_of_views_for_remake = Random.new.rand(0..views_to_generate)
 		views_to_generate -= num_of_views_for_remake
 		puts "generating " + num_of_views_for_remake.to_s + " views for remake: " + remake_id.to_s
-		gen_views_for_remake(remake_id,user_id,num_of_views_for_remake,fake_session_end)
+		gen_views_for_remake(remake_id,story_id,user_id,num_of_views_for_remake,fake_session_end)
 	end
 end
 
