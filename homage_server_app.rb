@@ -981,8 +981,10 @@ post '/remake/view' do
 		client_generated_view_id = BSON::ObjectId.from_string(params[:view_id])
 		remake_id = BSON::ObjectId.from_string(params[:remake_id])
 		user_id =  BSON::ObjectId.from_string(params[:user_id])
-		
-		view = {_id:client_generated_view_id, user_id:user_id , remake_id:remake_id, start_time:Time.now}
+		remake = settings.db.collection("Remakes").find_one(remake_id)
+		story_id = remake["story_id"];
+
+		view = {_id:client_generated_view_id, user_id:user_id , remake_id:remake_id, story_id: story_id, start_time:Time.now}
 		view_objectId = views.save(view)
 		
 		logger.info "New view saved in the DB with view id " + view_objectId.to_s
@@ -1070,7 +1072,7 @@ post '/user/end' do
 		logger.info "No matching start event for stop event: " + user_session_id.to_s
 	end
 	start_time = user_session["start_time"]
-	end_time = user_session["end_time"]
+	end_time = Time.now
 	duration_in_seconds = end_time - start_time
 	duration_in_minutes = duration_in_seconds.to_f/60
 	sessions.update({_id: user_session_id},{"$set" => {duration_in_minutes: duration_in_minutes}})

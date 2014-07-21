@@ -41,7 +41,7 @@ class AnalyticsTest < MiniTest::Unit::TestCase
 
 	def test_start_stop_new_video_view
 		view_id =   "5332ecd18bb1eb2bd1000333"
-		remake_id = "5332ecd18bb1eb2bd1000444"
+		remake_id = "5385affd70b35d7ebc0000eb"
 		user_id = "5332ecd18bb1eb2bd1000777"
 		playback_event = 0
 
@@ -126,10 +126,10 @@ class AnalyticsTest < MiniTest::Unit::TestCase
 	    #	assert_nil view
 		#end
 
-		if @session then
-			SESSIONS.remove({_id: @session["_id"]})
-			session = SESSIONS.find_one(@session["_id"])
-	    	assert_nil session
-		end
+		#if @session then
+			#SESSIONS.remove({_id: @session["_id"]})
+			#session = SESSIONS.find_one(@session["_id"])
+	    	#assert_nil session
+		#end
 	end
 end
