@@ -1174,19 +1174,6 @@ get '/play/:remake_id' do
 	erb :video
 end
 
-def prepare_data_for_date_range(proc,start_date,end_date)
-	puts "preparing data between: " + start_date.iso8601 + " to: " + end_date.iso8601
-	date = start_date
-	data = Hash.new 
-	while date!=end_date do
-		value = proc.call(date,story_id)
-		next_day = Analytics.add_days(date,1)
-		data[date] = value
-		date = next_day
-	end
-	return data
-end
-
 get '/analytics' do
 
 	start_date = Time.parse("20140701Z")

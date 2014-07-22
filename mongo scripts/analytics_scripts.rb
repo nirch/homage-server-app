@@ -23,41 +23,39 @@ end
 #KPI's
 #% of shared videos out of all created movies for date
 res = Analytics.get_pct_of_shared_videos_for_date_range_out_of_all_created_movies(start_date,end_date)
-#puts res
-fake_res = Hash.new
-res.each {|date, result_array|
-	if result_array.fetch(0) == 0 then
-		fake_res[date] = 0
-	else 
-		fake_res[date] = result_array.fetch(1).to_f/result_array.fetch(0).to_f
-	end
-}
+puts "pct of shared videos out of all videos: " + res.to_s
+puts ""
 
-#puts "pct of shared videos out of all videos: " + fake_res.to_s
-#puts ""
 
 # % of users that shared at least once out of all active users for date
-#res = Analytics.get_pct_of_users_who_shared_at_list_once_for_date_range(START_DATE,END_DATE)
-#puts "pct of users sharing videos: " + res.to_s
-#puts ""
-
-# % users who made a video out of all active users for date 
-#res = Analytics.get_pct_of_users_who_created_a_video_for_day(date)
-#puts "pct of users creating movies: " + res.to_s
-#puts ""x
+res = Analytics.get_pct_of_users_who_shared_at_list_once_for_date_range(start_date,end_date)
+puts "pct of users sharing videos: " + res.to_s
+puts ""
+puts "======================================================================================"
+puts ""
 
 # number of views for story
 #puts "Turbo ski story id: " + turbo_ski_story_id.to_s
-#res = Analytics.get_total_views_for_story_for_date_range(START_DATE,END_DATE,0)
-#puts "total views for day: " + res.to_s
+res = Analytics.get_total_views_for_story_for_date_range(start_date,end_date,0)
+puts "total views for day: " + res.to_s
+puts "" 
+puts "======================================================================================"
+puts ""
 
 #distribution of movie making between users from date
-#res = Analytics.get_distribution_of_remakes_between_users_from_date(LAUNCH_DATE)
-#puts "distibution of movie making between users: " + res.to_s
+res = Analytics.get_distribution_of_remakes_between_users_from_date(launch_date)
+puts "distibution of movie making between users: " + res.to_s
+puts "" 
+puts "======================================================================================"
+puts ""
 
 #avg session time for date range
 res = Analytics.get_avg_session_time_for_date_range(start_date,end_date)
 puts res
+
+
+
+
 
 get_total_views_for_story_for_day_proc = Proc.new { |date, story_id| 
 		Analytics.get_total_views_for_story_for_day(date,story_id) 

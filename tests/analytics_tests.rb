@@ -9,6 +9,10 @@ class AnalyticsTest < MiniTest::Unit::TestCase
 	VIEWS =  DB.collection("Views")
 	SESSIONS = DB.collection("Sessions")
 
+	@@start_date = Time.parse("2014070Z")
+	@@end_date = Time.parse("20140715Z")
+	@@launch_date = Time.parse("20140430")
+
 	def app
 		Sinatra::Application
 	end
@@ -113,12 +117,14 @@ class AnalyticsTest < MiniTest::Unit::TestCase
 	    assert @session
 	end
 
+
+
 	def teardown
-		if @share then
-			SHARES.remove({_id: @share["_id"]})
-			share = SHARES.find_one(@share["_id"])
-	    	assert_nil share
-		end
+		#if @share then
+		#	SHARES.remove({_id: @share["_id"]})
+		#	share = SHARES.find_one(@share["_id"])
+	    #	assert_nil share
+		#end
 
 		#if @view then
 		#	VIEWS.remove({_id: @view["_id"]})
