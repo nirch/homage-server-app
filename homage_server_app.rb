@@ -1049,7 +1049,7 @@ post '/story/view' do
 	end
 end
 
-post '/user/begin' do
+post '/user/session_begin' do
 	client_generated_session_id = BSON::ObjectId.from_string(params[:session_id])
 	user_id =  BSON::ObjectId.from_string(params[:user_id])
 
@@ -1062,7 +1062,23 @@ post '/user/begin' do
 	return user_session.to_json
 end
 
-post '/user/end' do
+post '/user/session_update' do
+	user_session_id = BSON::ObjectId.from_string(params[:session_id])
+	new_user_id =  BSON::ObjectId.from_string(params[:user_id])
+
+	sessions = settings.db.collection("Sessions")
+	user_session = sessions.find_one(user_session_id)
+	if !user_session then
+		logger.info "No matching start event for stop event: " + user_session_id.to_s
+	end
+
+	sessions.update({_id: user_session_id},{"$set" => {user_id: new_user_id}})
+	logger.info "user session updated with session id " + user_session_id.to_s
+	user_session = sessions.find_one(user_session_id)
+	return user_session.to_json
+end
+
+post '/user/session_end' do
 	user_session_id = BSON::ObjectId.from_string(params[:session_id])
 	user_id =  BSON::ObjectId.from_string(params[:user_id])
 
@@ -1177,31 +1193,15 @@ get '/analytics' do
 	end_date   = Time.parse("20140715Z")
 	launch_date = Time.parse("20140430Z")
 	story_id = "5356dc94ebad7c3bf100015d"
-	#story_id = BSON::ObjectId.from_string(turbo_ski_story_id.to_s)
 	Analytics.init_db(settings.db)
 
-	get_pct_of_shared_videos_proc = Proc.new { |date| 
-		Analytics.get_pct_of_shared_videos_for_day_out_of_all_created_movies(date) 
-	}
-
-	get_pct_of_sharing_user_proc = Proc.new { |date| 
-		Analytics.get_pct_of_users_who_shared_at_list_once_for_day(date) 
-	}
-
-	get_pct_of_users_creating_videos_proc = Proc.new { |date| 
-		Analytics.get_pct_of_users_who_created_a_video_for_day(date) 
-	}
-
-	get_total_views_for_story_for_day_proc = Proc.new { |date, story_id| 
-		Analytics.get_total_views_for_story_for_day(date,story_id) 
-	}
-
+	######
+	
 	@heading1 = "% of shared videos out of all created movies from: " + start_date.iso8601 + "to: " + end_date.iso8601
-	@heading2 = "% of users that shared at least once out of all active users from: " + start_date.iso8601 + "to: " + end_date.iso8601
-	@heading3 = "distribution of movie making between users from date: " + launch_date.iso8601
-	@heading4 = "views for story: " 
-	@heading5 = "avg session time between dates: " + start_date.iso8601 + " - " + end_date.iso8601
+
 	res = Analytics.get_pct_of_shared_videos_for_date_range_out_of_all_created_movies(start_date,end_date)
+	
+	#TODO: remove 
 	fake_res = Hash.new
 	res.each {|date, result_array|
 		if result_array.fetch(0) == 0 then
@@ -1212,6 +1212,10 @@ get '/analytics' do
 	}
 
 	@data1 = fake_res
+
+	######
+	
+	@heading2 = "% of users that shared at least once out of all active users from: " + start_date.iso8601 + "to: " + end_date.iso8601
 
 	res = Analytics.get_pct_of_users_who_shared_at_list_once_for_date_range(start_date,end_date)
     fake_res = Hash.new
@@ -1224,9 +1228,18 @@ get '/analytics' do
 	}
 
 	@data2 = fake_res
+
+    #####
+
+	@heading3 = "distribution of movie making between users from date: " + launch_date.iso8601
 	@data3 = Analytics.get_distribution_of_remakes_between_users_from_date(launch_date)
+
+	@heading4 = "views for story: " 
 	@data4 = Analytics.get_total_views_for_story_for_date_range(start_date,end_date,0)
+
+	@heading5 = "avg session time between dates: " + start_date.iso8601 + " - " + end_date.iso8601
 	@data5 = Analytics.get_avg_session_time_for_date_range(start_date,end_date)
+
 	erb :analytics
 end
 

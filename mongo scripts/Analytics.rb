@@ -54,72 +54,6 @@ class Analytics
    	return res
    end
 
-   def self.get_shares_for_date_range(start_date,end_date)
-    query_end_date = add_days(end_date,1)
-   	total_shares = @@shares_collection.find(created_at:{"$gte"=>start_date, "$lt"=>query_end_date})
-   	return total_shares
-   end
-
-   def self.get_number_of_remakes_shared_at_least_once_for_date_rnage(start_date,end_date)
-   	total_shares = get_shares_for_day(start_date,end_date)
-      puts "total shares for data range " + start_date.iso8601 + " - " + end_date.iso8601 + ": " + total_shares.count.to_s
-      unique_shares = unique_shares_by(total_shares,"remake_id")
-      puts "to " + unique_shares.count.to_s + " unique remakes"
-   	return unique_shares.count
-   end
-
-   def self.get_remakes_created_for_date_range(start_date,end_date)
-   	query_end_date = add_days(end_date,1)
-   	total_remakes = @@remakes_collection.find(created_at:{"$gte"=>start_date, "$lt"=>query_end_date}, status: 3)
-   end
-
-   def self.get_all_done_remakes 
-   	return $test_remakes.find(status: 3)
-   end
-
-   def self.get_number_of_users_who_shared_at_list_once_for_date_range(start_date,end_date)
-     total_shares = get_shares_for_day(start_date,end_date)
-     return unique_shares_by(total_shares,"user_id").count
-   end
-
-   def self.get_number_of_users_created_at_least_one_remake_for_date_range(start_date,end_date)
-     query_end_date = add_days(end_date,1)
-     remakes = @@remakes_collection.find(created_at:{"$gte"=>start_date, "$lt"=>query_end_date}, status: 3)
-     puts "remakes made today: " + remakes.count.to_s
-     unique_remakes = unique_remakes_by(remakes,"user_id")
-     puts "from " + unique_remakes.count.to_s + " users " 
-     return unique_remakes.count
-   end
-
-   def self.get_number_of_views_for_story_for_date_range(start_date,end_date,story_id)
-      query_end_date = add_days(end_date,1)
-      views = @@views_collection.find(created_at:{"$gte"=>start_date, "$lt"=>query_end_date}, story_id: story_id)
-      return views.count
-   end
-
-   def self.get_views_for_remake_for_date_range(start_date,end_date,remake_id)
-      query_end_date = add_days(end_date,1)
-      views = @@views_collection.find(created_at:{"$gte"=>start_date, "$lt"=>query_end_date}, remake_id: remake_id)
-      return views.count
-   end
-
-   def self.get_views_for_story_for_date_range(start_date,end_date,story_id)
-      query_end_date = add_days(end_date,1)
-      views = @@views_collection.find(created_at:{"$gte"=>start_date, "$lt"=>query_end_date}, story_id: story_id)
-      return views.count
-   end
-
-   def self.get_number_of_views_for_user_for_date_range(start_date,end_date,user_id)
-     query_end_date = add_days(end_date,1)
-     views = @@views_collection.find(created_at:{"$gte"=>start_date, "$lt"=>query_end_date}, user_id: user_id)
-     return views.count
-   end
-
-   def self.get_number_of_active_users_for_date_range(start_date,end_date)
-    query_end_date = add_days(end_date,1)
-    sessions = @@sessions_collection.find(start_time: {"$gte"=>start_date, "$lt"=>query_end_date})
-    return sessions.count
-   end
 
    def self.get_number_of_failed_remakes_for_date_range(start_date,end_date)
      query_end_date = add_days(end_date,1)
@@ -141,160 +75,40 @@ class Analytics
 
    
   def self.get_remakes_sorted_by_date_buckets(start_date,end_date)
-    date_range = {"$match" => 
-      {
-        created_at:{"$gte"=>start_date, "$lt"=>add_days(end_date,1)}
-      }
-    }
+    date_range = {"$match" => { created_at:{"$gte"=>start_date, "$lt"=>add_days(end_date,1)}}}
 
-    proj1={"$project" => {
-      "_id" => 1,
-      "created_at" => 1,
-      "h" => {
-        "$hour" => "$created_at"
-        },
-        "m" => {
-          "$minute" => "$created_at"
-          },
-          "s" => {
-            "$second" => "$created_at"
-            },
-            "ml" => {
-              "$millisecond" =>  "$created_at"
-            }
-          }
-        }
+    proj1={"$project" => {"_id" => 1, "created_at" => 1, 
+      "h" => {"$hour" => "$created_at"}, "m" => {"$minute" => "$created_at"}, "s" => {"$second" => "$created_at"}, "ml" => {"$millisecond" =>  "$created_at"}}}
 
-        proj2={"$project" => {
-          "_id" => 1,
-          "created_at" => {
-            "$subtract" => [
-              "$created_at",
-              {
-                "$add" => [
-                  "$ml",
-                  {
-                    "$multiply" => [
-                      "$s",
-                      1000
-                    ]
-                    },
-                    {
-                      "$multiply" => [
-                        "$m",
-                        60,
-                        1000
-                      ]
-                      },
-                      {
-                        "$multiply" => [
-                          "$h",
-                          60,
-                          60,
-                          1000
-                        ]
-                      }
-                    ]
-                  }
-                ]
-              }
-            }
-          }
+    proj2={"$project" => {"_id" => 1, "created_at" => {"$subtract" => 
+      ["$created_at", {"$add" => ["$ml",  {"$multiply" => ["$s", 1000]},  {"$multiply" => ["$m",60,1000]}, {"$multiply" => ["$h", 60, 60, 1000]}]}]}}}
 
-          group={"$group" => {
-            "_id" => {
-              "date" => "$created_at"
-              },
-              "list" => {
-                  "$push" => "$_id"
-                }
-              }
-          }
-          res = @@remakes_collection.aggregate([date_range,proj1,proj2,group])
-          return res
-    end
+    group={"$group" => { "_id" => { "date" => "$created_at"}, "list" => {"$push" => "$_id"}}}
+                  
+    res = @@remakes_collection.aggregate([date_range,proj1,proj2,group])
+    return res
+  end
 
-    def self.get_movie_making_users_sorted_by_date_buckets(start_date,end_date)
-      date_range = {"$match" => 
-      {
-        created_at:{"$gte"=>start_date, "$lt"=>add_days(end_date,1)}
-      }
-    }
+  def self.get_movie_making_users_sorted_by_date_buckets(start_date,end_date)
+    date_range = {"$match" => { created_at:{"$gte"=>start_date, "$lt"=>add_days(end_date,1)}}}
 
-    proj1={"$project" => {
-      "_id" => 0,
-      "created_at" => 1,
-      "user_id" => 1,
-      "h" => {
-        "$hour" => "$created_at"
-        },
-        "m" => {
-          "$minute" => "$created_at"
-          },
-          "s" => {
-            "$second" => "$created_at"
-            },
-            "ml" => {
-              "$millisecond" =>  "$created_at"
-            }
-          }
-        }
+    proj1={"$project" => {"_id" => 0, "created_at" => 1, "user_id" => 1,
+      "h" => {"$hour" => "$created_at"}, "m" => {"$minute" => "$created_at"}, "s" => {"$second" => "$created_at"}, "ml" => {"$millisecond" =>  "$created_at"}}}
 
-        proj2={"$project" => {
-          "_id" => 0,
-          "user_id" => "$user_id",
-          "created_at" => {
-            "$subtract" => [
-              "$created_at",
-              {
-                "$add" => [
-                  "$ml",
-                  {
-                    "$multiply" => [
-                      "$s",
-                      1000
-                    ]
-                    },
-                    {
-                      "$multiply" => [
-                        "$m",
-                        60,
-                        1000
-                      ]
-                      },
-                      {
-                        "$multiply" => [
-                          "$h",
-                          60,
-                          60,
-                          1000
-                        ]
-                      }
-                    ]
-                  }
-                ]
-              }
-            }
-          }
+    proj2={"$project" => {"_id" => 0, "user_id" => "$user_id", "created_at" => {"$subtract" => 
+      ["$created_at", {"$add" => ["$ml",  {"$multiply" => ["$s", 1000]},  {"$multiply" => ["$m",60,1000]}, {"$multiply" => ["$h", 60, 60, 1000]}]}]}}}
 
-          group={"$group" => {
-            "_id" => {
-              "date" => "$created_at",
-              },
-              "list" => {
-                  "$push" => "$user_id"
-                }
-              }
-          }
-          res = @@remakes_collection.aggregate([date_range,proj1,proj2,group])
-          return res
-    end
+    group={"$group" => { "_id" => { "date" => "$created_at"}, "list" => {"$push" => "$user_id"}}}
+    
+    res = @@remakes_collection.aggregate([date_range,proj1,proj2,group])
+    return res
+    
+  end
 
 
    #KPI's
    # % of shared videos out of all created movies for date
   def self.get_pct_of_shared_videos_for_date_range_out_of_all_created_movies(start_date,end_date)
-    puts "==== calculating pct of shared videos out of all created_movie from date: " + start_date.iso8601 + " to " + end_date.iso8601 + "===="
     remakes_sorted_by_date_buckets = get_remakes_sorted_by_date_buckets(start_date,end_date)
   
     # sort remakes to date buckets
@@ -303,13 +117,7 @@ class Analytics
       remake_bucket_by_dates[date["_id"]["date"]] = date["list"]
     end 
 
-    group = {"$group"=> 
-      {
-        "_id" => {
-          "remake_id" => "$remake_id"
-        }
-      } 
-    }
+    group = {"$group"=> {"_id" => {"remake_id" => "$remake_id"}}}
 
     res = @@shares_collection.aggregate([group])
 
@@ -342,45 +150,37 @@ class Analytics
     return final_data
   end
 
-   # % of users that shared at list once for day out of all of active users
-   def self.get_pct_of_users_who_shared_at_list_once_for_date_range(start_date,end_date)
-      users_sorted_by_date_buckets = get_movie_making_users_sorted_by_date_buckets(start_date,end_date)
-      
-      # sort remakes to date buckets
-      user_buckets_by_dates = Hash.new
-      for date in users_sorted_by_date_buckets do
-        user_buckets_by_dates[date["_id"]["date"]] = date["list"].uniq
-      end
-      
-     
+  # % of users that shared at list once for day out of all of active users
+  def self.get_pct_of_users_who_shared_at_list_once_for_date_range(start_date,end_date)
+    users_sorted_by_date_buckets = get_movie_making_users_sorted_by_date_buckets(start_date,end_date)
 
-      group = {"$group"=> 
-        {
-          "_id" => {
-          "user_id" => "$user_id"
-          }
-        } 
-      }
+    # sort remakes to date buckets
+    user_buckets_by_dates = Hash.new
+    for date in users_sorted_by_date_buckets do
+      user_buckets_by_dates[date["_id"]["date"]] = date["list"].uniq
+    end
 
-      res = @@shares_collection.aggregate([group])
+    group = {"$group"=> {"_id" => {"user_id" => "$user_id"}}}
 
-      #see which remakes have been shared in this time period
+    res = @@shares_collection.aggregate([group])
+
+    #see which remakes have been shared in this time period
       shares_for_user = Hash.new
       for share in res do
         shares_for_user[share["_id"]["user_id"]] = 1
       end
 
-      #sort remakes and shares to date buckets
-      final_data = Hash.new  
-      date = start_date
-      while date != end_date do
-        shares_for_day = 0
-        if user_buckets_by_dates[date] then
-          for user in user_buckets_by_dates[date] do
-            if shares_for_user[user] then
-              shares_for_day +=1
-            end
+    #sort remakes and shares to date buckets
+    final_data = Hash.new  
+    date = start_date
+    while date != end_date do
+      shares_for_day = 0
+      if user_buckets_by_dates[date] then
+        for user in user_buckets_by_dates[date] do
+          if shares_for_user[user] then
+            shares_for_day +=1
           end
+        end
       end
 
       if user_buckets_by_dates[date] then 
@@ -390,24 +190,11 @@ class Analytics
       end 
       date = add_days(date,1)
     end
-    return final_data
-    
-end
+    return final_data   
+  end
 
-   # % users who made a video out of all active users for date 
-   #def self.get_pct_of_users_who_created_a_video_for_day(date)
-    #  puts "calculating pct of users who created at least one remake out of all active users for date: " + date.iso8601
-   	#users_created_remake = get_number_of_users_created_at_least_one_remake_for_day(date)
-    #  puts "users created at least one remake: " + users_created_remake.to_s
-   	#active_users = get_number_of_active_users_for_day(date)
-    #  puts "active users today: " + active_users.to_s 
-   	#if active_users != 0 then 
-    #     return users_created_remake.to_f / active_users.to_f
-    #  end
-    #  return 0  
-   #end
-
-   def self.get_total_views_for_story_for_date_range(start_date,end_date,story_id)  
+  
+  def self.get_total_views_for_story_for_date_range(start_date,end_date,story_id)  
       stories = Array.new   
       if story_id == 0 then 
         stories = @@stories_collection.find({active: true}, {fields: {}}).flat_map(&:values)
@@ -418,82 +205,17 @@ end
       end
       
       remakes = @@remakes_collection.find({created_at:{"$gte"=>start_date, "$lt"=>add_days(end_date,1)}, story_id: {"$in"=>stories}, share_link: {"$exists"=>true}}, {fields: {}}).flat_map(&:values)
-      match = {"$match" => 
-      {
-        start_time:{"$gte"=>start_date, "$lt"=>add_days(end_date,1)}, story_id: {"$in"=> stories}
-      }
-      }
+      match = {"$match" => {start_time:{"$gte"=>start_date, "$lt"=>add_days(end_date,1)}, story_id: {"$in"=> stories}}}
       
-      proj1={"$project" => {
-      "_id" => 1,
-      "start_time" => 1,
-      "remake_id" => 1,
-      "story_id" => 1,
-      "h" => {
-        "$hour" => "$start_time"
-        },
-        "m" => {
-          "$minute" => "$start_time"
-          },
-          "s" => {
-            "$second" => "$start_time"
-            },
-            "ml" => {
-              "$millisecond" =>  "$start_time"
-            }
-          }
-        }
+      proj1={"$project" => { "_id" => 1, "start_time" => 1, "remake_id" => 1, "story_id" => 1,
+         "h" => {"$hour" => "$start_time"}, "m" => {"$minute" => "$start_time"}, "s" => {"$second" => "$start_time"}, "ml" => {"$millisecond" =>  "$start_time"}}}
 
-        proj2={"$project" => {
-          "_id" => 1,
-          "story_id" => 1,
-          "remake_id" => 1,
-          "start_time" => {
-            "$subtract" => [
-              "$start_time",
-              {
-                "$add" => [
-                  "$ml",
-                  {
-                    "$multiply" => [
-                      "$s",
-                      1000
-                    ]
-                    },
-                    {
-                      "$multiply" => [
-                        "$m",
-                        60,
-                        1000
-                      ]
-                      },
-                      {
-                        "$multiply" => [
-                          "$h",
-                          60,
-                          60,
-                          1000
-                        ]
-                      }
-                    ]
-                  }
-                ]
-              }
-            }
-          }
+      proj2={"$project" => { "_id" => 1, "story_id" => 1, "remake_id" => 1, "start_time" => {"$subtract" => 
+      ["$start_time", {"$add" => ["$ml",  {"$multiply" => ["$s", 1000]},  {"$multiply" => ["$m",60,1000]}, {"$multiply" => ["$h", 60, 60, 1000]}]}]}}}
 
-          group={"$group" => {
-            "_id" => {
-              "date" => "$start_time",
-              "story_id" => "$story_id"
-              },
-              "count" => {
-                  "$sum" => 1
-                }
-              }
-          }
-          
-
+      group={"$group" => {"_id" => {"date" => "$start_time", "story_id" => "$story_id"}, "count" => {"$sum" => 1}}}
+                
+      #init data model 
       views_for_dates = Hash.new
       for story_id in stories do
         views_for_dates[story_id] = Hash.new
@@ -504,24 +226,17 @@ end
         end
       end    
 
-      for story in stories do
-        #story_bson = BSON::ObjectId.from_string(story)
-
-      end
-
       views = @@views_collection.aggregate([match,proj1,proj2,group])
-      puts views.to_a
       
+      #fill data model
       for view in views do
         story_id = view["_id"]["story_id"]
-        puts "story_id: " + story_id.to_s
         date = view["_id"]["date"]
-        puts "date:" + date.iso8601
         count = view["count"]
-        puts "count: " + count.to_s
         views_for_dates[story_id][date] = count 
       end
 
+      #post process for visualization
       final_data = Array.new
       for story_id in stories do
         story_hash = { name: story_id.to_s, data: views_for_dates[story_id] } 
@@ -530,25 +245,11 @@ end
       return final_data 
     end
 
-
-
   def self.get_distribution_of_remakes_between_users_from_date(start_date)
-    match = {"$match" => 
-    {
-      created_at:{"$gte"=>start_date}, share_link: {"$exists"=>true}
-    }
-  }
+    match = {"$match" => {created_at:{"$gte"=>start_date}, share_link: {"$exists"=>true}}}
     
-    group={"$group" => {
-            "_id" => {
-              "user_id" => "$user_id",
-              },
-              "count" => {
-                  "$sum" => 1
-                }
-              }
-    }
-    
+    group={"$group" => { "_id" => {"user_id" => "$user_id"}, "count" => {"$sum" => 1}}}
+                
     users = @@remakes_collection.aggregate([match,group])
 
     final_data = Hash.new
@@ -557,82 +258,20 @@ end
       remake_count = user["count"]
       final_data[user_id] = remake_count
     end
-    puts final_data
     return final_data
   end
 
   def self.get_avg_session_time_for_date_range(start_date,end_date)
-     match = {"$match" => 
-    {
-      start_time:{"$gte"=>start_date, "$lt"=>add_days(end_date,1)}
-    }
-  }
-   proj1={"$project" => {
-      "_id" => 1,
-      "start_time" => 1,
-      "duration_in_minutes" => 1,
-      "h" => {
-        "$hour" => "$start_time"
-        },
-        "m" => {
-          "$minute" => "$start_time"
-          },
-          "s" => {
-            "$second" => "$start_time"
-            },
-            "ml" => {
-              "$millisecond" =>  "$start_time"
-            }
-          }
-        }
+    match = {"$match" => {start_time:{"$gte"=>start_date, "$lt"=>add_days(end_date,1)}}}
+   
+    proj1={"$project" => {"_id" => 1, "start_time" => 1, "duration_in_minutes" => 1, 
+      "h" => {"$hour" => "$start_time"}, "m" => {"$minute" => "$start_time"}, "s" => {"$second" => "$start_time"}, "ml" => {"$millisecond" =>  "$start_time"}}}
 
-        proj2={"$project" => {
-          "_id" => 1,
-          "duration_in_minutes" => 1,
-          "remake_id" => 1,
-          "start_time" => {
-            "$subtract" => [
-              "$start_time",
-              {
-                "$add" => [
-                  "$ml",
-                  {
-                    "$multiply" => [
-                      "$s",
-                      1000
-                    ]
-                    },
-                    {
-                      "$multiply" => [
-                        "$m",
-                        60,
-                        1000
-                      ]
-                      },
-                      {
-                        "$multiply" => [
-                          "$h",
-                          60,
-                          60,
-                          1000
-                        ]
-                      }
-                    ]
-                  }
-                ]
-              }
-            }
-          }
+    proj2={"$project" => {"_id" => 1, "duration_in_minutes" => 1, "remake_id" => 1, "start_time" => {"$subtract" => 
+      ["$start_time", {"$add" => ["$ml",  {"$multiply" => ["$s", 1000]},  {"$multiply" => ["$m",60,1000]}, {"$multiply" => ["$h", 60, 60, 1000]}]}]}}}
 
-          group={"$group" => {
-            "_id" => {
-              "date" => "$start_time",
-              },
-              "avg_session_time" => {
-                  "$avg" => "$duration_in_minutes"
-                }
-              }
-          }
+    group={"$group" => {"_id" => {"date" => "$start_time"}, "avg_session_time" => {"$avg" => "$duration_in_minutes"}}}
+                
     dates = @@sessions_collection.aggregate([match,proj1,proj2,group])
     
     final_data = Hash.new
