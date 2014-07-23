@@ -12,8 +12,18 @@ prod_users = prod_db.collection("Users")
 prod_remakes = prod_db.collection("Remakes")
 
 
+<<<<<<< HEAD
 puts File.dirname(File.expand_path(__FILE__)) + "/logs"
 #puts File.join(File.expand_path(__FILE__), '..', 'logs')
+=======
+great_remakes = prod_remakes.find({story_id: BSON::ObjectId.from_string("535e8fc981360cd22f0003d4"), grade:{"$gte"=>12}})
+
+for remake in great_remakes do
+	puts remake["_id"]
+end
+
+#puts File.stat("/Users/tomer/Desktop/Delete/Old Spice_v01_test.mp4").world_writable?
+>>>>>>> 7f7cdbcd986b326919799dc2439dafe2aa86186d
 
 # date_input = "20140509"
 # from_date = Time.parse(date_input)
