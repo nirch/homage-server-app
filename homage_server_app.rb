@@ -10,11 +10,13 @@ require 'sinatra/security'
 require 'houston'
 require 'time'
 require 'chartkick'
+require 'aws-sdk'
 require File.expand_path '../mongo scripts/Analytics.rb', __FILE__
 
 configure do
 	# Global configuration (regardless of the environment)
-
+	aws_config = {access_key_id: "AKIAJTPGKC25LGKJUCTA", secret_access_key: "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"}
+	AWS.config(aws_config)
 end
 
 configure :production do
