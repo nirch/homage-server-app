@@ -46,6 +46,10 @@ configure :test do
 	APN.certificate = File.read(File.expand_path("../certificates/homage_push_notification_prod.pem", __FILE__))
 	APN.passphrase = "homage"
 
+	# Process Footage Queue
+	process_footage_queue_url = "https://sqs.us-east-1.amazonaws.com/509268258673/ProcessFootageQueueTest"
+    set :process_footage_queue, AWS::SQS.new.queues[process_footage_queue_url]
+
 	# Test AE server connection
 	set :homage_server_foreground_uri, URI.parse("http://54.83.32.172:4567/footage")
 	set :homage_server_render_uri, URI.parse("http://54.83.32.172:4567/render")
@@ -685,7 +689,7 @@ post '/footage' do
 		take_id = ""
 	end
 
-	logger.debug "Footage " + scene_id.to_s + " of Remake " + remake_id.to_s + " with take id " + take_id + " uploaded and now will be processed"
+	logger.info "Footage " + scene_id.to_s + " of Remake " + remake_id.to_s + " with take id " + take_id + " uploaded and now will be processed"
 
 	new_footage(remake_id, scene_id, take_id)
 
@@ -722,21 +726,36 @@ def new_footage (remake_id, scene_id, take_id)
 
 	# Updating the status of this remake to in progress
 	remakes.update({_id: remake_id}, {"$set" => {status: RemakeStatus::InProgress}})
+	remake = remakes.find_one(remake_id)
 
-	# Updating the status of this footage to uploaded
-	result = remakes.update({_id: remake_id, "footages.scene_id" => scene_id}, {"$set" => {"footages.$.status" => FootageStatus::Uploaded}})
-	#logger.debug "DB Result: " + result.to_s
-	logger.info "Footage status updated to Uploaded (1) for remake <" + remake_id.to_s + ">, footage <" + scene_id.to_s + ">"
+	if is_latest_take(remake, scene_id, take_id) then
+		# Updating the status of this footage to uploaded
+		result = remakes.update({_id: remake_id, "footages.scene_id" => scene_id}, {"$set" => {"footages.$.status" => FootageStatus::Uploaded}})
 
-	Thread.new{
-		# Running the foreground extraction algorithm
-		#foreground_extraction remake_id, scene_id
-		### Call honage-server-foreground
+		logger.info "Footage status updated to Uploaded (1) for remake <" + remake_id.to_s + ">, footage <" + scene_id.to_s + ">"
 
-		logger.info "Calling homage-server-foreground"
-		response = Net::HTTP.post_form(settings.homage_server_foreground_uri, {"remake_id" => remake_id.to_s, "scene_id" => scene_id.to_s, "take_id" => take_id})
-		logger.debug "Response from homage-server-foreground" + response.to_s
-	}
+		# Sending a message to process the new footage
+		message = {remake_id: remake_id.to_s, scene_id: scene_id.to_s, take_id: take_id}
+		settings.process_footage_queue.send_message(message.to_json)
+	else
+		# if this is not the latest take, ignoring the call
+		logger.info "Ignoring the request since this is not the latest take for remake <" + remake_id.to_s + ">, footage <" + scene_id.to_s + ">"
+	end
+end
+
+def is_latest_take(remake, scene_id, take_id)
+	db_take_id = remake["footages"][scene_id - 1]["take_id"]
+	if db_take_id then
+		if db_take_id == take_id then
+			return true
+		else
+			logger.info "Not the latest take for remake <" + remake_id.to_s + ">, footage <" + scene_id.to_s + ">. DB take_id <" + db_take_id + "> while given take_id <" + take_id + ">"
+			return false
+		end
+	else
+		# No take_id then assuiming this is the latest one
+		return true
+	end
 end
 
 def is_remake_ready (remake_id)
