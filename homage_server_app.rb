@@ -604,6 +604,8 @@ end
 get '/remakes/story/:story_id' do
 	# input
 	story_id = BSON::ObjectId.from_string(params[:story_id])
+	skip = params[:skip].to_i if params[:skip] # Optional
+	limit = params[:limit].to_i if params[:limit] # Optional
 
 	logger.info "Getting remakes for story " + story_id.to_s
 
@@ -624,7 +626,10 @@ get '/remakes/story/:story_id' do
 	end
 
 	# Getting all the completed remakes of the public users
-	remakes_docs = settings.db.collection("Remakes").find({story_id:{"$in" => story_ids}, status: RemakeStatus::Done, user_id:{"$in" => public_users}});
+	options = Hash.new
+	options[:skip] = skip if skip
+	options[:limit] = limit if limit
+	remakes_docs = settings.db.collection("Remakes").find({story_id:{"$in" => story_ids}, status: RemakeStatus::Done, user_id:{"$in" => public_users}}, options);
 
 	remakes_json_array = Array.new
 	for remake_doc in remakes_docs do
