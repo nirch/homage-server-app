@@ -8,11 +8,7 @@ class AnalyticsTest < MiniTest::Unit::TestCase
 	SHARES = DB.collection("Shares")
 	VIEWS =  DB.collection("Views")
 	SESSIONS = DB.collection("Sessions")
-
-	@@start_date = Time.parse("2014070Z")
-	@@end_date = Time.parse("20140715Z")
-	@@launch_date = Time.parse("20140430")
-
+	
 	def app
 		Sinatra::Application
 	end

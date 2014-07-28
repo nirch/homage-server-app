@@ -214,7 +214,7 @@ class Analytics
       views_for_dates[story_id][date] = count 
     end
 
-      #post process for visualization
+    #post process for visualization
     final_data = Array.new
     for story_id in stories do
       story_hash = { name: story_id.to_s, data: views_for_dates[story_id] } 
@@ -302,7 +302,6 @@ class Analytics
  
   def self.get_avg_session_time_for_date_range(start_date,end_date)
     avg_session_time_for_date = self.get_avg_session_time_for_date(start_date,end_date)
-    puts avg_session_time_for_date
     final_data = get_data_avg_session_time(avg_session_time_for_date)
     return final_data
   end

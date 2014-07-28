@@ -1088,12 +1088,16 @@ post '/user/session_end' do
 		logger.info "No matching start event for stop event: " + user_session_id.to_s
 	end
 	start_time = user_session["start_time"]
-	end_time = Time.now
-	duration_in_seconds = end_time - start_time
-	duration_in_minutes = duration_in_seconds.to_f/60
-	sessions.update({_id: user_session_id},{"$set" => {duration_in_minutes: duration_in_minutes}})
-	logger.info "user session updated with session id " + user_session_id.to_s
-	user_session = sessions.find_one(user_session_id)
+	if user_session["duration_in_minutes"] then
+		logger.warning "user session with session id: " + user_session_id.to_s + " had already finished once. this is bad. ignoring the second finish event"
+	else
+		end_time = Time.now
+		duration_in_seconds = end_time - start_time
+		duration_in_minutes = duration_in_seconds.to_f/60
+		sessions.update({_id: user_session_id},{"$set" => {duration_in_minutes: duration_in_minutes}})
+		logger.info "user session finished with session id " + user_session_id.to_s
+		user_session = sessions.find_one(user_session_id)
+	end
 	return user_session.to_json
 end
 
