@@ -29,6 +29,10 @@ configure :production do
 	APN.certificate = File.read(File.expand_path("../certificates/homage_push_notification_prod.pem", __FILE__))
 	APN.passphrase = "homage"
 
+	# Process Footage Queue
+	process_footage_queue_url = "https://sqs.us-east-1.amazonaws.com/509268258673/ProcessFootageQueue"
+    set :process_footage_queue, AWS::SQS.new.queues[process_footage_queue_url]
+
 	# Production AE server connection
 	set :homage_server_foreground_uri, URI.parse("http://homage-render-prod-elb-882305239.us-east-1.elb.amazonaws.com:4567/footage")
 	set :homage_server_render_uri, URI.parse("http://homage-render-prod-elb-882305239.us-east-1.elb.amazonaws.com:4567/render")
