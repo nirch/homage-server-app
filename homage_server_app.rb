@@ -1120,7 +1120,7 @@ post '/user/session_end' do
 		end_time = Time.now
 		duration_in_seconds = end_time - start_time
 		duration_in_minutes = duration_in_seconds.to_f/60
-		sessions.update({_id: user_session_id},{"$set" => {duration_in_minutes: duration_in_minutes}})
+		sessions.update({_id: user_session_id},{"$set" => {duration_in_minutes: duration_in_minutes.round(2)}})
 		logger.info "user session finished with session id " + user_session_id.to_s
 		user_session = sessions.find_one(user_session_id)
 	end
