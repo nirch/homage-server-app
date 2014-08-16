@@ -118,19 +118,40 @@ end
 
 # Get all stories
 get '/stories' do
-	stories_collection = settings.db.collection("Stories")
-	stories_docs = stories_collection.find({}, {fields: {after_effects: 0}}).sort({order_id: 1})
+	# input
+	skip = params[:skip].to_i if params[:skip] # Optional
+	limit = params[:limit].to_i if params[:limit] # Optional
+	remakes_num = params[:remakes].to_i if params[:remakes] # Optional
+
+	stories = settings.db.collection("Stories").find({}, {fields: {after_effects: 0}}).sort({order_id: 1})
+	stories = stories.skip(skip) if skip
+	stories = stories.limit(limit) if limit
+
+	# Creating an array of all the public users (to use when getting the top remakes)
+	if remakes_num && remakes_num > 0 then
+		public_users_cursor = settings.db.collection("Users").find({is_public:true})
+		public_users = Array.new
+		for user in public_users_cursor do
+			public_users.push(user["_id"])
+		end
+	end
 
 	stories_json_array = Array.new
-	for story_doc in stories_docs do
-		stories_json_array.push(story_doc.to_json)
+	for story in stories do
+		# Adding the remakes per story
+		if remakes_num && remakes_num > 0 then
+			story_remakes = settings.db.collection("Remakes").find({story_id:story["_id"], status: RemakeStatus::Done, user_id:{"$in" => public_users}, grade:{"$ne" => -1}}).sort(grade:-1).limit(remakes_num);
+			story[:remakes] = story_remakes.to_a
+		end
+
+		stories_json_array.push(story.to_json)
 	end
 
 	logger.info "Returning " + stories_json_array.count.to_s + " stories"
 
-	stories = "[" + stories_json_array.join(",") + "]"
-	# stories = JSON[stories_docs]
+	stories_result = "[" + stories_json_array.join(",") + "]"
 end
+
 
 # Returns a given story id
 get '/story/:story_id' do
@@ -630,10 +651,9 @@ get '/remakes/story/:story_id' do
 	end
 
 	# Getting all the completed remakes of the public users
-	options = Hash.new
-	options[:skip] = skip if skip
-	options[:limit] = limit if limit
-	remakes_docs = settings.db.collection("Remakes").find({story_id:{"$in" => story_ids}, status: RemakeStatus::Done, user_id:{"$in" => public_users}}, options);
+	remakes_docs = settings.db.collection("Remakes").find({story_id:{"$in" => story_ids}, status: RemakeStatus::Done, user_id:{"$in" => public_users}, grade:{"$ne" => -1}}).sort(grade:-1);
+	remakes_docs = remakes_docs.skip(skip) if skip
+	remakes_docs = remakes_docs.limit(limit) if limit
 
 	remakes_json_array = Array.new
 	for remake_doc in remakes_docs do
