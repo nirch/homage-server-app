@@ -6,6 +6,7 @@ end_date = Time.parse("20140715Z")
 launch_date = Time.parse("20140430")
 turbo_ski_story_id = "5356dc94ebad7c3bf100015d"
 
+#db_connection = Mongo::MongoClient.from_uri("mongodb://Homage:homageIt12@troup.mongohq.com:10057/Homage_Prod")
 DB = Mongo::MongoClient.from_uri("mongodb://Homage:homageIt12@paulo.mongohq.com:10008/Homage").db()
 Analytics.init_db(DB)
 
@@ -47,6 +48,18 @@ res = Analytics.get_distribution_of_remakes_between_users_from_date(launch_date)
 puts "distibution of movie making between users: " + res.to_s
 puts "" 
 puts "======================================================================================"
+puts ""
+
+res = Analytics.get_user_distibution_per_number_of_remakes(start_date,3)
+puts "new user distribution test:" + res.to_s
+puts ""
+puts "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+puts ""
+
+res = Analytics.get_pct_of_failed_remakes_for_date_range(start_date,end_date)
+puts "pct of failed remakes out of all remakes:" + res.to_s
+puts ""
+puts "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 puts ""
 
 #avg session time for date range

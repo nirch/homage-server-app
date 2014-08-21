@@ -55,8 +55,39 @@ class Analytics
    end
 
    
-  def self.get_remakes_sorted_by_date_buckets(start_date,end_date)
+  def self.get_good_remakes_sorted_by_date_buckets(start_date,end_date)
     match = {"$match" => { created_at:{"$gte"=>start_date, "$lt"=>add_days(end_date,1)}, share_link: {"$exists"=>true}}}
+
+    proj1={"$project" => {"_id" => 1, "created_at" => 1, 
+      "h" => {"$hour" => "$created_at"}, "m" => {"$minute" => "$created_at"}, "s" => {"$second" => "$created_at"}, "ml" => {"$millisecond" =>  "$created_at"}}}
+
+    proj2={"$project" => {"_id" => 1, "created_at" => {"$subtract" => 
+      ["$created_at", {"$add" => ["$ml",  {"$multiply" => ["$s", 1000]},  {"$multiply" => ["$m",60,1000]}, {"$multiply" => ["$h", 60, 60, 1000]}]}]}}}
+
+    group={"$group" => { "_id" => { "date" => "$created_at"}, "list" => {"$push" => "$_id"}}}
+                  
+    res = @@remakes_collection.aggregate([match,proj1,proj2,group])
+    return res
+  end
+
+  def self.get_failed_remakes_sorted_by_date_buckets(start_date,end_date)
+    match = {"$match" => { created_at:{"$gte"=>start_date, "$lt"=>add_days(end_date,1)}, render_start: {"$exists"=>true}, render_end: {"$exists"=>false}}}
+
+    proj1={"$project" => {"_id" => 1, "created_at" => 1, 
+      "h" => {"$hour" => "$created_at"}, "m" => {"$minute" => "$created_at"}, "s" => {"$second" => "$created_at"}, "ml" => {"$millisecond" =>  "$created_at"}}}
+
+    proj2={"$project" => {"_id" => 1, "created_at" => {"$subtract" => 
+      ["$created_at", {"$add" => ["$ml",  {"$multiply" => ["$s", 1000]},  {"$multiply" => ["$m",60,1000]}, {"$multiply" => ["$h", 60, 60, 1000]}]}]}}}
+
+    group={"$group" => { "_id" => { "date" => "$created_at"}, "list" => {"$push" => "$_id"}}}
+                  
+    res = @@remakes_collection.aggregate([match,proj1,proj2,group])
+    return res
+  end
+
+
+   def self.get_all_remakes_sorted_by_date_buckets(start_date,end_date)
+    match = {"$match" => { created_at:{"$gte"=>start_date, "$lt"=>add_days(end_date,1)}}}
 
     proj1={"$project" => {"_id" => 1, "created_at" => 1, 
       "h" => {"$hour" => "$created_at"}, "m" => {"$minute" => "$created_at"}, "s" => {"$second" => "$created_at"}, "ml" => {"$millisecond" =>  "$created_at"}}}
@@ -225,8 +256,50 @@ class Analytics
 
   def self.get_remakes_grouped_by_users(start_date)
     match = {"$match" => {created_at:{"$gte"=>start_date}, share_link: {"$exists"=>true}}}  
-    group={"$group" => { "_id" => {"user_id" => "$user_id"}, "count" => {"$sum" => 1}}}            
+    group = {"$group" => { "_id" => {"user_id" => "$user_id"}, "count" => {"$sum" => 1}}}            
     return @@remakes_collection.aggregate([match,group])
+  end
+
+  def self.sort_users_by_number_of_remakes(start_date)
+    match = {"$match" => {created_at:{"$gte"=>start_date}, share_link: {"$exists"=>true}}}  
+    group = {"$group" => { "_id" => {"user_id" => "$user_id"}, "count" => {"$sum" => 1}}}
+    
+    res = @@remakes_collection.aggregate([match,group])
+
+    data = Hash.new
+    for user in res do
+      user_id = user["_id"]["user_id"]
+      count = user["count"]
+      if !data[count] then
+
+        data[count] = Array.new
+      end
+      data[count].push(user_id)
+    end
+    return data
+  end  
+
+  def self.get_user_distibution_per_number_of_remakes(start_date,more_than)
+
+    data = sort_users_by_number_of_remakes(start_date)
+    
+    final_data = Hash.new
+
+    more_than_count = 0
+    
+    data.each do |key, array|
+      num_of_users = array.count
+
+      if key < more_than then
+        final_data[key] = num_of_users
+      else 
+        more_than_count += num_of_users
+      end
+    end
+
+    more_than_key = more_than.to_s + " and more" 
+    final_data[more_than_key] = more_than_count
+    return final_data
   end
 
   def self.get_data_distribution_of_movie_makers(remakes_grouped_by_users)
@@ -238,8 +311,6 @@ class Analytics
     end
     return final_data
   end
-
-  
 
   def self.get_avg_session_time_for_date(start_date,end_date)
     match = {"$match" => {start_time:{"$gte"=>start_date, "$lt"=>add_days(end_date,1)}}}
@@ -265,7 +336,7 @@ class Analytics
    # % of shared videos out of all created movies for date
   def self.get_pct_of_shared_videos_for_date_range_out_of_all_created_movies(start_date,end_date)  
     #res of this query returns all remakes for dates, sorted by date buckets: {"_id"=>{"date"=>2014-07-15 00:00:00 UTC}, "list"=>[BSON::ObjectId('53c524e670b35d0a7c00001a'), BSON::ObjectId('53c5633770b35d77a2000001')]}
-    remakes_sorted_by_date_buckets = get_remakes_sorted_by_date_buckets(start_date,end_date)
+    remakes_sorted_by_date_buckets = get_good_remakes_sorted_by_date_buckets(start_date,end_date)
     # {"_id"=>{"remake_id"=>BSON::ObjectId('53bc0a2770b35d3c590000bf')}}
     all_shared_remakes_for_dates = get_shares_grouped_by_remake_id(start_date,end_date)
     
@@ -305,7 +376,45 @@ class Analytics
     final_data = get_data_avg_session_time(avg_session_time_for_date)
     return final_data
   end
+
+  def self.get_data_pct_of_failed_remakes_per_day(start_date,end_date,failed_remakes,all_remakes)
+    failed_remakes_bucket_by_dates = Hash.new
+    all_remakes_bucket_by_dates = Hash.new
+
+    for date in failed_remakes do
+      failed_remakes_bucket_by_dates[date["_id"]["date"]] = date["list"]
+    end 
+
+    for date in all_remakes do 
+      all_remakes_bucket_by_dates[date["_id"]["date"]] = date["list"]
+    end 
+
+    #sort remakes and shares to date buckets
+    final_data = Hash.new  
+    date = start_date
+    
+    # iterate per day 
+    while date != end_date do
+      final_data[date] = []
+      if failed_remakes_bucket_by_dates[date] then
+        final_data[date] = [failed_remakes_bucket_by_dates[date].count, all_remakes_bucket_by_dates[date].count]
+      else 
+        final_data[date] = [0,0]
+      end
+      date = add_days(date,1)
+    end
+    return final_data
+  end
+
+  def self.get_pct_of_failed_remakes_for_date_range(start_date,end_date)
+    failed_remakes = get_failed_remakes_sorted_by_date_buckets(start_date,end_date)
+    all_remakes = get_all_remakes_sorted_by_date_buckets(start_date,end_date)
+
+    final_data = get_data_pct_of_failed_remakes_per_day(start_date,end_date,failed_remakes,all_remakes)
+    return final_data
+  end
 end
+
 
 
 

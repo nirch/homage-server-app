@@ -13,6 +13,8 @@ require 'chartkick'
 require 'aws-sdk'
 require File.expand_path '../mongo scripts/Analytics.rb', __FILE__
 
+current_session_ID = nil
+
 configure do
 	# Global configuration (regardless of the environment)
 	aws_config = {access_key_id: "AKIAJTPGKC25LGKJUCTA", secret_access_key: "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"}
@@ -1002,10 +1004,12 @@ post '/remake/view' do
 		client_generated_view_id = BSON::ObjectId.from_string(params[:view_id])
 		remake_id = BSON::ObjectId.from_string(params[:remake_id])
 		user_id =  BSON::ObjectId.from_string(params[:user_id])
+		orig_screen = params[:originating_screen].to_i
+
 		remake = settings.db.collection("Remakes").find_one(remake_id)
 		story_id = remake["story_id"];
 
-		view = {_id:client_generated_view_id, user_id:user_id , remake_id:remake_id, story_id: story_id, start_time:Time.now}
+		view = {_id:client_generated_view_id, user_id:user_id , remake_id:remake_id, story_id: story_id, start_time:Time.now, originating_screen:orig_screen}
 		view_objectId = views.save(view)
 		
 		logger.info "New view saved in the DB with view id " + view_objectId.to_s
@@ -1017,6 +1021,7 @@ post '/remake/view' do
 		user_id =  BSON::ObjectId.from_string(params[:user_id])
 		playback_duration = params[:playback_duration].to_i
 		total_duration = params[:total_duration].to_i
+		orig_screen = params[:originating_screen].to_i
 
 		#remakes.update({_id: remake_id}, {"$set" => {grade: grade}})
 		#users.update({_id: update_user_id}, {"$set" => {facebook: params[:facebook], email: params[:email], is_public: params[:is_public]}})
@@ -1025,7 +1030,7 @@ post '/remake/view' do
 		if !view then
 			logger.error "No matching start event for stop event: " + view_id.to_s
 		end
-		views.update({_id: view_id},{"$set" => {playback_duration: playback_duration, total_duration: total_duration}})
+		views.update({_id: view_id},{"$set" => {playback_duration: playback_duration, total_duration: total_duration, originating_screen:orig_screen}})
 		logger.info "view updated in the DB after stop with view id " + view_id.to_s
 		view = views.find_one(view_id)
 		return view.to_json
@@ -1042,8 +1047,9 @@ post '/story/view' do
 		client_generated_view_id =  BSON::ObjectId.from_string(params[:view_id])
 		story_id = BSON::ObjectId.from_string(params[:story_id])
 		user_id =  BSON::ObjectId.from_string(params[:user_id])
+		orig_screen = params[:originating_screen].to_i
 		
-		view = {_id:client_generated_view_id, user_id:user_id , story_id:story_id, start_time:Time.now}
+		view = {_id:client_generated_view_id, user_id:user_id , story_id:story_id, start_time:Time.now , originating_screen: orig_screen}
 		view_objectId = views.save(view)
 		
 		logger.info "New view saved in the DB with view id " + view_objectId.to_s
@@ -1055,6 +1061,7 @@ post '/story/view' do
 		user_id =  BSON::ObjectId.from_string(params[:user_id])
 		playback_duration = params[:playback_duration].to_i
 		total_duration = params[:total_duration].to_i
+		orig_screen = params[:originating_screen].to_i
 
 		#remakes.update({_id: remake_id}, {"$set" => {grade: grade}})
 		#users.update({_id: update_user_id}, {"$set" => {facebook: params[:facebook], email: params[:email], is_public: params[:is_public]}})
@@ -1063,7 +1070,7 @@ post '/story/view' do
 		if !view then
 			logger.error "No matching start event for stop event: " + view_id.to_s
 		end
-		views.update({_id: view_id},{"$set" => {playback_duration: playback_duration, total_duration: total_duration}})
+		views.update({_id: view_id, },{"$set" => {playback_duration: playback_duration, total_duration: total_duration, originating_screen: orig_screen}})
 		logger.info "view updated in the DB after stop with view id " + view_id.to_s
 		view = views.find_one(view_id)
 		return view.to_json
@@ -1107,13 +1114,21 @@ post '/user/session_end' do
 	user_session = sessions.find_one(user_session_id)
 	if !user_session then
 		logger.info "No matching start event for stop event: " + user_session_id.to_s
+		return
 	end
 	start_time = user_session["start_time"]
 	if user_session["duration_in_minutes"] then
-		logger.warning "user session with session id: " + user_session_id.to_s + " had already finished once. this is bad. ignoring the second finish event"
+		logger.warn "user session with session id: " + user_session_id.to_s + " had already finished once. this is bad. ignoring the second finish event"
 	else
 		end_time = Time.now
 		duration_in_seconds = end_time - start_time
+
+		#ignoring glitch sessions (short false sessions)
+		if duration_in_seconds < 30 then 
+			logger.info "user session shorter then 30 seconds. deleting"
+			sessions.remove({_id: user_session_id});
+		end
+
 		duration_in_minutes = duration_in_seconds.to_f/60
 		sessions.update({_id: user_session_id},{"$set" => {duration_in_minutes: duration_in_minutes}})
 		logger.info "user session finished with session id " + user_session_id.to_s
@@ -1251,6 +1266,24 @@ get '/analytics' do
 
 	@heading5 = "avg session time between dates: " + start_date.iso8601 + " - " + end_date.iso8601
 	@data5 = Analytics.get_avg_session_time_for_date_range(start_date,end_date)
+
+	@heading6 = "remake distibution between users by count from start_date" + start_date.iso8601
+	@data6 =  Analytics.get_user_distibution_per_number_of_remakes(start_date,3)
+
+	@heading7 = "pct of failed remakes for date range: " + start_date.iso8601 + " - " + end_date.iso8601
+	res = Analytics.get_pct_of_failed_remakes_for_date_range(start_date,end_date)
+
+	#TODO: remove 
+	fake_res = Hash.new
+	res.each {|date, result_array|
+		if result_array.fetch(0) == 0 then
+			fake_res[date] = 0
+		else 
+			fake_res[date] = result_array.fetch(0).to_f/result_array.fetch(1).to_f
+		end
+	}
+
+	@data7 = fake_res
 
 	erb :analytics
 end
