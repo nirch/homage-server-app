@@ -6,6 +6,11 @@ require 'open-uri'
 # input
 #remake_id = BSON::ObjectId.from_string("5380834b0be044412f000039")
 #download_folder = "C:/Development/Homage/Remakes/" + remake_id.to_s + "/"
+
+if !ARGV[0] || !ARGV[1] then 
+	puts "usage: download_remake_s3 {-p|-t} {-remake=<remake_id>|-date=YYYYMMDD} [-folder=<folder>]"
+end
+
 puts "Production or Test? (p/t)"
 env = gets.chomp
 if env == "p" || env == "P" then

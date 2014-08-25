@@ -30,7 +30,6 @@
 		}
 	</style>
 
-
 	<!-- Google Analytics (only if in production) -->
 	<% if ENV['RACK_ENV'] == "production" then %>
 		<script>
@@ -42,68 +41,7 @@
 			ga('create', 'UA-46293158-1', 'auto');
 			ga('send', 'pageview');
 		</script>
-
-		<script>
-			sublime.ready(function() {
-			  sublime.player('0').on({
-			    start: trackVideoStart,
-			    end:   trackVideoEnd
-			  });
-			});
-			 
-			function trackVideoStart(player) {
-			  ga('send', 'event', 'Videos', 'Started', videoName(player));
-			}
-			 
-			function trackVideoEnd(player) {
-			  ga('send', 'event', 'Videos', 'Ended', videoName(player));
-			}
-			 
-			function videoName(player) {
-			  return player.videoElement().getAttribute('title');
-			}
-		</script>
 	<% end %>
-
-<!-- End Google Analytics -->
-
-<!-- Google Analytics ga
-	<script type="text/javascript">
-
-	  var _gaq = _gaq || [];
-	  _gaq.push(['_setAccount', 'UA-46293158-1']);
-	  _gaq.push(['_trackPageview']);
-
-	  (function() {
-	    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-	    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-	    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-	  })();
-
-	</script>
-
-	<script type="text/javascript">
-		sublime.ready(function() {
-		  sublime.player('0').on({
-		    start: trackVideoStart,
-		    end:   trackVideoEnd
-		  });
-		});
-		 
-		function trackVideoStart(player) {
-		  _gaq.push(["_trackEvent", "Videos", "Started", videoName(player)]);
-		}
-		 
-		function trackVideoEnd(player) {
-		  _gaq.push(["_trackEvent", "Videos", "Ended", videoName(player)]);
-		}
-		 
-		function videoName(player) {
-		  return player.videoElement().getAttribute('title');
-		}
-	</script>
--->
-
 </head>
 
 <body>
@@ -127,35 +65,31 @@
 			<% end %>
 		</h1>
 
-<!-- 		<video id="0" class="sublime" title="<%= @story["name"] + " - " + @remake["_id"].to_s%>" poster=<%= @remake["thumbnail"]%> data-sharing-url=<%= @remake["share_link"]%> data-sharing-image='poster' data-sharing-text='Check out this cool video by #HomageApp' width="640" height="360" data-uid="0" preload="none">
-		  <source src=<%= @remake["video"]%> data-quality="hd" />
-		</video> -->
-
-		<video id="0" class="video-js vjs-default-skin vjs-big-play-centered"
+		<video id="video_1" class="video-js vjs-default-skin vjs-big-play-centered" title="<%= @story["name"] + " - " + @remake["_id"].to_s%>" 
 			controls preload="auto" width="640" height="360"
 			poster=<%= @remake["thumbnail"]%>
 			data-setup='{"example_option":true}'>
 			<source src=<%= @remake["video"]%> type='video/mp4' />
 			<p class="vjs-no-js">To view this video please enable JavaScript, and consider upgrading to a web browser that <a href="http://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a></p>
 		</video>
-
-<!-- 		<div class="row">
-			<div class="col-sm-8">
-		<video id="0" class="video-js vjs-default-skin vjs-big-play-centered"
-			controls preload="auto" width="640" height="360"
-			poster=<%= @remake["thumbnail"]%>
-			data-setup='{"example_option":true}'>
-			<source src=<%= @remake["video"]%> type='video/mp4' />
-			<p class="vjs-no-js">To view this video please enable JavaScript, and consider upgrading to a web browser that <a href="http://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a></p>
-		</video>
-			</div>
-
-			<div class="col-sm-4">
-				<p>By Nir Channes</p>
-				<button class="btn btn-primary btn-lg">Share</button>
-			</div>
-		</div>
- -->	
- 
 	</div>
+
+	<script>
+		videojs('video_1').ready(function(){
+			var myPlayer = this;
+			var videoTitle = '<%= @story["name"] + " - " + @remake["_id"].to_s %>'
+
+			var trackVideoSrart = function(){
+				ga('send', 'event', 'Videos', 'Started', videoTitle);
+			};
+
+			var trackVideoEnd = function(){
+				ga('send', 'event', 'Videos', 'Ended', videoTitle);
+			};
+
+			myPlayer.on("play", trackVideoSrart)
+			myPlayer.on("ended", trackVideoEnd)
+			myPlayer.on("pause", trackVideoEnd)
+		});
+	</script>		
 </body>

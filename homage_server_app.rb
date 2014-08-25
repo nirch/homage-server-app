@@ -1245,8 +1245,8 @@ end
 
 get '/analytics' do
 
-	start_date = Time.parse("20140701Z")
-	end_date   = Time.parse("20140715Z")
+	start_date = Time.parse("20140805Z")
+	end_date   = Time.parse("20140818Z")
 	launch_date = Time.parse("20140430Z")
 	story_id = "5356dc94ebad7c3bf100015d"
 	Analytics.init_db(settings.db)
