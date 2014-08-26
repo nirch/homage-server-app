@@ -18,6 +18,12 @@
 	<!-- Latest compiled and minified JavaScript -->
 	<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
 
+	<!-- script for creating a BSON objectID -->
+	<script src="/js/Objectid.js"></script>
+
+	<!-- jQuery -->
+ 	<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+
 	<style type="text/css">
 		html, body {
 			height: 100%;
@@ -75,21 +81,41 @@
 	</div>
 
 	<script>
+		var stopReported = false;
+		var playReported = false;
+
 		videojs('video_1').ready(function(){
 			var myPlayer = this;
 			var videoTitle = '<%= @story["name"] + " - " + @remake["_id"].to_s %>'
+			var remakeId = '<%= @remake["_id"].to_s %>'
+			var objectId = new ObjectId().toString();
 
 			var trackVideoSrart = function(){
-				ga('send', 'event', 'Videos', 'Started', videoTitle);
+				// Tracking in our Server
+				$.post('/remake/view', {"view_id":objectId, "remake_id":remakeId, "playback_event":0, "originating_screen":11}, function(data,status){
+    				playReported = true;
+    				console.log("Status: " + status + " Data: " + data);
+  				});
+
+				// Tracking in Google Analytics
+				if (typeof ga !== 'undefined') ga('send', 'event', 'Videos', 'Started', videoTitle);
 			};
 
 			var trackVideoEnd = function(){
-				ga('send', 'event', 'Videos', 'Ended', videoTitle);
+				// Tracking in our Server
+				$.post('/remake/view', {"view_id":objectId, "remake_id":remakeId, "playback_event":1, "originating_screen":11, "total_duration":myPlayer.duration(), "playback_duration":myPlayer.duration()}, function(data,status){
+    				stopReported = true;
+    				console.log("Status: " + status + " Data: " + data);
+  				});
+
+				// Tracking in Google Analytics
+				if (typeof ga !== 'undefined') ga('send', 'event', 'Videos', 'Ended', videoTitle);				
 			};
 
-			myPlayer.on("play", trackVideoSrart)
-			myPlayer.on("ended", trackVideoEnd)
-			myPlayer.on("pause", trackVideoEnd)
+			myPlayer.one("play", trackVideoSrart)
+			myPlayer.one("ended", trackVideoEnd)
 		});
+
+
 	</script>		
 </body>

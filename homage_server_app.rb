@@ -1032,13 +1032,14 @@ post '/remake/view' do
 	if playback_event == PlaybackEventType::PlaybackEventStart then
 		client_generated_view_id = BSON::ObjectId.from_string(params[:view_id])
 		remake_id = BSON::ObjectId.from_string(params[:remake_id])
-		user_id =  BSON::ObjectId.from_string(params[:user_id])
+		user_id =  BSON::ObjectId.from_string(params[:user_id]) if params[:user_id]
 		orig_screen = params[:originating_screen].to_i
 
 		remake = settings.db.collection("Remakes").find_one(remake_id)
 		story_id = remake["story_id"];
 
-		view = {_id:client_generated_view_id, user_id:user_id , remake_id:remake_id, story_id: story_id, start_time:Time.now, originating_screen:orig_screen}
+		view = {_id:client_generated_view_id, remake_id:remake_id, story_id: story_id, start_time:Time.now, originating_screen:orig_screen}
+		view["user_id"] = user_id if user_id
 		view_objectId = views.save(view)
 		
 		logger.info "New view saved in the DB with view id " + view_objectId.to_s
@@ -1047,7 +1048,7 @@ post '/remake/view' do
 	elsif playback_event = PlaybackEventType::PlaybackEventStop then
 		view_id =  BSON::ObjectId.from_string(params[:view_id])
 		remake_id = BSON::ObjectId.from_string(params[:remake_id])
-		user_id =  BSON::ObjectId.from_string(params[:user_id])
+		user_id =  BSON::ObjectId.from_string(params[:user_id]) if params[:user_id]
 		playback_duration = params[:playback_duration].to_i
 		total_duration = params[:total_duration].to_i
 		orig_screen = params[:originating_screen].to_i
