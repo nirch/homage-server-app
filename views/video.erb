@@ -3,6 +3,9 @@
 	<title>Homage</title>
 	<!-- <script type="text/javascript" src="//cdn.sublimevideo.net/js/w5ui0013.js"></script> -->
 
+	<!-- jQuery -->
+ 	<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+
 	<link href="//vjs.zencdn.net/4.6/video-js.css" rel="stylesheet">
 	<script src="//vjs.zencdn.net/4.6/video.js"></script>
 	<style type="text/css">
@@ -20,9 +23,6 @@
 
 	<!-- script for creating a BSON objectID -->
 	<script src="/js/Objectid.js"></script>
-
-	<!-- jQuery -->
- 	<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
 
 	<style type="text/css">
 		html, body {
@@ -94,7 +94,6 @@
 				// Tracking in our Server
 				$.post('/remake/view', {"view_id":objectId, "remake_id":remakeId, "playback_event":0, "originating_screen":11}, function(data,status){
     				playReported = true;
-    				console.log("Status: " + status + " Data: " + data);
   				});
 
 				// Tracking in Google Analytics
@@ -103,9 +102,8 @@
 
 			var trackVideoEnd = function(){
 				// Tracking in our Server
-				$.post('/remake/view', {"view_id":objectId, "remake_id":remakeId, "playback_event":1, "originating_screen":11, "total_duration":myPlayer.duration(), "playback_duration":myPlayer.duration()}, function(data,status){
+				$.post('/remake/view', {"view_id":objectId, "remake_id":remakeId, "playback_event":1, "originating_screen":11, "total_duration":myPlayer.duration(), "playback_duration":myPlayer.currentTime()}, function(data,status){
     				stopReported = true;
-    				console.log("Status: " + status + " Data: " + data);
   				});
 
 				// Tracking in Google Analytics
@@ -114,8 +112,25 @@
 
 			myPlayer.one("play", trackVideoSrart)
 			myPlayer.one("ended", trackVideoEnd)
-		});
 
+			// Event for page unload to track the end of the view
+			$(window).bind('beforeunload', function(){
+				// Tracking only if we already tracked play and didn'y track stop
+  				if (playReported && !stopReported) {
+	  				// Tracking in our Server (doing a sync call because the page is about to close)
+	  				$.ajax({
+				        type: 'POST',
+				        async: false,
+				        url: '/remake/view',
+				        data: {"view_id":objectId, "remake_id":remakeId, "playback_event":1, "originating_screen":11, "total_duration":myPlayer.duration(), "playback_duration":myPlayer.currentTime()},
+				        complete: function(xhr, status){ }
+				    });
+
+					// Tracking in Google Analytics
+					if (typeof ga !== 'undefined') ga('send', 'event', 'Videos', 'Ended', videoTitle);				
+  				}
+  			});
+		});
 
 	</script>		
 </body>
