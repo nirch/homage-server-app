@@ -15,9 +15,9 @@ SESSIONS = DB.collection("Sessions")
 
 START_DATE = Time.parse("20140701Z")
 END_DATE = Time.parse("20140715Z")
-MAX_VIEWS = 10
-MAX_SHARES = 10
-MAX_REMAKES = 10
+MAX_VIEWS = 50
+MAX_SHARES = 50
+MAX_REMAKES = 50
 
 def add_days(date,num_of_days)
    	#res = date + 86400*num_of_days
@@ -59,10 +59,21 @@ def gen_views_for_remake(remake_id,story_id,user_id,num_of_views_for_remake,fake
     playback_duration = 20
     max_time_for_view = fake_session_end
 
+    #gen story view
+    view_start_time = Random.new.rand(remake_created_at..max_time_for_view)
+    view_id = BSON::ObjectId.new
+    originating_screen = Random.new.rand(0..5)
+    view_source = Random.new.rand(0..2)
+    view = {_id:view_id, user_id:user_id, story_id:story_id, start_time:view_start_time, playback_duration: playback_duration, total_duration: total_duration, originating_screen: originating_screen, view_source: view_source}
+    view_objectId = VIEWS.save(view)
+
+
     for i in 0..num_of_views_for_remake do
     	view_start_time = Random.new.rand(remake_created_at..max_time_for_view)
     	view_id = BSON::ObjectId.new
-    	view = {_id:view_id, user_id:user_id , story_id:story_id, remake_id:remake_id, start_time:view_start_time, playback_duration: playback_duration, total_duration: total_duration}
+    	originating_screen = Random.new.rand(0..5)
+    	view_source = Random.new.rand(0..2)
+    	view = {_id:view_id, user_id:user_id , story_id:story_id, remake_id:remake_id, start_time:view_start_time, playback_duration: playback_duration, total_duration: total_duration, originating_screen: originating_screen, view_source: view_source}
     	view_objectId = VIEWS.save(view)
     end
 end

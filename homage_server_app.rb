@@ -11,6 +11,8 @@ require 'houston'
 require 'time'
 require 'chartkick'
 require 'aws-sdk'
+require 'active_support/core_ext'
+require 'user_agent_parser'
 require File.expand_path '../mongo scripts/Analytics.rb', __FILE__
 
 current_session_ID = nil
@@ -62,10 +64,15 @@ configure :test do
 	set :homage_server_foreground_uri, URI.parse("http://54.83.32.172:4567/footage")
 	set :homage_server_render_uri, URI.parse("http://54.83.32.172:4567/render")
 	set :logging, Logger::DEBUG
+
 end
 
 before do
-  logger.info "params=" + params.to_s
+	userAgentStr = request.env["HTTP_USER_AGENT"].to_s
+	$user_agent = UserAgentParser.parse(userAgentStr)
+	$user_os = $user_agent.os.to_s
+	logger.info "request.env: " + request.env.to_s
+	logger.info "params=" + params.to_s
 end
 
 module RemakeStatus
@@ -117,6 +124,22 @@ module PlaybackEventType
 	PlaybackEventStart = 0
 	PlaybackEventStop = 1
 end
+
+module KPIGraphType
+	NormalFractionGraphType = 0
+	NormalValueGraphType = 1
+	AvgValueGraphType = 2
+	StoryViewsGraphType = 3
+	PieChartGraphType = 4
+	UndefinedGraphType = 5
+end
+
+module ViewSource
+	IPhone  = 0
+	Android = 1
+	Web = 2
+end
+
 
 # Get all stories
 get '/stories' do
@@ -1024,6 +1047,16 @@ post '/remake/share' do
 	return share.to_json
 end
 
+def getViewSource(user_os)
+	if (user_os =~ /ios/i) then
+		return ViewSource::IPhone
+	elsif (user_os =~ /android/i) then
+		return ViewSource::Android
+	else 
+		return ViewSource::Web
+	end
+end
+
 post '/remake/view' do 
 	playback_event = params[:playback_event].to_i
 
@@ -1051,6 +1084,7 @@ post '/remake/view' do
 		playback_duration = params[:playback_duration].to_i
 		total_duration = params[:total_duration].to_i
 		orig_screen = params[:originating_screen].to_i
+		view_source = getViewSource($user_os)
 
 		#remakes.update({_id: remake_id}, {"$set" => {grade: grade}})
 		#users.update({_id: update_user_id}, {"$set" => {facebook: params[:facebook], email: params[:email], is_public: params[:is_public]}})
@@ -1059,7 +1093,7 @@ post '/remake/view' do
 		if !view then
 			logger.error "No matching start event for stop event: " + view_id.to_s
 		end
-		views.update({_id: view_id},{"$set" => {playback_duration: playback_duration, total_duration: total_duration, originating_screen:orig_screen}})
+		views.update({_id: view_id},{"$set" => {playback_duration: playback_duration, total_duration: total_duration, originating_screen:orig_screen, view_source: view_source}})
 		logger.info "view updated in the DB after stop with view id " + view_id.to_s
 		view = views.find_one(view_id)
 		return view.to_json
@@ -1078,7 +1112,7 @@ post '/story/view' do
 		user_id =  BSON::ObjectId.from_string(params[:user_id])
 		orig_screen = params[:originating_screen].to_i
 		
-		view = {_id:client_generated_view_id, user_id:user_id , story_id:story_id, start_time:Time.now , originating_screen: orig_screen}
+		view = {_id:client_generated_view_id, user_id:user_id , story_id:story_id, start_time:Time.now}
 		view_objectId = views.save(view)
 		
 		logger.info "New view saved in the DB with view id " + view_objectId.to_s
@@ -1091,6 +1125,7 @@ post '/story/view' do
 		playback_duration = params[:playback_duration].to_i
 		total_duration = params[:total_duration].to_i
 		orig_screen = params[:originating_screen].to_i
+		view_source = getViewSource($user_os)
 
 		#remakes.update({_id: remake_id}, {"$set" => {grade: grade}})
 		#users.update({_id: update_user_id}, {"$set" => {facebook: params[:facebook], email: params[:email], is_public: params[:is_public]}})
@@ -1099,7 +1134,7 @@ post '/story/view' do
 		if !view then
 			logger.error "No matching start event for stop event: " + view_id.to_s
 		end
-		views.update({_id: view_id, },{"$set" => {playback_duration: playback_duration, total_duration: total_duration, originating_screen: orig_screen}})
+		views.update({_id: view_id, },{"$set" => {playback_duration: playback_duration, total_duration: total_duration, originating_screen: orig_screen, view_source: view_source}})
 		logger.info "view updated in the DB after stop with view id " + view_id.to_s
 		view = views.find_one(view_id)
 		return view.to_json
@@ -1243,78 +1278,56 @@ get '/play/:remake_id' do
 	erb :video
 end
 
+
+
 get '/analytics' do
 
-	start_date = Time.parse("20140701Z")
-	end_date   = Time.parse("20140715Z")
+	_start_date = Time.parse(params[:start_date])
+	_end_date   = Time.parse(params[:end_date])
+	stories = params[:stories];
+
+	start_date =  Time.parse(_start_date.strftime("%Y%m%dZ"))
+	end_date   =  Time.parse(_end_date.strftime("%Y%m%dZ"))
+
+	puts "/analytics: start_date " + start_date.iso8601 + " end date: " + end_date.iso8601
+
 	launch_date = Time.parse("20140430Z")
-	story_id = "5356dc94ebad7c3bf100015d"
 	Analytics.init_db(settings.db)
 
 	######
-	
-	@heading1 = "% of shared videos out of all created movies from: " + start_date.iso8601 + "to: " + end_date.iso8601
-
-	res = Analytics.get_pct_of_shared_videos_for_date_range_out_of_all_created_movies(start_date,end_date)
-	
-	#TODO: remove 
-	fake_res = Hash.new
-	res.each {|date, result_array|
-		if result_array.fetch(0) == 0 then
-			fake_res[date] = 0
-		else 
-			fake_res[date] = result_array.fetch(1).to_f/result_array.fetch(0).to_f
-		end
-	}
-
-	@data1 = fake_res
-
+	@heading1 = "% of shared videos out of all created movies"
+	@data1    = Analytics.get_pct_of_shared_videos_for_date_range_out_of_all_created_movies(start_date,end_date)
 	######
-	
-	@heading2 = "% of users that shared at least once out of all active users from: " + start_date.iso8601 + "to: " + end_date.iso8601
-
-	res = Analytics.get_pct_of_users_who_shared_at_list_once_for_date_range(start_date,end_date)
-    fake_res = Hash.new
-	res.each {|date, result_array|
-		if result_array.fetch(0) == 0 then
-			fake_res[date] = 0
-		else 
-			fake_res[date] = result_array.fetch(1).to_f/result_array.fetch(0).to_f
-		end
-	}
-
-	@data2 = fake_res
-
+	@heading2 = "% of users that shared at least once out of all active users"
+	@data2    = Analytics.get_pct_of_users_who_shared_at_list_once_for_date_range(start_date,end_date) 
     #####
-
-	@heading3 = "distribution of movie making between users from date: " + launch_date.iso8601
-	@data3 = Analytics.get_distribution_of_remakes_between_users_from_date(launch_date)
-
-	@heading4 = "views for story: " 
-	@data4 = Analytics.get_total_views_for_story_for_date_range(start_date,end_date,0)
-
-	@heading5 = "avg session time between dates: " + start_date.iso8601 + " - " + end_date.iso8601
+	#@heading3 = "distribution of movie making between users from date: " + launch_date.iso8601
+	#@data3    = Analytics.get_distribution_of_remakes_between_users_from_date(launch_date)
+	#####
+	@heading4 = "views for story" 
+	@data4 = Analytics.get_total_views_for_story_for_date_range(start_date,end_date,stories)
+	puts @heading4
+	puts @data4
+	######
+	@heading5 = "avg session time between dates"
 	@data5 = Analytics.get_avg_session_time_for_date_range(start_date,end_date)
-
+	######
 	@heading6 = "remake distibution between users by count from start_date" + start_date.iso8601
 	@data6 =  Analytics.get_user_distibution_per_number_of_remakes(start_date,3)
+	######
+	@heading7 = "% of failed remakes"
+	@data7 = Analytics.get_pct_of_failed_remakes_for_date_range(start_date,end_date)
 
-	@heading7 = "pct of failed remakes for date range: " + start_date.iso8601 + " - " + end_date.iso8601
-	res = Analytics.get_pct_of_failed_remakes_for_date_range(start_date,end_date)
+	puts "=============== presenting Anaytlics ==============="
+	return [["line" , KPIGraphType::NormalFractionGraphType, @heading1, @data1], ["line", KPIGraphType::NormalFractionGraphType, @heading2, @data2],
+	 ["line" , KPIGraphType::StoryViewsGraphType, @heading4,  @data4],
+	 ["line" , KPIGraphType::AvgValueGraphType, @heading5, @data5], ["pie", KPIGraphType::PieChartGraphType ,@heading6, @data6],
+	 ["line", KPIGraphType::NormalFractionGraphType ,@heading7, @data7]].to_json
+	#erb :analytics
+end
 
-	#TODO: remove 
-	fake_res = Hash.new
-	res.each {|date, result_array|
-		if result_array.fetch(0) == 0 then
-			fake_res[date] = 0
-		else 
-			fake_res[date] = result_array.fetch(0).to_f/result_array.fetch(1).to_f
-		end
-	}
-
-	@data7 = fake_res
-
-	erb :analytics
+get '/test_analytics' do
+	erb :new_analytics_test
 end
 
 get '/health/check' do

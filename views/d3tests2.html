@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+body {
+  font: 10px sans-serif;
+}
+ 
+.bar {
+  fill: steelblue;
+}
+ 
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.x.axis path {
+  display: none;
+}
+
+.line {
+  fill: none;
+  stroke: steelblue;
+  stroke-width: 1.5px;
+}
+
+.arc path {
+  stroke: #fff;
+}
+</style>
+
+<body>
+<script src="http://d3js.org/d3.v3.js"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<script src="/js/Analytics.js"></script>
+<script src="/js/HomageD3charts.js"></script>
+<div class="container col-sm-12">
+            <div class="hero-unit">
+                <input  type="text" placeholder="start date" id="dpStartDate">
+                <input  type="text" placeholder="end date" id="dpEndDate">
+                <button type="button" class="btn btn-default" id="send_button">Send</button>
+              
+                <div class="btn-group">
+                  <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" id="dropdownButton">
+                  Week <span class="caret"></span>
+                  </button>
+                  <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu">
+                   <li><a tabindex="-1" href="#">Day</a></li>
+                   <li><a tabindex="-1" href="#">Week</a></li>
+                   <li><a tabindex="-1" href="#">Month</a></li>
+                 </ul>
+               </div>
+
+            <div class="container col-sm-6" id="container0">
+              <span class="label label-default" id="label-0"></span>
+              <div id="chart-0" style="height: 200px;"></div>
+            </div>
+
+            <div class="container col-sm-6" id="container1">
+              <span class="label label-default" id="label-1"></span>
+              <div id="chart-1" style="height: 200px;"></div>
+            </div>
+
+            <div class="container col-sm-6" id="container2">
+              <span class="label label-default" id="label-2"></span>
+              <div id="chart-2" style="height: 500px;"></div>
+            </div>
+
+             <div class="container col-sm-6" id="container3">
+              <span class="label label-default" id="label-3"></span>
+              <div id="chart-3" style="height: 500px;"></div>
+            </div>
+        </div>
+</div>
+
+<script>
+// Set the dimensions of the canvas / graph
+
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////
+
+data1 = [{"date": "2014-08-05" , "val": 3},{"date": "2014-08-06" , "val": 12},{"date": "2014-08-07" , "val": 60},{"date": "2014-08-08" , "val": 3},{"date": "2014-08-09" , "val": 5},{"date": "2014-08-10" , "val": 300}];
+
+data2 = [{"date": "2014-08-05" , "val": 3.7},{"date": "2014-08-06" , "val": 12},{"date": "2014-08-07" , "val": 60},{"date": "2014-08-08" , "val": 3},{"date": "2014-08-09" , "val": 5},{"date": "2014-08-10" , "val": 100.67}];
+
+data3 = [{"segment":"<5", "val": 2704659}, {"segment": "5-13", "val": 4499890}, {"segment":"14-17" , "val": 2159981}, {"segment":"18-24" , "val": 3853788 }, {"segment": "25-44" , "val":14106543 }, {"segment":"45-64" , "val":8819342 }, {"segment": ">=65", "val": 612463}];
+
+data4 = [{"remake views": 20, "story views": 4, "iOS views":10,"android views":5,"web views":9, "date": "2014-08-05"} , {"remake views": 20, "story views": 4, "iOS views":10,"android views":5,"web views":9, "date": "2014-08-07"}];
+
+innerColumns = {
+  "column1" : ["remake views","story views"],
+  "column2" : ["iOS views","android views","web views"]
+}
+
+// Adds the svg canvas
+chart_name = "#chart-0";
+graph_container = d3.select(chart_name);
+
+genLineChart(data1,graph_container);
+
+chart_name = "#chart-1";
+graph_container = d3.select(chart_name);
+
+genLineChart(data2,graph_container);
+
+chart_name = "#chart-2";
+graph_container = d3.select(chart_name);
+
+genPieChart(data3,graph_container);
+
+chart_name = "#chart-3";
+graph_container = d3.select(chart_name);
+
+genStackedAndGroupBarChart(data4,innerColumns,graph_container);
+
+</script>
+</body>

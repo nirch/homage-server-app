@@ -1,8 +1,8 @@
 require File.expand_path '../Analytics.rb', __FILE__
 
 date = Time.parse("20140708Z")
-start_date = Time.parse("20140701Z")
-end_date = Time.parse("20140715Z")
+start_date = Time.parse("20140805Z")
+end_date = Time.parse("20140813Z")
 launch_date = Time.parse("20140430")
 turbo_ski_story_id = "5356dc94ebad7c3bf100015d"
 
@@ -21,6 +21,7 @@ def add_weeks(date,num_of_weeks)
    	return res
 end
 
+
 #KPI's
 #% of shared videos out of all created movies for date
 res = Analytics.get_pct_of_shared_videos_for_date_range_out_of_all_created_movies(start_date,end_date)
@@ -37,7 +38,11 @@ puts ""
 
 # number of views for story
 #puts "Turbo ski story id: " + turbo_ski_story_id.to_s
-res = Analytics.get_total_views_for_story_for_date_range(start_date,end_date,0)
+story_array = Array.new
+story_array.push("53b540d3123459d5aa000253")
+story_array.push("538140fe709b9aac2300009d")
+story_array.push("53b17db89a452198f80004a6")
+res = Analytics.get_total_views_for_story_for_date_range(start_date,end_date,story_array)
 puts "total views for day: " + res.to_s
 puts "" 
 puts "======================================================================================"
