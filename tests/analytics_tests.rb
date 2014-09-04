@@ -113,25 +113,27 @@ class AnalyticsTest < MiniTest::Unit::TestCase
 	    assert @session
 	end
 
+	def test_pct_of_shared_videos_for_date_range_out_of_all_created_movies
+	end
 
 
 	def teardown
-		#if @share then
-		#	SHARES.remove({_id: @share["_id"]})
-		#	share = SHARES.find_one(@share["_id"])
-	    #	assert_nil share
-		#end
+		if @share then
+			SHARES.remove({_id: @share["_id"]})
+			share = SHARES.find_one(@share["_id"])
+	    	assert_nil share
+		end
 
-		#if @view then
-		#	VIEWS.remove({_id: @view["_id"]})
-		#	view = VIEWS.find_one(@view["_id"])
-	    #	assert_nil view
-		#end
+		if @view then
+			VIEWS.remove({_id: @view["_id"]})
+			view = VIEWS.find_one(@view["_id"])
+	    	assert_nil view
+		end
 
-		#if @session then
-			#SESSIONS.remove({_id: @session["_id"]})
-			#session = SESSIONS.find_one(@session["_id"])
-	    	#assert_nil session
-		#end
+		if @session then
+			SESSIONS.remove({_id: @session["_id"]})
+			session = SESSIONS.find_one(@session["_id"])
+	    	assert_nil session
+		end
 	end
 end

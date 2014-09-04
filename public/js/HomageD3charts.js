@@ -5,7 +5,8 @@ StoryViewsGraphType = 3
 PieChartGraphType =  4
 UndefinedGraphType = 5
 
-function genLineChart(data,container) {
+//old. new id /js/d3LineChart.js
+/*function genLineChart(data,container) {
 	
   var	margin = {top: 30, right: 20, bottom: 30, left: 50},
   width = 500 - margin.left - margin.right,
@@ -36,26 +37,12 @@ function genLineChart(data,container) {
   .attr("height", height + margin.top + margin.bottom)
   .append("g")
   .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-  console.log("this is data")
-  console.log(data)
-
   
   data.forEach(function(d) {
     d.date = parseDate(d.date);
     d.val  = +d.val;
   });
   
-  /*Object.keys(data).forEach(function(key) {
-    d = data[key];
-    d.date = parseDate(key);
-    d.val  = +d[key];
-    data[key] = d;
-  });*/
-
-  console.log("this is data now")
-  console.log(data)
-
   x.domain(d3.extent(data, function(d) { return d.date; }));
   y.domain([0, d3.max(data, function(d) { return d.val; })]);
 
@@ -73,16 +60,17 @@ function genLineChart(data,container) {
   	chart.append("g")
     .attr("class", "y axis")
     .call(yAxis);
-}
+}*/
 
-
-function genPieChart(data,container) {
+function genPieChart(data,chart_name) {
 
   console.log("data: " + data);
 
   var width = 400,
   height = 220,
   radius = Math.min(width, height) / 2;
+
+  var margin = 100;
 
   var color = d3.scale.ordinal()
   .range(["#98abc5", "#8a89a6", "#7b6888", "#6b486b", "#a05d56", "#d0743c", "#ff8c00"]);
@@ -93,20 +81,43 @@ function genPieChart(data,container) {
 
   var pie = d3.layout.pie()
   .sort(null)
-  .value(function(d) { return d.val; });
+  .value(function(d) { return d.value; });
 
-  var chart = container
+  svg = d3.select(chart_name).select('svg').select('g');
+
+  if (svg.empty()) {
+    svg = d3.select(chart_name)
+      .append('svg:svg')
+        .attr('width', width)
+        .attr('height', height)
+      .append('svg:g')
+        .attr('transform', 'translate(' + margin + ',' + margin + ')');
+
+    /*yAxisGroup = svg.append('svg:g')
+      .attr('class', 'yTick')
+      .call(yAxis);
+
+    xAxisGroup = svg.append('svg:g')
+      .attr('class', 'xTick')
+      .call(xAxis);
+
+    svg.append('svg:g').attr('id' , 'data_line_g');
+    svg.append('svg:g').attr('id' , 'data_circle_g' );*/
+  }
+
+
+  /*var chart = container
   .append("svg")
   .attr("width", width)
   .attr("height", height)
   .append("g")
-  .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+  .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");*/
 
   data.forEach(function(d) {
-    d.val = +d.val;
+    d.value = +d.value;
   });
 
-  var g = chart.selectAll(".arc")
+  var g = svg.selectAll(".arc")
   .data(pie(data))
   .enter().append("g")
   .attr("class", "arc");
@@ -123,7 +134,7 @@ function genPieChart(data,container) {
 }
 
 
-function genStackedAndGroupBarChart(data,innerColumns,container) {
+function genStackedAndGroupBarChart(data,innerColumns,chart_name) {
 
   console.log("generating stacked and grouped chart");
   console.log(data);
@@ -151,8 +162,20 @@ function genStackedAndGroupBarChart(data,innerColumns,container) {
 
   var color = d3.scale.ordinal()
   .range(["#98abc5", "#8a89a6", "#7b6888", "#6b486b", "#a05d56", "#d0743c", "#ff8c00"]);
+ 
+  console.log("chart name is: " + chart_name);
 
-  var chart = container
+  var _chart_area = chart_name.replace(/^#/, "");
+  chart_area = document.getElementById(_chart_area);
+  svg = d3.select(chart_area).select('svg');
+
+  if ( svg != null ) {
+    console.log("grouped chart already populized in: " + chart_name + ". removing svg");
+    console.log("chart populized, removing");
+    chart_area.innerHTML = ""; // clear out the SVG
+  }
+
+  var chart = d3.select(chart_area)
   .append("svg")
   .attr("width", width + margin.left + margin.right)
   .attr("height", height + margin.top + margin.bottom)
@@ -161,8 +184,6 @@ function genStackedAndGroupBarChart(data,innerColumns,container) {
 
   var yBegin;
   
-  console.log("current innerColumns");
-  console.log(innerColumns);
   columnHeaders = [];
   for (key in innerColumns) {
     console.log("key:");
@@ -170,8 +191,6 @@ function genStackedAndGroupBarChart(data,innerColumns,container) {
   	columnHeaders = columnHeaders.concat(innerColumns[key]);
   };
   
-  console.log("columnHeaders");
-  console.log(columnHeaders);
   color.domain(columnHeaders);
 
   data.forEach(function(d) {
@@ -192,8 +211,6 @@ function genStackedAndGroupBarChart(data,innerColumns,container) {
     d.total = d3.max(d.columnDetails, function(d) { 
       return d.yEnd; 
     });
-    console.log("d: ")
-    console.log(d);
   });
 
   x0.domain(data.map(function(d) { return d.date; }));
@@ -259,3 +276,4 @@ function genStackedAndGroupBarChart(data,innerColumns,container) {
   .text(function(d) { return d; });
 
 }
+
