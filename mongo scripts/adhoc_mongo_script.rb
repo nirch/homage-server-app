@@ -11,19 +11,50 @@ prod_db = Mongo::MongoClient.from_uri("mongodb://Homage:homageIt12@troup.mongohq
 prod_users = prod_db.collection("Users")
 prod_remakes = prod_db.collection("Remakes")
 
+remakes = ["53ecdebe0be0440cdc000009","53ee5f2f0be0445d5d00000b","53ee10210be0443520000008","53ee6d690be0446c45000006","53ee820f0be0447547000009","53ee91a90be044754700001e","53ef08270be0443897000015","53ef61560be0447457000003","53efbd5a0be04428b9000004","53f018a80be0445c23000008","53f0b3480be044333e00000d","53f0fe0b0be0445ecc000001","53f128290be0447785000001","53f1e5500be0445cff000003","53f20ac20be044732b000007","53f222480be04475b8000014","53f2ee050be0447036000001","53f3521d0be0442536000008","53f3d4250be04469b6000011","53f4b4a30be04468aa000002","53f4db890be0447c81000008","53f4ebf60be0440625000003","53f510ee0be0441c67000002","53f525dc0be0441f7c00000b","53f541030be04433c0000001","53f608300be0441f65000002","53f6c24e0be0447cfc000005","53f6a7f60be04474e3000003","53f751dd0be0445511000001","53f76d190be0445511000008","53f7bf230be0440444000006","53f7f0ac0be044238c000005","53f87e5b0be044495c00000b","53f8803b0be044772d000001","53f891c60be0447ee5000006","53f8aec70be0440ae0000008","53f8e7fb0be0442ecf000002","53f8fe320be04439db000005","53f930340be044569a000001","53f999cc0be0440b50000007","53f99b1f0be0440b50000008","53f9f3d70be04416f8000018","53fa1bbd0be0445662000001","53fa73a90be0440355000007","53fa8c420be0440b15000005","53fa9da80be0441d81000005","53fab8610be044202a000014"]
+puts remakes.count
 
-<<<<<<< HEAD
-puts File.dirname(File.expand_path(__FILE__)) + "/logs"
-#puts File.join(File.expand_path(__FILE__), '..', 'logs')
-=======
-great_remakes = prod_remakes.find({story_id: BSON::ObjectId.from_string("535e8fc981360cd22f0003d4"), grade:{"$gte"=>12}})
-
-for remake in great_remakes do
-	puts remake["_id"]
+for remake_id in remakes do
+	remake = prod_remakes.find_one(BSON::ObjectId.from_string(remake_id))
+	puts remake_id + ": " + remake["status"].to_s
+	# homage_server_uri = URI.parse("http://homage-server-app-prod.elasticbeanstalk.com/render")
+	# response = Net::HTTP.post_form(homage_server_uri, {"remake_id" => remake_id.to_s})
+	# puts response
 end
 
-#puts File.stat("/Users/tomer/Desktop/Delete/Old Spice_v01_test.mp4").world_writable?
->>>>>>> 7f7cdbcd986b326919799dc2439dafe2aa86186d
+
+
+# from_date = Time.parse("20140814Z")
+# superior_man_id = BSON::ObjectId.from_string("535e8fc981360cd22f0003d4")
+# monster_attack_id = BSON::ObjectId.from_string("532f058a3f13af9af80001bb")
+# stories_with_kness = [superior_man_id, monster_attack_id]
+# scene_hash = {monster_attack_id => 3, superior_man_id => 4}
+# failed_remakes = prod_remakes.find({story_id: {"$in" => stories_with_kness}, created_at:{"$gte"=>from_date}, status:4})
+# puts failed_remakes.count
+# print "["
+# for failed_remake in failed_remakes do
+# 	remake_id = failed_remake["_id"].to_s
+# 	story_id = failed_remake["story_id"]
+# 	scene_id = scene_hash[story_id]
+# 	take_id = failed_remake["footages"][scene_id - 1]["take_id"]
+# 	#puts '["' + remake_id + '", ' + '"' + scene_id.to_s + '", "' + take_id + '"],'
+# 	print '"' + remake_id + '",'
+# end
+# puts "]"
+
+
+# <<<<<<< HEAD
+# puts File.dirname(File.expand_path(__FILE__)) + "/logs"
+# #puts File.join(File.expand_path(__FILE__), '..', 'logs')
+# =======
+# great_remakes = prod_remakes.find({story_id: BSON::ObjectId.from_string("535e8fc981360cd22f0003d4"), grade:{"$gte"=>12}})
+
+# for remake in great_remakes do
+# 	puts remake["_id"]
+# end
+
+# #puts File.stat("/Users/tomer/Desktop/Delete/Old Spice_v01_test.mp4").world_writable?
+# >>>>>>> 7f7cdbcd986b326919799dc2439dafe2aa86186d
 
 # date_input = "20140509"
 # from_date = Time.parse(date_input)

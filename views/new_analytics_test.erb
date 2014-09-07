@@ -18,7 +18,7 @@
   <link rel="stylesheet" href="css/bootstrap-multiselect.css" type="text/css"/>
 
   <!-- Include Tipsy + D3Linechart -->
-  <link rel="stylesheet" type="text/css" href="css/d3LineChart.css"> 
+  <link rel="stylesheet" type="text/css" href="css/d3LineChart.css">
   <script type="text/javascript" src="js/jquery.tipsy.js"></script> 
   <link href="css/tipsy.css" rel="stylesheet" type="text/css" /> 
   <script src="js/d3LineChart.js" type="text/javascript"></script> 
@@ -30,7 +30,7 @@
 
 <style>
 
-body {
+/*body {
   font: 14px sans-serif;
 }
  
@@ -57,7 +57,7 @@ body {
 
 .arc path {
   stroke: #fff;
-}
+}*/
 
 
 </style>
@@ -96,16 +96,14 @@ body {
             
             </div>
 
-            
-
             <div class="container col-sm-6">
               <span class="label label-default" id="label-0"></span>
-              <div id="chart-0" style="height: 300px;"></div>
+              <div id="chart-0" style="height: 300px;" class="line_chart"></div>
             </div>
 
             <div class="container col-sm-6">
               <span class="label label-default" id="label-1"></span>
-              <div id="chart-1" style="height: 300px;"></div>
+              <div id="chart-1" style="height: 300px;" class="line_chart"></div>
             </div>
 
             <div class="container col-sm-6">
@@ -115,7 +113,7 @@ body {
 
             <div class="container col-sm-6">
               <span class="label label-default" id="label-3"></span>
-              <div id="chart-3" style="height: 300px;"></div>
+              <div id="chart-3" style="height: 300px;" class="line_chart"></div>
             </div>
 
             <div class="container col-sm-6">
@@ -125,7 +123,7 @@ body {
 
             <div class="container col-sm-6">
               <span class="label label-default" id="label-5"></span>
-              <div id="chart-5" style="height: 300px;"></div>
+              <div id="chart-5" style="height: 300px;" class="line_chart"></div>
             </div>
 
             <div class="container col-sm-6">
@@ -149,7 +147,7 @@ body {
 
                 $('#story_selector').multiselect();
 
-                $('#dpStartDate').datepicker('setDate', new Date(2014, 06, 01));
+                $('#dpStartDate').datepicker('setDate', new Date(2014, 06, 06));
                 $('#dpStartDate').datepicker('update');
                 //$('#dpStartDate').val('');
                 
@@ -157,7 +155,7 @@ body {
                     format: "yyyy-mm-dd"
                 });  
 
-                $('#dpEndDate').datepicker('setDate', new Date(2014, 06, 15));
+                $('#dpEndDate').datepicker('setDate', new Date(2014, 06, 09));
                 $('#dpEndDate').datepicker('update');
                 //$('#dpEndDate').val('');
 
@@ -186,15 +184,17 @@ body {
 
                   $.get('/analytics', {"start_date": sd, "end_date": ed, "stories": selected_stories}, function( data, status, xhr){
                   json_data = $.parseJSON(data);
-                  for (i = 0; i < json_data.length; i++)
+                  console.log(json_data);
+                  for (k = 0; k < json_data.length; k++)
                   {
-                    data_set = json_data[i];
+                    data_set = json_data[k];
                     chart_type  = data_set[0];
                     data_type   = data_set[1];  
                     data_label  = data_set[2];
                     data_series = data_set[3];
 
                     data_for_chart = [];
+                    console.log("preparing data:" + data_label);
 
                     switch (currentDropDownSelection) {
                       case "Day":
@@ -208,9 +208,8 @@ body {
                         break;
                     }
 
-                    chart_name = "#chart-" + i;
-                    chart_area = d3.select(chart_name);
-                    label_name = "#label-" + i;
+                    chart_name = "#chart-" + k;
+                    label_name = "#label-" + k;
                  
                     $(label_name).text(data_label);
 

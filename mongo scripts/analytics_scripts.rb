@@ -1,8 +1,7 @@
 require File.expand_path '../Analytics.rb', __FILE__
 
-date = Time.parse("20140708Z")
-start_date = Time.parse("20140805Z")
-end_date = Time.parse("20140813Z")
+start_date = Time.parse("20140701Z")
+end_date = Time.parse("20140715Z")
 launch_date = Time.parse("20140430")
 turbo_ski_story_id = "5356dc94ebad7c3bf100015d"
 
@@ -69,11 +68,10 @@ puts ""
 
 #avg session time for date range
 res = Analytics.get_avg_session_time_for_date_range(start_date,end_date)
-puts res
-
-
-
-
+puts "avg user session time for date range:" + res.to_s
+puts ""
+puts "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+puts ""
 
 get_total_views_for_story_for_day_proc = Proc.new { |date, story_id| 
 		Analytics.get_total_views_for_story_for_day(date,story_id) 

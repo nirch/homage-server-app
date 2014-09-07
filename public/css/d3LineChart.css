@@ -1,17 +1,10 @@
 
-/*#line_chart_path {
+.line_chart path {
 	stroke: #eee;
 	stroke-width: 2;
 	stroke-dasharray: 0;
 	fill: none;
-}*/
-
-/*path {
-	stroke: #eee;
-	stroke-width: 2;
-	stroke-dasharray: 0;
-	fill: none;
-}*/
+}
 
 .data-line {
 	stroke: steelblue;

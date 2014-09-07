@@ -55,8 +55,8 @@ class Analytics
    end
 
    
-  def self.get_good_remakes_sorted_by_date_buckets(start_date,end_date)
-    match = {"$match" => { created_at:{"$gte"=>start_date, "$lt"=>add_days(end_date,1)}, share_link: {"$exists"=>true}}}
+  def self.get_good_remakes_sorted_by_date_buckets(start_date,end_date,stories_array)
+    match = {"$match" => { created_at:{"$gte"=>start_date, "$lt"=>add_days(end_date,1)}, share_link: {"$exists"=>true}, story_id: {"$in"=> stories_array}}}
 
     proj1={"$project" => {"_id" => 1, "created_at" => 1, 
       "h" => {"$hour" => "$created_at"}, "m" => {"$minute" => "$created_at"}, "s" => {"$second" => "$created_at"}, "ml" => {"$millisecond" =>  "$created_at"}}}
@@ -70,8 +70,8 @@ class Analytics
     return res
   end
 
-  def self.get_failed_remakes_sorted_by_date_buckets(start_date,end_date)
-    match = {"$match" => { created_at:{"$gte"=>start_date, "$lt"=>add_days(end_date,1)}, render_start: {"$exists"=>true}, render_end: {"$exists"=>false}}}
+  def self.get_failed_remakes_sorted_by_date_buckets(start_date,end_date,stories_array)
+    match = {"$match" => { created_at:{"$gte"=>start_date, "$lt"=>add_days(end_date,1)}, render_start: {"$exists"=>true}, render_end: {"$exists"=>false}, story_id: {"$in" => stories_array}}}
 
     proj1={"$project" => {"_id" => 1, "created_at" => 1, 
       "h" => {"$hour" => "$created_at"}, "m" => {"$minute" => "$created_at"}, "s" => {"$second" => "$created_at"}, "ml" => {"$millisecond" =>  "$created_at"}}}
@@ -86,8 +86,8 @@ class Analytics
   end
 
 
-   def self.get_all_remakes_sorted_by_date_buckets(start_date,end_date)
-    match = {"$match" => { created_at:{"$gte"=>start_date, "$lt"=>add_days(end_date,1)}, render_start: {"$exists"=>true}}}
+   def self.get_all_remakes_sorted_by_date_buckets(start_date,end_date,stories_array)
+    match = {"$match" => { created_at:{"$gte"=>start_date, "$lt"=>add_days(end_date,1)}, render_start: {"$exists"=>true}, story_id: {"$in" => stories_array}}}
 
     proj1={"$project" => {"_id" => 1, "created_at" => 1, 
       "h" => {"$hour" => "$created_at"}, "m" => {"$minute" => "$created_at"}, "s" => {"$second" => "$created_at"}, "ml" => {"$millisecond" =>  "$created_at"}}}
@@ -101,8 +101,8 @@ class Analytics
     return res
   end
 
-  def self.get_movie_making_users_sorted_by_date_buckets(start_date,end_date)
-    date_range = {"$match" => { created_at:{"$gte"=>start_date, "$lt"=>add_days(end_date,1)}}}
+  def self.get_movie_making_users_sorted_by_date_buckets(start_date,end_date,stories_array)
+    date_range = {"$match" => { created_at:{"$gte"=>start_date, "$lt"=>add_days(end_date,1)}, story_id: {"$in"=> stories_array}}}
 
     proj1={"$project" => {"_id" => 0, "created_at" => 1, "user_id" => 1,
       "h" => {"$hour" => "$created_at"}, "m" => {"$minute" => "$created_at"}, "s" => {"$second" => "$created_at"}, "ml" => {"$millisecond" =>  "$created_at"}}}
@@ -159,12 +159,12 @@ class Analytics
       key = date.strftime("%Y-%m-%d")
       if user_buckets_by_dates[date] then 
         final_data[key] = [shares_for_day, user_buckets_by_dates[date].count]
-      else 
-        final_data[key] = [0,0]
       end 
       date = add_days(date,1)
     end
 
+    puts "final data ===== get_data_pct_of_users_who_shared_at_list_once: "
+    puts final_data
     return final_data
   end
 
@@ -201,12 +201,12 @@ class Analytics
       key = date.strftime("%Y-%m-%d")
       if remake_bucket_by_dates[date] then 
         final_data[key] = [shares_for_day, remake_bucket_by_dates[date].count]
-      else 
-        final_data[key] = [0,0]
       end 
       date = add_days(date,1)
     end
 
+    puts "final data ===== gen_data_pct_of_shared_videos_out_of_all_created_movies: "
+    puts final_data
     return final_data
   end
 
@@ -214,12 +214,8 @@ class Analytics
     return @@stories_collection.find({active: true}, {fields: {}}).flat_map(&:values)
   end
 
-  def self.get_remake_views_for_stories(start_date,end_date,story_array)
-
-    bson_story_array = Array.new
-    story_array.each { |story_id| bson_story_array.push(BSON::ObjectId.from_string(story_id)) }
-    
-    remake_views_match = {"$match" => {start_time:{"$gte"=>start_date, "$lt"=>add_days(end_date,1)}, story_id: {"$in"=> bson_story_array}, remake_id: {"$exists" => true}}}
+  def self.get_remake_views_for_stories(start_date,end_date,stories_array)
+    remake_views_match = {"$match" => {start_time:{"$gte"=>start_date, "$lt"=>add_days(end_date,1)}, story_id: {"$in"=> stories_array}, remake_id: {"$exists" => true}}}
 
     proj1={"$project" => { "_id" => 1, "start_time" => 1, "remake_id" => 1, "story_id" => 1, "view_source"=> 1,
      "h" => {"$hour" => "$start_time"}, "m" => {"$minute" => "$start_time"}, "s" => {"$second" => "$start_time"}, "ml" => {"$millisecond" =>  "$start_time"}}}
@@ -232,12 +228,8 @@ class Analytics
     return @@views_collection.aggregate([remake_views_match,proj1,proj2,group])
 end
   
-def self.get_story_views_for_stories(start_date,end_date,story_array)
-
-    bson_story_array = Array.new
-    story_array.each { |story_id| bson_story_array.push(BSON::ObjectId.from_string(story_id)) }
-
-    story_views_match  = {"$match" => {start_time:{"$gte"=>start_date, "$lt"=>add_days(end_date,1)}, story_id: {"$in"=> bson_story_array}, remake_id: {"$exists" => false}}}
+def self.get_story_views_for_stories(start_date,end_date,stories_array)
+    story_views_match  = {"$match" => {start_time:{"$gte"=>start_date, "$lt"=>add_days(end_date,1)}, story_id: {"$in"=> stories_array}, remake_id: {"$exists" => false}}}
 
     proj1={"$project" => { "_id" => 1, "start_time" => 1, "story_id" => 1, "view_source"=> 1,
      "h" => {"$hour" => "$start_time"}, "m" => {"$minute" => "$start_time"}, "s" => {"$second" => "$start_time"}, "ml" => {"$millisecond" =>  "$start_time"}}}
@@ -250,11 +242,8 @@ def self.get_story_views_for_stories(start_date,end_date,story_array)
     return @@views_collection.aggregate([story_views_match,proj1,proj2,group])
 end
 
-  def self.get_view_distribution_by_view_source(start_date,end_date,story_array)
-    bson_story_array = Array.new
-    story_array.each { |story_id| bson_story_array.push(BSON::ObjectId.from_string(story_id)) }  
-
-    views_match  = {"$match" => {start_time:{"$gte"=>start_date, "$lt"=>add_days(end_date,1)}, story_id: {"$in"=> bson_story_array}}}
+  def self.get_view_distribution_by_view_source(start_date,end_date,stories_array)
+    views_match  = {"$match" => {start_time:{"$gte"=>start_date, "$lt"=>add_days(end_date,1)}, story_id: {"$in"=> stories_array}}}
     proj1={"$project" => { "_id" => 1, "start_time" => 1, "story_id" => 1, "view_source" => 1,
      "h" => {"$hour" => "$start_time"}, "m" => {"$minute" => "$start_time"}, "s" => {"$second" => "$start_time"}, "ml" => {"$millisecond" =>  "$start_time"}}}
 
@@ -310,7 +299,8 @@ end
     puts view_by_distribution_for_stories
 
     views_for_stories = Hash.new
-    for story_id in stories do
+    for bson_story_id in stories do
+      story_id = bson_story_id.to_s
       views_for_stories[story_id] = Hash.new
       date = start_date
       while date<=end_date do
@@ -344,22 +334,21 @@ end
         views_for_stories[story_id][date_key] = data_for_date
         date = add_days(date,1)
       end
-      puts "views_for_stories[" + story_id + "]: " + views_for_stories[story_id].to_s
+      #puts "views_for_stories[" + story_id + "]: " + views_for_stories[story_id].to_s
     end
     
-    puts "views_for_stories: " + views_for_stories.to_s
-    #TODO: remove [story_id] after figuring out what to do with 2 stories. the will return data only for the last story selected
-    return views_for_stories[story_id]
+    #puts "views_for_stories: " + views_for_stories.to_s
+    return views_for_stories
   end
 
-  def self.get_remakes_grouped_by_users(start_date)
-    match = {"$match" => {created_at:{"$gte"=>start_date}, share_link: {"$exists"=>true}}}  
+  def self.get_remakes_grouped_by_users(start_date,end_date,stories_array)
+    match = {"$match" => {created_at:{"$gte"=>start_date, "$lt"=>add_days(end_date,1)}, share_link: {"$exists"=>true}, story_id:{ "$in" => stories_array}}}  
     group = {"$group" => { "_id" => {"user_id" => "$user_id"}, "count" => {"$sum" => 1}}}            
     return @@remakes_collection.aggregate([match,group])
   end
 
-  def self.sort_users_by_number_of_remakes(start_date)
-    match = {"$match" => {created_at:{"$gte"=>start_date}, share_link: {"$exists"=>true}}}  
+  def self.sort_users_by_number_of_remakes(start_date,end_date)
+    match = {"$match" => {created_at:{"$gte"=>start_date, "$lt"=>add_days(end_date,1)}, share_link: {"$exists"=>true}}}  
     group = {"$group" => { "_id" => {"user_id" => "$user_id"}, "count" => {"$sum" => 1}}}
     
     res = @@remakes_collection.aggregate([match,group])
@@ -377,9 +366,9 @@ end
     return data
   end  
 
-  def self.get_user_distibution_per_number_of_remakes(start_date,more_than)
+  def self.get_user_distibution_per_number_of_remakes(start_date,end_date,more_than)
 
-    data = sort_users_by_number_of_remakes(start_date)
+    data = sort_users_by_number_of_remakes(start_date,end_date)
     
     final_data = Hash.new
 
@@ -420,26 +409,28 @@ end
     return @@sessions_collection.aggregate([match,proj1,proj2,group])
   end
 
-  def self.get_data_avg_session_time(avg_session_time_for_date)  
+  def self.get_data_avg_session_time(start_date,end_date,avg_session_time_for_date)   
     final_data = Hash.new
+    
     for date in avg_session_time_for_date do
+      puts "date: " + date.to_s
       _date = date["_id"]["date"]
       _date_key = _date.strftime("%Y-%m-%d")
       avg_session_time = date["avg_session_time"]
       final_data[_date_key] = avg_session_time
     end
+
     return final_data
   end
 
-   #KPI's
-   # % of shared videos out of all created movies for date
-  def self.get_pct_of_shared_videos_for_date_range_out_of_all_created_movies(start_date,end_date)  
-    puts "=============================="
-    puts "start date " + start_date.iso8601
-    puts "end_date " + end_date.iso8601
+  #=====================================================================================
+  #===================================  Final KPI's ====================================
+  #=====================================================================================
 
+  # % of shared videos out of all created movies for date
+  def self.get_pct_of_shared_videos_for_date_range_out_of_all_created_movies(start_date,end_date,stories_array)  
     #res of this query returns all remakes for dates, sorted by date buckets: {"_id"=>{"date"=>2014-07-15 00:00:00 UTC}, "list"=>[BSON::ObjectId('53c524e670b35d0a7c00001a'), BSON::ObjectId('53c5633770b35d77a2000001')]}
-    remakes_sorted_by_date_buckets = get_good_remakes_sorted_by_date_buckets(start_date,end_date)
+    remakes_sorted_by_date_buckets = get_good_remakes_sorted_by_date_buckets(start_date,end_date,stories_array)
 
     # {"_id"=>{"remake_id"=>BSON::ObjectId('53bc0a2770b35d3c590000bf')}}
     all_shared_remakes_for_dates = get_shares_grouped_by_remake_id(start_date,end_date)
@@ -449,8 +440,8 @@ end
   end
 
   # % of users that shared at list once for day out of all of active users
-  def self.get_pct_of_users_who_shared_at_list_once_for_date_range(start_date,end_date)
-    users_sorted_by_date_buckets = get_movie_making_users_sorted_by_date_buckets(start_date,end_date)
+  def self.get_pct_of_users_who_shared_at_list_once_for_date_range(start_date,end_date,stories_array)
+    users_sorted_by_date_buckets = get_movie_making_users_sorted_by_date_buckets(start_date,end_date,stories_array)
     all_sharing_users_for_dates = get_shares_grouped_by_user_id(start_date,end_date)
     final_data = get_data_pct_of_users_who_shared_at_list_once(start_date,end_date,users_sorted_by_date_buckets, all_sharing_users_for_dates)
     return final_data      
@@ -461,32 +452,23 @@ end
         stories_array = get_active_stories_array 
       end   
 
-      puts "stories_array:"
-      puts stories_array
-      remake_views = get_remake_views_for_stories(start_date,end_date,stories_array)
-      puts "remake views:"
-      puts remake_views
-      story_views = get_story_views_for_stories(start_date,end_date,stories_array)
-      puts "story views:"
-      puts story_views
-
       views_distribution_by_view_source = get_view_distribution_by_view_source(start_date,end_date,stories_array)
-      puts "views_distribution_by_view_source: "
-      puts views_distribution_by_view_source
+      story_views = get_story_views_for_stories(start_date,end_date,stories_array)
+      remake_views = get_remake_views_for_stories(start_date,end_date,stories_array)
 
       final_data = get_data_total_views_for_story_for_day(start_date,end_date,story_views,remake_views,views_distribution_by_view_source,stories_array)
       return final_data
   end
 
-  def self.get_distribution_of_remakes_between_users_from_date(start_date)
-    remakes_grouped_by_users = get_remakes_grouped_by_users(start_date)
+  def self.get_distribution_of_remakes_between_users_from_date(start_date,end_date,stories_array)
+    remakes_grouped_by_users = get_remakes_grouped_by_users(start_date,end_date,stories_array)
     final_data = get_data_distribution_of_movie_makers(remakes_grouped_by_users)
     return final_data
   end
  
   def self.get_avg_session_time_for_date_range(start_date,end_date)
     avg_session_time_for_date = self.get_avg_session_time_for_date(start_date,end_date)
-    final_data = get_data_avg_session_time(avg_session_time_for_date)
+    final_data = get_data_avg_session_time(start_date,end_date,avg_session_time_for_date)
     return final_data
   end
 
@@ -511,21 +493,29 @@ end
       key = date.strftime("%Y-%m-%d")
 
       final_data[key] = []
-      if failed_remakes_bucket_by_dates[date] then
-        final_data[key] = [failed_remakes_bucket_by_dates[date].count, all_remakes_bucket_by_dates[date].count]
-      else 
-        final_data[key] = [0,0]
+      if all_remakes_bucket_by_dates[date] then
+        if failed_remakes_bucket_by_dates[date] then 
+          final_data[key] = [failed_remakes_bucket_by_dates[date].count, all_remakes_bucket_by_dates[date].count]
+        else 
+          final_data[key] = [0, all_remakes_bucket_by_dates[date].count]
+        end
       end
       date = add_days(date,1)
     end
     return final_data
   end
 
-  def self.get_pct_of_failed_remakes_for_date_range(start_date,end_date)
-    failed_remakes = get_failed_remakes_sorted_by_date_buckets(start_date,end_date)
-    all_remakes = get_all_remakes_sorted_by_date_buckets(start_date,end_date)
+  def self.get_pct_of_failed_remakes_for_date_range(start_date,end_date,stories_array)
+    failed_remakes = get_failed_remakes_sorted_by_date_buckets(start_date,end_date,stories_array)
+    puts "failed_remakes"
+    puts failed_remakes
+    all_remakes = get_all_remakes_sorted_by_date_buckets(start_date,end_date,stories_array)
+    puts "all_remakes"
+    puts all_remakes
 
     final_data = get_data_pct_of_failed_remakes_per_day(start_date,end_date,failed_remakes,all_remakes)
+    puts "final_data: get_pct_of_failed_remakes_for_date_range"
+    puts final_data
     return final_data
   end
 end

@@ -1065,13 +1065,14 @@ post '/remake/view' do
 	if playback_event == PlaybackEventType::PlaybackEventStart then
 		client_generated_view_id = BSON::ObjectId.from_string(params[:view_id])
 		remake_id = BSON::ObjectId.from_string(params[:remake_id])
-		user_id =  BSON::ObjectId.from_string(params[:user_id])
+		user_id =  BSON::ObjectId.from_string(params[:user_id]) if params[:user_id]
 		orig_screen = params[:originating_screen].to_i
 
 		remake = settings.db.collection("Remakes").find_one(remake_id)
 		story_id = remake["story_id"];
 
-		view = {_id:client_generated_view_id, user_id:user_id , remake_id:remake_id, story_id: story_id, start_time:Time.now, originating_screen:orig_screen}
+		view = {_id:client_generated_view_id, remake_id:remake_id, story_id: story_id, start_time:Time.now, originating_screen:orig_screen}
+		view["user_id"] = user_id if user_id
 		view_objectId = views.save(view)
 		
 		logger.info "New view saved in the DB with view id " + view_objectId.to_s
@@ -1080,7 +1081,7 @@ post '/remake/view' do
 	elsif playback_event = PlaybackEventType::PlaybackEventStop then
 		view_id =  BSON::ObjectId.from_string(params[:view_id])
 		remake_id = BSON::ObjectId.from_string(params[:remake_id])
-		user_id =  BSON::ObjectId.from_string(params[:user_id])
+		user_id =  BSON::ObjectId.from_string(params[:user_id]) if params[:user_id]
 		playback_duration = params[:playback_duration].to_i
 		total_duration = params[:total_duration].to_i
 		orig_screen = params[:originating_screen].to_i
@@ -1278,13 +1279,16 @@ get '/play/:remake_id' do
 	erb :video
 end
 
-
-
 get '/analytics' do
+
+	Analytics.init_db(settings.db)
 
 	_start_date = Time.parse(params[:start_date])
 	_end_date   = Time.parse(params[:end_date])
-	stories = params[:stories];
+	stories_array = params[:stories];
+
+	bson_story_array = Array.new
+    stories_array.each { |story_id| bson_story_array.push(BSON::ObjectId.from_string(story_id)) }  
 
 	start_date =  Time.parse(_start_date.strftime("%Y%m%dZ"))
 	end_date   =  Time.parse(_end_date.strftime("%Y%m%dZ"))
@@ -1295,17 +1299,17 @@ get '/analytics' do
 	Analytics.init_db(settings.db)
 
 	######
-	@heading1 = "% of shared videos out of all created movies"
-	@data1    = Analytics.get_pct_of_shared_videos_for_date_range_out_of_all_created_movies(start_date,end_date)
+	@heading1 = "% of shared videos out of all created movies "
+	@data1    = Analytics.get_pct_of_shared_videos_for_date_range_out_of_all_created_movies(start_date,end_date,bson_story_array)
 	######
 	@heading2 = "% of users that shared at least once out of all active users"
-	@data2    = Analytics.get_pct_of_users_who_shared_at_list_once_for_date_range(start_date,end_date) 
+	@data2    = Analytics.get_pct_of_users_who_shared_at_list_once_for_date_range(start_date,end_date,bson_story_array) 
     #####
 	#@heading3 = "distribution of movie making between users from date: " + launch_date.iso8601
 	#@data3    = Analytics.get_distribution_of_remakes_between_users_from_date(launch_date)
 	#####
 	@heading4 = "views for story" 
-	@data4 = Analytics.get_total_views_for_story_for_date_range(start_date,end_date,stories)
+	@data4 = Analytics.get_total_views_for_story_for_date_range(start_date,end_date,bson_story_array)
 	puts @heading4
 	puts @data4
 	######
@@ -1313,14 +1317,14 @@ get '/analytics' do
 	@data5 = Analytics.get_avg_session_time_for_date_range(start_date,end_date)
 	######
 	@heading6 = "remake distibution between users by count from start_date" + start_date.iso8601
-	@data6 =  Analytics.get_user_distibution_per_number_of_remakes(start_date,3)
+	@data6 =  Analytics.get_user_distibution_per_number_of_remakes(start_date,end_date,3)
 	######
 	@heading7 = "% of failed remakes"
-	@data7 = Analytics.get_pct_of_failed_remakes_for_date_range(start_date,end_date)
+	@data7 = Analytics.get_pct_of_failed_remakes_for_date_range(start_date,end_date,bson_story_array)
 
 	puts "=============== presenting Anaytlics ==============="
 	return [["line" , KPIGraphType::NormalFractionGraphType, @heading1, @data1], ["line", KPIGraphType::NormalFractionGraphType, @heading2, @data2],
-	 ["line" , KPIGraphType::StoryViewsGraphType, @heading4,  @data4],
+	 ["stacked grouped bars" , KPIGraphType::StoryViewsGraphType, @heading4,  @data4],
 	 ["line" , KPIGraphType::AvgValueGraphType, @heading5, @data5], ["pie", KPIGraphType::PieChartGraphType ,@heading6, @data6],
 	 ["line", KPIGraphType::NormalFractionGraphType ,@heading7, @data7]].to_json
 	#erb :analytics

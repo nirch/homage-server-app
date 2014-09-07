@@ -3,6 +3,9 @@
 	<title>Homage</title>
 	<!-- <script type="text/javascript" src="//cdn.sublimevideo.net/js/w5ui0013.js"></script> -->
 
+	<!-- jQuery -->
+ 	<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+
 	<link href="//vjs.zencdn.net/4.6/video-js.css" rel="stylesheet">
 	<script src="//vjs.zencdn.net/4.6/video.js"></script>
 	<style type="text/css">
@@ -18,6 +21,9 @@
 	<!-- Latest compiled and minified JavaScript -->
 	<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
 
+	<!-- script for creating a BSON objectID -->
+	<script src="/js/Objectid.js"></script>
+
 	<style type="text/css">
 		html, body {
 			height: 100%;
@@ -30,7 +36,6 @@
 		}
 	</style>
 
-
 	<!-- Google Analytics (only if in production) -->
 	<% if ENV['RACK_ENV'] == "production" then %>
 		<script>
@@ -42,68 +47,7 @@
 			ga('create', 'UA-46293158-1', 'auto');
 			ga('send', 'pageview');
 		</script>
-
-		<script>
-			sublime.ready(function() {
-			  sublime.player('0').on({
-			    start: trackVideoStart,
-			    end:   trackVideoEnd
-			  });
-			});
-			 
-			function trackVideoStart(player) {
-			  ga('send', 'event', 'Videos', 'Started', videoName(player));
-			}
-			 
-			function trackVideoEnd(player) {
-			  ga('send', 'event', 'Videos', 'Ended', videoName(player));
-			}
-			 
-			function videoName(player) {
-			  return player.videoElement().getAttribute('title');
-			}
-		</script>
 	<% end %>
-
-<!-- End Google Analytics -->
-
-<!-- Google Analytics ga
-	<script type="text/javascript">
-
-	  var _gaq = _gaq || [];
-	  _gaq.push(['_setAccount', 'UA-46293158-1']);
-	  _gaq.push(['_trackPageview']);
-
-	  (function() {
-	    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-	    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-	    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-	  })();
-
-	</script>
-
-	<script type="text/javascript">
-		sublime.ready(function() {
-		  sublime.player('0').on({
-		    start: trackVideoStart,
-		    end:   trackVideoEnd
-		  });
-		});
-		 
-		function trackVideoStart(player) {
-		  _gaq.push(["_trackEvent", "Videos", "Started", videoName(player)]);
-		}
-		 
-		function trackVideoEnd(player) {
-		  _gaq.push(["_trackEvent", "Videos", "Ended", videoName(player)]);
-		}
-		 
-		function videoName(player) {
-		  return player.videoElement().getAttribute('title');
-		}
-	</script>
--->
-
 </head>
 
 <body>
@@ -127,35 +71,66 @@
 			<% end %>
 		</h1>
 
-<!-- 		<video id="0" class="sublime" title="<%= @story["name"] + " - " + @remake["_id"].to_s%>" poster=<%= @remake["thumbnail"]%> data-sharing-url=<%= @remake["share_link"]%> data-sharing-image='poster' data-sharing-text='Check out this cool video by #HomageApp' width="640" height="360" data-uid="0" preload="none">
-		  <source src=<%= @remake["video"]%> data-quality="hd" />
-		</video> -->
-
-		<video id="0" class="video-js vjs-default-skin vjs-big-play-centered"
+		<video id="video_1" class="video-js vjs-default-skin vjs-big-play-centered" title="<%= @story["name"] + " - " + @remake["_id"].to_s%>" 
 			controls preload="auto" width="640" height="360"
 			poster=<%= @remake["thumbnail"]%>
 			data-setup='{"example_option":true}'>
 			<source src=<%= @remake["video"]%> type='video/mp4' />
 			<p class="vjs-no-js">To view this video please enable JavaScript, and consider upgrading to a web browser that <a href="http://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a></p>
 		</video>
-
-<!-- 		<div class="row">
-			<div class="col-sm-8">
-		<video id="0" class="video-js vjs-default-skin vjs-big-play-centered"
-			controls preload="auto" width="640" height="360"
-			poster=<%= @remake["thumbnail"]%>
-			data-setup='{"example_option":true}'>
-			<source src=<%= @remake["video"]%> type='video/mp4' />
-			<p class="vjs-no-js">To view this video please enable JavaScript, and consider upgrading to a web browser that <a href="http://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a></p>
-		</video>
-			</div>
-
-			<div class="col-sm-4">
-				<p>By Nir Channes</p>
-				<button class="btn btn-primary btn-lg">Share</button>
-			</div>
-		</div>
- -->	
- 
 	</div>
+
+	<script>
+		var stopReported = false;
+		var playReported = false;
+
+		videojs('video_1').ready(function(){
+			var myPlayer = this;
+			var videoTitle = '<%= @story["name"] + " - " + @remake["_id"].to_s %>'
+			var remakeId = '<%= @remake["_id"].to_s %>'
+			var objectId = new ObjectId().toString();
+
+			var trackVideoSrart = function(){
+				// Tracking in our Server
+				$.post('/remake/view', {"view_id":objectId, "remake_id":remakeId, "playback_event":0, "originating_screen":11}, function(data,status){
+    				playReported = true;
+  				});
+
+				// Tracking in Google Analytics
+				if (typeof ga !== 'undefined') ga('send', 'event', 'Videos', 'Started', videoTitle);
+			};
+
+			var trackVideoEnd = function(){
+				// Tracking in our Server
+				$.post('/remake/view', {"view_id":objectId, "remake_id":remakeId, "playback_event":1, "originating_screen":11, "total_duration":myPlayer.duration(), "playback_duration":myPlayer.currentTime()}, function(data,status){
+    				stopReported = true;
+  				});
+
+				// Tracking in Google Analytics
+				if (typeof ga !== 'undefined') ga('send', 'event', 'Videos', 'Ended', videoTitle);				
+			};
+
+			myPlayer.one("play", trackVideoSrart)
+			myPlayer.one("ended", trackVideoEnd)
+
+			// Event for page unload to track the end of the view
+			$(window).bind('beforeunload', function(){
+				// Tracking only if we already tracked play and didn'y track stop
+  				if (playReported && !stopReported) {
+	  				// Tracking in our Server (doing a sync call because the page is about to close)
+	  				$.ajax({
+				        type: 'POST',
+				        async: false,
+				        url: '/remake/view',
+				        data: {"view_id":objectId, "remake_id":remakeId, "playback_event":1, "originating_screen":11, "total_duration":myPlayer.duration(), "playback_duration":myPlayer.currentTime()},
+				        complete: function(xhr, status){ }
+				    });
+
+					// Tracking in Google Analytics
+					if (typeof ga !== 'undefined') ga('send', 'event', 'Videos', 'Ended', videoTitle);				
+  				}
+  			});
+		});
+
+	</script>		
 </body>

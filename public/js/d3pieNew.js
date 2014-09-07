@@ -1651,7 +1651,6 @@ var text = {
 		// element can be an ID or DOM element
 		this.element = element;
 		if (typeof element === "string") {
-			console.log("the element i got is: " + element);
 			var el = element.replace(/^#/, ""); // replace any jQuery-like ID hash char
 			this.element = document.getElementById(el);
 		}

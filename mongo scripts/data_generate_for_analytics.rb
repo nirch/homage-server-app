@@ -13,11 +13,10 @@ SHARES = DB.collection("Shares")
 VIEWS =  DB.collection("Views")
 SESSIONS = DB.collection("Sessions")
 
-START_DATE = Time.parse("20140701Z")
-END_DATE = Time.parse("20140715Z")
-MAX_VIEWS = 50
-MAX_SHARES = 50
-MAX_REMAKES = 50
+START_DATE = Time.parse("20140706Z")
+END_DATE = Time.parse("20140709Z")
+MAX_VIEWS = 10
+MAX_SHARES = 10
 
 def add_days(date,num_of_days)
    	#res = date + 86400*num_of_days
@@ -139,10 +138,13 @@ end
 
 date = START_DATE
 while date!=END_DATE do
-	puts "===============  Good morning, today is: " + date.iso8601 + "======================"
+	puts "===============  Sabah El Hir Ya Talamid, today is: " + date.iso8601 + "======================"
 	puts " "
 	next_day = add_days(date,1)
 	users = users_for_date(date)
+	puts "users for date: "
+	puts users
+
 	users.each {|user_id, value|
 		puts "--- generating activity for user: " + user_id + " ------ "
 		user_id_bson = BSON::ObjectId.from_string(user_id)
@@ -163,11 +165,13 @@ while date!=END_DATE do
 		puts "generating session from: " + fake_session_start.iso8601 + " to: " + fake_session_end.iso8601 
 		gen_session_for_user(user_id_bson,fake_session_start,fake_session_end)
 
-		num_of_views_to_generate = Random.new.rand(0..MAX_VIEWS)
+		#num_of_views_to_generate = Random.new.rand(0..MAX_VIEWS)
+		num_of_views_to_generate = MAX_VIEWS;
 		puts "generating " + num_of_views_to_generate.to_s + " views"
 		gen_views_for_user(user_id_bson, fake_session_start, fake_session_end, num_of_views_to_generate)
 
-		num_of_shares_to_generate = Random.new.rand(0..MAX_SHARES)
+		#num_of_shares_to_generate = Random.new.rand(0..MAX_SHARES)
+		num_of_shares_to_generate = MAX_SHARES;
 		puts "generating " + num_of_shares_to_generate.to_s + " shares"
 		gen_shares_for_user(user_id_bson, fake_session_start, fake_session_end, num_of_shares_to_generate)
 
