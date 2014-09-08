@@ -206,14 +206,22 @@ end
 def add_devices(users, source_user, destination_user, destination_id)
 	destination_devices = Set.new
 	for device in destination_user["devices"]
-		destination_devices.add(device["identifier_for_vendor"])
+		destination_devices.add(device["identifier_for_vendor"]) if device["identifier_for_vendor"]
+		destination_devices.add(device["device_id"]) if device["device_id"]		
 	end
 
 	for device in source_user["devices"]
-		if !destination_devices.include?(device["identifier_for_vendor"]) then
-			#logger.info "Adding to user " + destination_id.to_s + " device " + device.to_s 
-			users.update({_id: destination_id}, {"$push" => {devices: device} })
-		end
+		if device["identifier_for_vendor"] then
+			if !destination_devices.include?(device["identifier_for_vendor"]) then
+				#logger.info "Adding to user " + destination_id.to_s + " device " + device.to_s 
+				users.update({_id: destination_id}, {"$push" => {devices: device} })
+			end
+		elsif device["device_id"] then
+			if !destination_devices.include?(device["device_id"]) then
+				#logger.info "Adding to user " + destination_id.to_s + " device " + device.to_s 
+				users.update({_id: destination_id}, {"$push" => {devices: device} })
+			end
+		end				
 	end
 end
 
