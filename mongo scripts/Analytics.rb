@@ -190,7 +190,9 @@ class Analytics
     # iterate per day 
     while date <= end_date do
       shares_for_day = 0
+
       if remake_bucket_by_dates[date] then
+        puts remake_bucket_by_dates[date]
         for remake in remake_bucket_by_dates[date] do
           if shares_for_remake[remake] then
             shares_for_day +=1
@@ -366,14 +368,32 @@ end
     return data
   end  
 
+  def self.get_users_for_date_range(start_date,end_date)
+    match = {"$match" => {start_time:{"$gte"=>start_date, "$lt"=>add_days(end_date,1)}}}
+    group ={"$group" => {"_id" => {"user_id" => "$user_id"}}}  
+    return @@sessions_collection.aggregate([match,group]).count
+  end
+
   def self.get_user_distibution_per_number_of_remakes(start_date,end_date,more_than)
 
-    data = sort_users_by_number_of_remakes(start_date,end_date)
-    
     final_data = Hash.new
+    data = sort_users_by_number_of_remakes(start_date,end_date)
+
+    users_made_remakes = 0
+    data.each do |key, array| 
+      users_made_remakes += array.count
+    end
+
+    total_active_users = get_users_for_date_range(start_date,end_date)
+    users_wo_remakes = total_active_users - users_made_remakes
+    final_data[0] = users_wo_remakes
 
     more_than_count = 0
     
+    for i in 1..more_than-1
+      final_data[i] = 0
+    end
+
     data.each do |key, array|
       num_of_users = array.count
 
@@ -413,7 +433,6 @@ end
     final_data = Hash.new
     
     for date in avg_session_time_for_date do
-      puts "date: " + date.to_s
       _date = date["_id"]["date"]
       _date_key = _date.strftime("%Y-%m-%d")
       avg_session_time = date["avg_session_time"]
@@ -436,13 +455,22 @@ end
     all_shared_remakes_for_dates = get_shares_grouped_by_remake_id(start_date,end_date)
     
     final_data = gen_data_pct_of_shared_videos_out_of_all_created_movies(start_date,end_date,remakes_sorted_by_date_buckets, all_shared_remakes_for_dates)
+
     return final_data
   end
 
   # % of users that shared at list once for day out of all of active users
   def self.get_pct_of_users_who_shared_at_list_once_for_date_range(start_date,end_date,stories_array)
     users_sorted_by_date_buckets = get_movie_making_users_sorted_by_date_buckets(start_date,end_date,stories_array)
+
+    puts "users_sorted_by_date_buckets"
+    puts users_sorted_by_date_buckets
+
     all_sharing_users_for_dates = get_shares_grouped_by_user_id(start_date,end_date)
+
+    puts "all_sharing_users_for_dates"
+    puts all_sharing_users_for_dates
+
     final_data = get_data_pct_of_users_who_shared_at_list_once(start_date,end_date,users_sorted_by_date_buckets, all_sharing_users_for_dates)
     return final_data      
   end
