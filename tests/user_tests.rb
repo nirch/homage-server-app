@@ -22,9 +22,8 @@ class UserTest < MiniTest::Unit::TestCase
                   :device => { :identifier_for_vendor => "3DACF253-C0B7-4F4C-843E-435A436A1932", :name => "Nir's iPhone", :system_name => "iPhone", :system_version => "7.1", :model => "5s" }, 
                 }
 
-
   GUEST_ANDROID_USER =  {  :is_public => "YES", 
-                   :device => {:device_id => "ff54-c06c-c2d2-b84a", :name => "Nir's Nexus", :system_name => "Android", :system_version => "4.4", :model => "5" } 
+                   :device => {:device_id => "ff54-c06c-c2d2-b84a", :name => "Nir's Nexus", :system_name => "Android", :system_version => "4.4", :model => "5", :android_push_token => "APA91bE4MZmyhKWNiYyecfa8r0cHzai6KGv_LJTz59mdWlCFUQ_Y6fIu9U3V0myH7yfKWL3qr_ru8f4xkThOVsTtbbaSFwiZpBryF6zy9At4h3Q7ySQQEbKQMfH1PXYzJwm_HykxTltsHZDaykGNZj5c6Fv3TFKtyw"} 
                 }
 
   FACEBOOK_ANDROID_USER = { :email => "unit_facebook@test.com",
@@ -879,6 +878,140 @@ class UserTest < MiniTest::Unit::TestCase
     USERS.remove({_id: user_id})
     user = USERS.find_one({_id: user_id})
     assert_nil(user)
+  end
+
+  def test_update_push_token
+    post '/user', GUEST_ANDROID_USER
+
+    json_response = JSON.parse(last_response.body)
+    assert json_response["_id"]["$oid"]
+    guest_user_id = BSON::ObjectId.from_string(json_response["_id"]["$oid"])
+    guest_device_id = GUEST_ANDROID_USER[:device][:device_id]
+
+    new_push_token = "APA91bE4MZmyhKWNiYyecfa8r0cHzai6KGv_LJTz59mdWlCFUQ_Y6fIu9U3V0myH7yfKWL3qr_ru8f4xkThOVsTtbbaSFwiZpBryF6zy9At4h3Q7ySQQEbKQMfH1PXYzJwm_HykxTltsHZDaykGNZj5c6Fv3TFKNEW"
+
+    # Updating push token
+    put '/user/push_token', {:user_id => guest_user_id.to_s, :device_id => guest_device_id, :android_push_token => new_push_token}
+    json_response = JSON.parse(last_response.body)
+    assert json_response["_id"]["$oid"]
+    assert_equal new_push_token, json_response["devices"][0]["android_push_token"]
+
+    user = USERS.find_one(guest_user_id)
+    assert_equal new_push_token, user["devices"][0]["android_push_token"]
+
+    # deleting the user
+    USERS.remove({_id: guest_user_id})
+    user = USERS.find_one(guest_user_id)
+    assert_nil user
+  end
+
+  def test_update_push_token_invalid_user
+    post '/user', GUEST_ANDROID_USER
+
+    json_response = JSON.parse(last_response.body)
+    assert json_response["_id"]["$oid"]
+    guest_user_id = BSON::ObjectId.from_string(json_response["_id"]["$oid"])
+    guest_device_id = GUEST_ANDROID_USER[:device][:device_id]
+
+    new_push_token = "APA91bE4MZmyhKWNiYyecfa8r0cHzai6KGv_LJTz59mdWlCFUQ_Y6fIu9U3V0myH7yfKWL3qr_ru8f4xkThOVsTtbbaSFwiZpBryF6zy9At4h3Q7ySQQEbKQMfH1PXYzJwm_HykxTltsHZDaykGNZj5c6Fv3TFKNEW"
+
+    new_user_id = BSON::ObjectId.new
+
+    # Updating push token
+    put '/user/push_token', {:user_id => new_user_id, :device_id => guest_device_id, :android_push_token => new_push_token}
+
+    assert_equal 404, last_response.status
+    json_response = JSON.parse(last_response.body)
+    assert_equal 1002, json_response["error_code"]
+
+    user = USERS.find_one(guest_user_id)
+    assert_equal GUEST_ANDROID_USER[:device][:android_push_token], user["devices"][0]["android_push_token"]
+
+    # deleting the user
+    USERS.remove({_id: guest_user_id})
+    user = USERS.find_one(guest_user_id)
+    assert_nil user
+  end
+
+  def test_update_push_token_invalid_device
+    post '/user', GUEST_ANDROID_USER
+
+    json_response = JSON.parse(last_response.body)
+    assert json_response["_id"]["$oid"]
+    guest_user_id = BSON::ObjectId.from_string(json_response["_id"]["$oid"])
+    guest_device_id = GUEST_ANDROID_USER[:device][:device_id]
+
+    new_push_token = "APA91bE4MZmyhKWNiYyecfa8r0cHzai6KGv_LJTz59mdWlCFUQ_Y6fIu9U3V0myH7yfKWL3qr_ru8f4xkThOVsTtbbaSFwiZpBryF6zy9At4h3Q7ySQQEbKQMfH1PXYzJwm_HykxTltsHZDaykGNZj5c6Fv3TFKNEW"
+
+    new_device_id = "ff54-c06c-c2d2-xxxx"
+
+    # Updating push token
+    put '/user/push_token', {:user_id => guest_user_id.to_s, :device_id => new_device_id, :android_push_token => new_push_token}
+
+    assert_equal 404, last_response.status
+    json_response = JSON.parse(last_response.body)
+    assert_equal 1006, json_response["error_code"]
+
+    user = USERS.find_one(guest_user_id)
+    assert_equal GUEST_ANDROID_USER[:device][:android_push_token], user["devices"][0]["android_push_token"]
+
+    # deleting the user
+    USERS.remove({_id: guest_user_id})
+    user = USERS.find_one(guest_user_id)
+    assert_nil user    
+  end
+
+  def test_update_push_token_multiple_devices
+    post '/user', FACEBOOK_USER
+
+    json_response = JSON.parse(last_response.body)
+    assert json_response["_id"]["$oid"]
+    facebook_user_id = BSON::ObjectId.from_string(json_response["_id"]["$oid"])
+
+    post '/user', GUEST_ANDROID_USER
+
+    json_response = JSON.parse(last_response.body)
+    assert json_response["_id"]["$oid"]
+    guest_user_id = BSON::ObjectId.from_string(json_response["_id"]["$oid"])
+
+    guest_to_facebook_user = FACEBOOK_USER.clone
+    guest_to_facebook_user[:user_id] = guest_user_id.to_s
+    put '/user', guest_to_facebook_user
+
+    json_response = JSON.parse(last_response.body)
+    assert json_response["_id"]["$oid"]
+    guest_to_facebook_user_id = BSON::ObjectId.from_string(json_response["_id"]["$oid"])
+
+    assert_equal facebook_user_id, guest_to_facebook_user_id
+
+    # Guest user should already be deleted
+    user = USERS.find_one(guest_user_id)
+    assert_nil user
+
+    user = USERS.find_one(facebook_user_id)
+    assert_equal 2, user["devices"].count
+
+    guest_device_id = GUEST_ANDROID_USER[:device][:device_id]
+
+    new_push_token = "APA91bE4MZmyhKWNiYyecfa8r0cHzai6KGv_LJTz59mdWlCFUQ_Y6fIu9U3V0myH7yfKWL3qr_ru8f4xkThOVsTtbbaSFwiZpBryF6zy9At4h3Q7ySQQEbKQMfH1PXYzJwm_HykxTltsHZDaykGNZj5c6Fv3TFKNEW"
+
+    # Updating push token
+    put '/user/push_token', {:user_id => guest_to_facebook_user_id.to_s, :device_id => guest_device_id, :android_push_token => new_push_token}
+    json_response = JSON.parse(last_response.body)
+    assert json_response["_id"]["$oid"]
+    user = USERS.find_one(guest_to_facebook_user_id)
+
+    for device in user["devices"]
+        android_device = device if device["device_id"] == guest_device_id
+    end
+    assert_equal new_push_token, android_device["android_push_token"]
+
+    # deleting the user, and checking that both ids (which is the same id) doesn;t exist in the DB
+    USERS.remove({_id: facebook_user_id})
+    user = USERS.find_one(facebook_user_id)
+    assert_nil user
+    user = USERS.find_one(guest_to_facebook_user_id)
+    assert_nil user    
   end
 
   def test_env

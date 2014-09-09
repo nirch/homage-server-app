@@ -97,6 +97,7 @@ module ErrorCodes
 	FacebookToGuestForbidden = 1003
 	FacebookToEmailForbidden = 1004
 	EmailToGuestForbidden = 1005
+	InvalidDeviceID = 1006
 end
 
 module UserType
@@ -457,6 +458,45 @@ put '/user' do
 	end
 
 	return users.find_one(_id: update_user_id).to_json
+end
+
+put '/user/push_token' do
+	# input
+	user_id = BSON::ObjectId.from_string(params[:user_id])
+	device_id = params[:device_id]
+	#system_name = params[:system_name]
+	android_push_token = params[:android_push_token]
+
+	users = settings.db.collection("Users")
+	user = users.find_one(user_id)
+
+	# Validating that the user and the device exists
+
+	if !user then
+		# returning an error
+		logger.warn "Trying to update the push token for a user that doesn't exist with id " + user_id.to_s
+		error_hash = { :message => "User with id " + user_id.to_s + " doesn't exist", :error_code => ErrorCodes::InvalidUserID }
+		return [404, [error_hash.to_json]]
+	end
+
+	device_found = false
+	for device in user["devices"] do
+		if device["device_id"] then
+			device_found = true if device["device_id"] == device_id
+		end
+	end
+
+	if !device_found then
+		# returning an error
+		logger.warn "Trying to update the push token for a device that doesn't exist. user_id=" + user_id.to_s + "; device_id=" + device_id
+		error_hash = { :message => "Device with id " + device_id.to_s + " doesn't exist", :error_code => ErrorCodes::InvalidDeviceID }
+		return [404, [error_hash.to_json]]		
+	end
+
+	# Updating the push token
+	users.update({_id: user_id, "devices.device_id" => device_id}, {"$set" => {"devices.$.android_push_token" => android_push_token}})
+
+	return users.find_one(_id: user_id).to_json
 end
 
 post '/user/old' do
