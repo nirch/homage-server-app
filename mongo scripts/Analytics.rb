@@ -163,8 +163,6 @@ class Analytics
       date = add_days(date,1)
     end
 
-    puts "final data ===== get_data_pct_of_users_who_shared_at_list_once: "
-    puts final_data
     return final_data
   end
 
@@ -192,7 +190,6 @@ class Analytics
       shares_for_day = 0
 
       if remake_bucket_by_dates[date] then
-        puts remake_bucket_by_dates[date]
         for remake in remake_bucket_by_dates[date] do
           if shares_for_remake[remake] then
             shares_for_day +=1
@@ -207,8 +204,6 @@ class Analytics
       date = add_days(date,1)
     end
 
-    puts "final data ===== gen_data_pct_of_shared_videos_out_of_all_created_movies: "
-    puts final_data
     return final_data
   end
 
@@ -269,7 +264,6 @@ end
       end
       remake_views_for_stories[story_id][date] = record["count"]
     end
-    puts remake_views_for_stories
 
     story_views_for_stories = Hash.new
     for record in story_views do
@@ -280,7 +274,6 @@ end
       end
       story_views_for_stories[story_id][date] = record["count"]
     end
-    puts story_views_for_stories
 
     view_by_distribution_for_stories = Hash.new
     for record in views_distribution_by_view_source do
@@ -298,7 +291,6 @@ end
 
       view_by_distribution_for_stories[story_id][date][view_source] = record["count"]
     end
-    puts view_by_distribution_for_stories
 
     views_for_stories = Hash.new
     for bson_story_id in stories do
@@ -336,10 +328,8 @@ end
         views_for_stories[story_id][date_key] = data_for_date
         date = add_days(date,1)
       end
-      #puts "views_for_stories[" + story_id + "]: " + views_for_stories[story_id].to_s
     end
     
-    #puts "views_for_stories: " + views_for_stories.to_s
     return views_for_stories
   end
 
@@ -462,15 +452,7 @@ end
   # % of users that shared at list once for day out of all of active users
   def self.get_pct_of_users_who_shared_at_list_once_for_date_range(start_date,end_date,stories_array)
     users_sorted_by_date_buckets = get_movie_making_users_sorted_by_date_buckets(start_date,end_date,stories_array)
-
-    puts "users_sorted_by_date_buckets"
-    puts users_sorted_by_date_buckets
-
     all_sharing_users_for_dates = get_shares_grouped_by_user_id(start_date,end_date)
-
-    puts "all_sharing_users_for_dates"
-    puts all_sharing_users_for_dates
-
     final_data = get_data_pct_of_users_who_shared_at_list_once(start_date,end_date,users_sorted_by_date_buckets, all_sharing_users_for_dates)
     return final_data      
   end
@@ -535,15 +517,8 @@ end
 
   def self.get_pct_of_failed_remakes_for_date_range(start_date,end_date,stories_array)
     failed_remakes = get_failed_remakes_sorted_by_date_buckets(start_date,end_date,stories_array)
-    puts "failed_remakes"
-    puts failed_remakes
     all_remakes = get_all_remakes_sorted_by_date_buckets(start_date,end_date,stories_array)
-    puts "all_remakes"
-    puts all_remakes
-
     final_data = get_data_pct_of_failed_remakes_per_day(start_date,end_date,failed_remakes,all_remakes)
-    puts "final_data: get_pct_of_failed_remakes_for_date_range"
-    puts final_data
     return final_data
   end
 end

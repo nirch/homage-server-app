@@ -22,7 +22,6 @@ class ServerClientKPITest < MiniTest::Unit::TestCase
 
 	USER_ACTIVITY = Hash.new
 	
-	# activity = [[<num_of_views>,<num_of_shares>],[]...]
 	#USER_ACTIVITY["5332ec99f52d5c1ec2000017"] = {"2013-02-06" => {"sessions"=>2, remakes" => 5, "views" => 10, "shares" => 5}, "2013-02-07" => {"sessions"=>1, "remakes" => 6, "views" => 5, "shares" => 5}},
 	#											 "2013-02-08" => {"sessions"=>2, "remakes" => 2, "views" => 5, "shares" => 5}, "2013-02-09" => {"sessions=>1, remakes" => 6, "views" => 3, "shares" => 5}
 
@@ -40,7 +39,7 @@ class ServerClientKPITest < MiniTest::Unit::TestCase
 	end
 
 	def setup 
-		
+		generateUserActivity
 	end
 
 	def teardown 
@@ -81,8 +80,6 @@ class ServerClientKPITest < MiniTest::Unit::TestCase
    			
    			activity = d["activity"]
    			if activity == nil then
-   				puts "nil activity"
-   				puts d
    				return
    			end
 
@@ -91,7 +88,6 @@ class ServerClientKPITest < MiniTest::Unit::TestCase
    			created_at = Random.new.rand(date..next_day)
 
    			if activity == "remake" then
-   				puts "generating remake"
    				remake_id = d["entity_id"]
    				user_id = d["user_id"]
    				story_id = d["story_id"]
@@ -107,11 +103,12 @@ class ServerClientKPITest < MiniTest::Unit::TestCase
    				if render_end != nil then
    					remake[:render_end] = render_end
    				end
-
+				
+				puts "generating remake: " + remake.to_s   					
 				REMAKES.save(remake)
 
 			elsif activity == "view" then 
-				puts "generating view"
+				
 				view_id = d["entity_id"]
 				user_id = d["user_id"]
 				story_id = d["story_id"]
@@ -126,47 +123,43 @@ class ServerClientKPITest < MiniTest::Unit::TestCase
 
     			remake_id = d["remake_id"]
 				if remake_id != nil then
-					puts "remake_id: " + remake_id
-					puts "generating remake view"
 					view[:remake_id] = remake_id
 				end
 
+    			puts "generating view: " + view.to_s
     			VIEWS.save(view)
+
     		elsif activity == "share" then
-    			puts "generating share"
+
 				share_id = d["entity_id"]
 				remake_id = d["remake_id"]
 				user_id = d["user_id"]
 				share = {_id:share_id, user_id:user_id , remake_id:remake_id, created_at:created_at, share_method: Random.new.rand(0..5)}
+				puts "generating share: " + share.to_s
 				SHARES.save(share)
+
 			elsif activity == "session" then
-				puts "generating session"
+
 				session_id = d["entity_id"]
 				user_id = d["user_id"]
 				duration_in_minutes = d["duration_in_minutes"].to_f
 				session_start_time = created_at
 				session_end_time = created_at + duration_in_minutes.to_f*60
-
-				puts "session_id: " + session_id
-				puts "user_id: " + user_id
-				puts "duration_in_minutes: " + duration_in_minutes.to_s
-				puts "session_start_time: " + created_at.iso8601
-				puts "session_end_time: " + session_end_time.iso8601
 				user_session = {_id: session_id, user_id:user_id, start_time:session_start_time, end_time: session_end_time, duration_in_minutes: duration_in_minutes}
+				puts "generating user_session: " + user_session.to_s
 				SESSIONS.save(user_session)
 			end
 			
    		end
    	end
 
-	def rafi_test_get_good_remakes_sorted_by_date_buckets
+	def test_get_good_remakes_sorted_by_date_buckets
 
-		generateUserActivity
+		
 			
 		data = Analytics.get_good_remakes_sorted_by_date_buckets(START_DATE,END_DATE,STORIES)
-		puts "data: " + data.to_s
 		
-		expected_res = {"2013-02-06"=>6, "2013-02-07"=>9, "2013-02-08"=>2, "2013-02-09"=>11}
+		expected_res = {"2013-02-06"=>5, "2013-02-07"=>6, "2013-02-08"=>1, "2013-02-09"=>8}
 		for datum in data do
 			date = datum["_id"]["date"].strftime "%Y-%m-%d"
 			res = datum["list"].count
@@ -174,7 +167,7 @@ class ServerClientKPITest < MiniTest::Unit::TestCase
 		end
 	end
 
-	def rafi_test_gen_data_pct_of_shared_videos_out_of_all_created_movies
+	def test_gen_data_pct_of_shared_videos_out_of_all_created_movies
 							  
 		remakes_sorted_by_date_buckets = [{"_id"=>{"date"=>Time.parse("20130206Z")}, "list"=>[BSON::ObjectId('540d9fd4cbd4858b08000001'), BSON::ObjectId('540d9fd5cbd4858b08000003'), BSON::ObjectId('540d9fd6cbd4858b08000009'), BSON::ObjectId('540d9fd7cbd4858b0800000e'), BSON::ObjectId('540d9fd7cbd4858b08000012')]},
 										  {"_id"=>{"date"=>Time.parse("20130207Z")}, "list"=>[BSON::ObjectId('540d9fdbcbd4858b0800002a'), BSON::ObjectId('540d9fd8cbd4858b08000015'), BSON::ObjectId('540d9fd8cbd4858b08000017'), BSON::ObjectId('540d9fd9cbd4858b0800001b'), BSON::ObjectId('540d9fdacbd4858b08000022'), BSON::ObjectId('540d9fdbcbd4858b08000025')]}]
@@ -197,9 +190,9 @@ class ServerClientKPITest < MiniTest::Unit::TestCase
 	end
 
 
-	def rafi_test_get_movie_making_users_sorted_by_date_buckets
+	def test_get_movie_making_users_sorted_by_date_buckets
 		
-		generateUserActivity
+		
 			
 		data = Analytics.get_movie_making_users_sorted_by_date_buckets(START_DATE,END_DATE,STORIES)
 
@@ -213,7 +206,7 @@ class ServerClientKPITest < MiniTest::Unit::TestCase
 	end 
 
 
-	def rafi_test_get_data_pct_of_users_who_shared_at_list_once
+	def test_get_data_pct_of_users_who_shared_at_list_once
 		users_sorted_by_date_buckets = [{"_id"=>{"date"=>Time.parse("20130206Z")}, "list"=>["5332ec99f52d5c1ec2000017", "53306186f52d5c6a14000006"]},
 										{"_id"=>{"date"=>Time.parse("20130207Z")}, "list"=>["5332ec99f52d5c1ec2000017", "53306186f52d5c6a14000006"]}]
 
@@ -225,12 +218,10 @@ class ServerClientKPITest < MiniTest::Unit::TestCase
 		assert_equal(expected_res,res)
 	end 
 	
-	def rafi_test_get_view_distribution_by_view_source
-		generateUserActivity
+	def test_get_view_distribution_by_view_source
+		
 
 		data = Analytics.get_view_distribution_by_view_source(START_DATE,END_DATE,STORIES)
-		puts "data: "
-		puts data.to_s
 
 		n_data = Hash.new
 		for datum in data do
@@ -249,11 +240,8 @@ class ServerClientKPITest < MiniTest::Unit::TestCase
 			view_source = datum["_id"]["view_source"]
 			count = datum["count"]
 			n_data[date][story_id][view_source] = count
-			
-			puts "date: " + date + " story_id: " + story_id + "view_source: " + view_source.to_s + "count: " + count.to_s
 		end
 		
-		#{}"2013-02-07"=>{"5320cade72ec727673000402"=>{"0"=>2, "1"=>3}
 		expected_res1 = 3
 		expected_res2 = 10
 
@@ -263,11 +251,10 @@ class ServerClientKPITest < MiniTest::Unit::TestCase
 		assert_equal(expected_res2,res2)
 	end
 
-	def rafi_test_get_story_views_for_stories
-		generateUserActivity
+	def test_get_story_views_for_stories
+		
 
 		data = Analytics.get_story_views_for_stories(START_DATE,END_DATE,STORIES)
-		puts "data: " + data.to_s
 
 		n_data = Hash.new
 		for datum in data do
@@ -285,8 +272,6 @@ class ServerClientKPITest < MiniTest::Unit::TestCase
 
 			count = datum["count"]
 			n_data[date][story_id] = count
-			
-			puts "date: " + date + " story_id: " + story_id + "view_source: " + "count: " + count.to_s
 		end
 
 		expected_res1 = 1
@@ -298,11 +283,10 @@ class ServerClientKPITest < MiniTest::Unit::TestCase
 		assert_equal(expected_res2,res2)
 	end
 
-	def rafi_test_get_remake_views_for_stories
-		generateUserActivity
+	def test_get_remake_views_for_stories
+		
 
 		data = Analytics.get_remake_views_for_stories(START_DATE,END_DATE,STORIES)
-		puts "data: " + data.to_s
 
 		n_data = Hash.new
 		for datum in data do
@@ -320,8 +304,6 @@ class ServerClientKPITest < MiniTest::Unit::TestCase
 
 			count = datum["count"]
 			n_data[date][story_id] = count
-			
-			puts "date: " + date + " story_id: " + story_id + "view_source: " + "count: " + count.to_s
 		end
 
 		expected_res1 = 4
@@ -333,15 +315,13 @@ class ServerClientKPITest < MiniTest::Unit::TestCase
 		assert_equal(expected_res2,res2)
 	end
 
-	def rafi_test_get_data_total_views_for_story_for_day
-		generateUserActivity
+	def test_get_data_total_views_for_story_for_day
+		
+		
 
-		puts "views_distribution_by_view_source"
 		#views_distribution_by_view_source = Analytics.get_view_distribution_by_view_source(START_DATE,END_DATE,STORIES)
 		views_distribution_by_view_source = [{"_id"=>{"date"=>Time.parse("20130209Z"), "story_id"=>"5320cade72ec727673000402", "view_source"=>"0"}, "count"=>2}, {"_id"=>{"date"=>Time.parse("20130209Z"), "story_id"=>"52c18c569f372005e0000286", "view_source"=>"1"}, "count"=>3}, {"_id"=>{"date"=>Time.parse("20130207Z"), "story_id"=>"5320cade72ec727673000402", "view_source"=>"0"}, "count"=>2}, {"_id"=>{"date"=>Time.parse("20130208Z"), "story_id"=>"5320cade72ec727673000402", "view_source"=>"0"}, "count"=>5}, {"_id"=>{"date"=>Time.parse("20130207Z"), "story_id"=>"5320cade72ec727673000402", "view_source"=>"1"}, "count"=>3}, {"_id"=>{"date"=>Time.parse("20130209Z"), "story_id"=>"52c18c569f372005e0000286", "view_source"=>"0"}, "count"=>1}, {"_id"=>{"date"=>Time.parse("20130208Z"), "story_id"=>"52c18c569f372005e0000286", "view_source"=>"1"}, "count"=>3}, {"_id"=>{"date"=>Time.parse("20130206Z"), "story_id"=>"52c18c569f372005e0000286", "view_source"=>"0"}, "count"=>10}, {"_id"=>{"date"=>Time.parse("20130207Z"), "story_id"=>"52c18c569f372005e0000286", "view_source"=>"0"}, "count"=>3}, {"_id"=>{"date"=>Time.parse("20130207Z"), "story_id"=>"52c18c569f372005e0000286", "view_source"=>"1"}, "count"=>4}, {"_id"=>{"date"=>Time.parse("20130209Z"), "story_id"=>"5320cade72ec727673000402", "view_source"=>"1"}, "count"=>2}, {"_id"=>{"date"=>Time.parse("20130206Z"), "story_id"=>"52c18c569f372005e0000286", "view_source"=>"1"}, "count"=>2}]
 
-		puts views_distribution_by_view_source.to_s
-		puts "story_views"
 		#story_views = Analytics.get_story_views_for_stories(START_DATE,END_DATE,STORIES)
 		story_views = [{"_id"=>{"date"=>Time.parse("20130209Z"), "story_id"=>"5320cade72ec727673000402"}, "count"=>1},
 						{"_id"=>{"date"=>Time.parse("20130209Z"), "story_id"=>"52c18c569f372005e0000286"}, "count"=>1},
@@ -349,8 +329,7 @@ class ServerClientKPITest < MiniTest::Unit::TestCase
 						{"_id"=>{"date"=>Time.parse("20130207Z"), "story_id"=>"52c18c569f372005e0000286"}, "count"=>3},
 						{"_id"=>{"date"=>Time.parse("20130207Z"), "story_id"=>"5320cade72ec727673000402"}, "count"=>1},
 						{"_id"=>{"date"=>Time.parse("20130206Z"), "story_id"=>"52c18c569f372005e0000286"}, "count"=>6}]
-		puts story_views
-		puts "remake_views"
+		
 		#remake_views = Analytics.get_remake_views_for_stories(START_DATE,END_DATE,STORIES)
 		remake_views = [{"_id"=>{"date"=>Time.parse("20130209Z"), "story_id"=>"5320cade72ec727673000402"}, "count"=>3},
 						{"_id"=>{"date"=>Time.parse("20130209Z"), "story_id"=>"52c18c569f372005e0000286"}, "count"=>3},
@@ -359,11 +338,8 @@ class ServerClientKPITest < MiniTest::Unit::TestCase
 						{"_id"=>{"date"=>Time.parse("20130207Z"), "story_id"=>"52c18c569f372005e0000286"}, "count"=>4},
 						{"_id"=>{"date"=>Time.parse("20130207Z"), "story_id"=>"5320cade72ec727673000402"}, "count"=>4},
 						{"_id"=>{"date"=>Time.parse("20130206Z"), "story_id"=>"52c18c569f372005e0000286"}, "count"=>6}]
-		puts remake_views
 
 		data = Analytics.get_data_total_views_for_story_for_day(START_DATE,END_DATE,story_views,remake_views,views_distribution_by_view_source,STORIES)
-		puts "data: "
-		puts data
 
 		expected_res1 = 4
 		res1 = data["52c18c569f372005e0000286"]["2013-02-07"]["remake_views"]
@@ -376,8 +352,8 @@ class ServerClientKPITest < MiniTest::Unit::TestCase
 	end
 
 
-	def rafi_test_get_avg_session_time_for_date_range
-		generateUserActivity
+	def test_get_avg_session_time_for_date_range
+		
 
 		data = Analytics.get_avg_session_time_for_date(START_DATE,END_DATE)
 		final_data = Analytics.get_data_avg_session_time(START_DATE,END_DATE,data)
@@ -392,11 +368,10 @@ class ServerClientKPITest < MiniTest::Unit::TestCase
 		assert_equal(expected_res2,res2)
 	end
 
-	def rafi_test_get_failed_remakes_sorted_by_date_buckets
-		generateUserActivity
+	def test_get_failed_remakes_sorted_by_date_buckets
+		
 
 		data = Analytics.get_failed_remakes_sorted_by_date_buckets(START_DATE,END_DATE,STORIES)
-		puts "data: " + data.to_s
 		
 		n_data = Hash.new
 		for datum in data do
@@ -416,11 +391,10 @@ class ServerClientKPITest < MiniTest::Unit::TestCase
 	end
 
 
-	def rafi_test_get_all_remakes_sorted_by_date_buckets
-		generateUserActivity
+	def test_get_all_remakes_sorted_by_date_buckets
+		
 
 		data = Analytics.get_all_remakes_sorted_by_date_buckets(START_DATE,END_DATE,STORIES)
-		puts "data: " + data.to_s
 		
 		n_data = Hash.new
 		for datum in data do
@@ -439,26 +413,20 @@ class ServerClientKPITest < MiniTest::Unit::TestCase
 		assert_equal(expected_res2,res2)
 	end
 
-	def rafi_test_get_data_pct_of_failed_remakes_per_day
-		#generateUserActivity
-		puts "failed_remakes:"
-		failed_remakes = Analytics.get_failed_remakes_sorted_by_date_buckets(START_DATE,END_DATE,STORIES)
+	def test_get_data_pct_of_failed_remakes_per_day
+		
+
+		#failed_remakes = Analytics.get_failed_remakes_sorted_by_date_buckets(START_DATE,END_DATE,STORIES)
     	failed_remakes = [{"_id"=>{"date"=>Time.parse("20130209Z")}, "list"=>["540e1c2acbd485906b00000f", "540e1c2acbd485906b000012", "540e1c2acbd485906b000019"]},
 							{"_id"=>{"date"=>Time.parse("20130208Z")}, "list"=>["540e1c2acbd485906b00000d"]},
 							{"_id"=>{"date"=>Time.parse("20130207Z")}, "list"=>["540e1c2acbd485906b000006", "540e1c2acbd485906b000016"]},
 							{"_id"=>{"date"=>Time.parse("20130206Z")}, "list"=>["540e1c2acbd485906b000003"]}]
-    	puts failed_remakes
-	    
-	    puts "all_remakes"
-	    all_remakes = Analytics.get_all_remakes_sorted_by_date_buckets(START_DATE,END_DATE,STORIES)
+    
+	    #all_remakes = Analytics.get_all_remakes_sorted_by_date_buckets(START_DATE,END_DATE,STORIES)
 	    all_remakes = [{"_id"=>{"date"=>Time.parse("20130209Z")}, "list"=>["540e1c2acbd485906b00000e", "540e1c2acbd485906b00000f", "540e1c2acbd485906b000010", "540e1c2acbd485906b000011", "540e1c2acbd485906b000012", "540e1c2acbd485906b000013", "540e1c2acbd485906b000018", "540e1c2acbd485906b000019", "540e1c2acbd485906b00001a", "540e1c2acbd485906b00001b", "540e1c2acbd485906b00001c"]},
 						{"_id"=>{"date"=>Time.parse("20130208Z")}, "list"=>["540e1c2acbd485906b00000c", "540e1c2acbd485906b00000d"]},
 						{"_id"=>{"date"=>Time.parse("20130207Z")}, "list"=>["540e1c2acbd485906b000006", "540e1c2acbd485906b000007", "540e1c2acbd485906b000008", "540e1c2acbd485906b000009", "540e1c2acbd485906b00000a", "540e1c2acbd485906b00000b", "540e1c2acbd485906b000015", "540e1c2acbd485906b000016", "540e1c2acbd485906b000017"]},
 						{"_id"=>{"date"=>Time.parse("20130206Z")}, "list"=>["540e1c2acbd485906b000001", "540e1c2acbd485906b000002", "540e1c2acbd485906b000003", "540e1c2acbd485906b000004", "540e1c2acbd485906b000005", "540e1c2acbd485906b000014"]}]
-
-
-	    puts "all_remakes"
-	    puts all_remakes
 
 	    data = Analytics.get_data_pct_of_failed_remakes_per_day(START_DATE,END_DATE,failed_remakes,all_remakes)
 	  
@@ -473,11 +441,10 @@ class ServerClientKPITest < MiniTest::Unit::TestCase
 
 	end
 
-	def rafi_test_sort_users_by_number_of_remakes
-		generateUserActivity
+	def test_sort_users_by_number_of_remakes
+		
 
 		data = Analytics.sort_users_by_number_of_remakes(START_DATE,END_DATE)
-		puts "data: " + data.to_s
 
 		n_data = Hash.new
 		data.each do |key, value|
@@ -496,15 +463,15 @@ class ServerClientKPITest < MiniTest::Unit::TestCase
 		assert_equal(expected_res2,res2)
 	end
 
-	def rafi_test_get_users_for_date_range
-		generateUserActivity 
+	def test_get_users_for_date_range
+		 
 		res = Analytics.get_users_for_date_range(START_DATE,END_DATE)
 		expected_res = 3
 		assert_equal(expected_res,res)
 	end
 
-	def rafi_test_get_user_distibution_per_number_of_remakes
-		generateUserActivity
+	def test_get_user_distibution_per_number_of_remakes
+		
 		res = Analytics.get_user_distibution_per_number_of_remakes(START_DATE,END_DATE,3)
 		expected_res = {0=>1, 1=>0, 2=>0, "3 and more"=>2}
 		assert_equal(expected_res,res)
