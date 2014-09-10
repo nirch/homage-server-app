@@ -13,11 +13,11 @@ class ServerClientKPITest < MiniTest::Unit::TestCase
 	START_DATE = Time.parse("20130206Z")
 	END_DATE = Time.parse("20130209Z")
 
-	TEST_USERS 		   			=  ["5332ec99f52d5c1ec2000017","53306186f52d5c6a14000006","53b9b6fd70b35d3c59000029"];
-	HOT_TOPIC_STORY_ID 			=  "5320cade72ec727673000402"  
-	TEST_STORY_ID      			=  "52c18c569f372005e0000286"
-	DUMB_AND_HELPLESS_STORY_ID  =  "530dd1e5784380a058000601"
-	STORIES                     =  [HOT_TOPIC_STORY_ID, TEST_STORY_ID];
+	test_USERS 		   			=  ["5332ec99f52d5c1ec2000017","53306186f52d5c6a14000006","53b9b6fd70b35d3c59000029"];
+	HOT_TOPIC_STORY_ID 			=  BSON::ObjectId.from_string("5320cade72ec727673000402")
+	test_STORY_ID      			=  BSON::ObjectId.from_string("52c18c569f372005e0000286")
+	DUMB_AND_HELPLESS_STORY_ID  =  BSON::ObjectId.from_string("530dd1e5784380a058000601")
+	STORIES                     =  [HOT_TOPIC_STORY_ID, test_STORY_ID];
 	STORY_VIEWS = 1
 
 	USER_ACTIVITY = Hash.new
@@ -59,15 +59,7 @@ class ServerClientKPITest < MiniTest::Unit::TestCase
    def add_weeks(date,num_of_weeks)
    		res = date + 604800*num_of_weeks
    		return res
-   end
-
-   def gen_session_for_user(user_id,session_start_time,session_end_time)
-		session_id = BSON::ObjectId.new
-		duration_in_seconds = session_end_time - session_start_time;
-		duration_in_minutes = duration_in_seconds.to_f/60
-		user_session = {_id: session_id, user_id:user_id, start_time:session_start_time, end_time: session_end_time, duration_in_minutes: duration_in_minutes}
-		user_session_objectId = SESSIONS.save(user_session)
-	end
+    end
 
    	#activity	created_at	entity_id	story_id	remake_id	share_link	user_id	view_source
    	def generateUserActivity
@@ -88,9 +80,15 @@ class ServerClientKPITest < MiniTest::Unit::TestCase
    			created_at = Random.new.rand(date..next_day)
 
    			if activity == "remake" then
-   				remake_id = d["entity_id"]
-   				user_id = d["user_id"]
-   				story_id = d["story_id"]
+   				story_id = BSON::ObjectId.from_string(d["story_id"])
+				if BSON::ObjectId.legal?(d["user_id"]) then
+					user_id = BSON::ObjectId.from_string(d["user_id"])
+				else
+					user_id = d["user_id"]
+				end
+
+   				remake_id = BSON::ObjectId.from_string(d["entity_id"])
+   
    				share_link = d["share_link"]
    				render_start = d["render_start"]
    				render_end = d["render_end"]
@@ -109,9 +107,9 @@ class ServerClientKPITest < MiniTest::Unit::TestCase
 
 			elsif activity == "view" then 
 				
-				view_id = d["entity_id"]
-				user_id = d["user_id"]
-				story_id = d["story_id"]
+				view_id = BSON::ObjectId.from_string(d["entity_id"])
+				user_id = BSON::ObjectId.from_string(d["user_id"])
+				story_id = BSON::ObjectId.from_string(d["story_id"])
 				view_source = d["view_source"]
 				
     			originating_screen = Random.new.rand(0..5)
@@ -131,17 +129,17 @@ class ServerClientKPITest < MiniTest::Unit::TestCase
 
     		elsif activity == "share" then
 
-				share_id = d["entity_id"]
-				remake_id = d["remake_id"]
-				user_id = d["user_id"]
+				share_id = BSON::ObjectId.from_string(d["entity_id"])
+				remake_id = BSON::ObjectId.from_string(d["remake_id"])
+				user_id = BSON::ObjectId.from_string(d["user_id"])
 				share = {_id:share_id, user_id:user_id , remake_id:remake_id, created_at:created_at, share_method: Random.new.rand(0..5)}
 				puts "generating share: " + share.to_s
 				SHARES.save(share)
 
 			elsif activity == "session" then
 
-				session_id = d["entity_id"]
-				user_id = d["user_id"]
+				session_id = BSON::ObjectId.from_string(d["entity_id"])
+				user_id = BSON::ObjectId.from_string(d["user_id"])
 				duration_in_minutes = d["duration_in_minutes"].to_f
 				session_start_time = created_at
 				session_end_time = created_at + duration_in_minutes.to_f*60
@@ -153,12 +151,8 @@ class ServerClientKPITest < MiniTest::Unit::TestCase
    		end
    	end
 
-	def test_get_good_remakes_sorted_by_date_buckets
-
-		
-			
+	def test_get_good_remakes_sorted_by_date_buckets		
 		data = Analytics.get_good_remakes_sorted_by_date_buckets(START_DATE,END_DATE,STORIES)
-		
 		expected_res = {"2013-02-06"=>5, "2013-02-07"=>6, "2013-02-08"=>1, "2013-02-09"=>8}
 		for datum in data do
 			date = datum["_id"]["date"].strftime "%Y-%m-%d"
@@ -190,10 +184,7 @@ class ServerClientKPITest < MiniTest::Unit::TestCase
 	end
 
 
-	def test_get_movie_making_users_sorted_by_date_buckets
-		
-		
-			
+	def test_get_movie_making_users_sorted_by_date_buckets		
 		data = Analytics.get_movie_making_users_sorted_by_date_buckets(START_DATE,END_DATE,STORIES)
 
 		expected_res = {"2013-02-06"=>2, "2013-02-07"=>2, "2013-02-08"=>1, "2013-02-09"=>2}
@@ -220,7 +211,6 @@ class ServerClientKPITest < MiniTest::Unit::TestCase
 	
 	def test_get_view_distribution_by_view_source
 		
-
 		data = Analytics.get_view_distribution_by_view_source(START_DATE,END_DATE,STORIES)
 
 		n_data = Hash.new
@@ -231,7 +221,7 @@ class ServerClientKPITest < MiniTest::Unit::TestCase
 				n_data[date] = Hash.new
 			end
 			
-			story_id = datum["_id"]["story_id"]
+			story_id = datum["_id"]["story_id"].to_s
 
 			if n_data[date][story_id] == nil then 
 				n_data[date][story_id] =  Hash.new
@@ -264,7 +254,7 @@ class ServerClientKPITest < MiniTest::Unit::TestCase
 				n_data[date] = Hash.new
 			end
 			
-			story_id = datum["_id"]["story_id"]
+			story_id = datum["_id"]["story_id"].to_s
 
 			if n_data[date][story_id] == nil then 
 				n_data[date][story_id] =  Hash.new
@@ -296,7 +286,7 @@ class ServerClientKPITest < MiniTest::Unit::TestCase
 				n_data[date] = Hash.new
 			end
 			
-			story_id = datum["_id"]["story_id"]
+			story_id = datum["_id"]["story_id"].to_s
 
 			if n_data[date][story_id] == nil then 
 				n_data[date][story_id] =  Hash.new
@@ -317,27 +307,25 @@ class ServerClientKPITest < MiniTest::Unit::TestCase
 
 	def test_get_data_total_views_for_story_for_day
 		
-		
-
 		#views_distribution_by_view_source = Analytics.get_view_distribution_by_view_source(START_DATE,END_DATE,STORIES)
-		views_distribution_by_view_source = [{"_id"=>{"date"=>Time.parse("20130209Z"), "story_id"=>"5320cade72ec727673000402", "view_source"=>"0"}, "count"=>2}, {"_id"=>{"date"=>Time.parse("20130209Z"), "story_id"=>"52c18c569f372005e0000286", "view_source"=>"1"}, "count"=>3}, {"_id"=>{"date"=>Time.parse("20130207Z"), "story_id"=>"5320cade72ec727673000402", "view_source"=>"0"}, "count"=>2}, {"_id"=>{"date"=>Time.parse("20130208Z"), "story_id"=>"5320cade72ec727673000402", "view_source"=>"0"}, "count"=>5}, {"_id"=>{"date"=>Time.parse("20130207Z"), "story_id"=>"5320cade72ec727673000402", "view_source"=>"1"}, "count"=>3}, {"_id"=>{"date"=>Time.parse("20130209Z"), "story_id"=>"52c18c569f372005e0000286", "view_source"=>"0"}, "count"=>1}, {"_id"=>{"date"=>Time.parse("20130208Z"), "story_id"=>"52c18c569f372005e0000286", "view_source"=>"1"}, "count"=>3}, {"_id"=>{"date"=>Time.parse("20130206Z"), "story_id"=>"52c18c569f372005e0000286", "view_source"=>"0"}, "count"=>10}, {"_id"=>{"date"=>Time.parse("20130207Z"), "story_id"=>"52c18c569f372005e0000286", "view_source"=>"0"}, "count"=>3}, {"_id"=>{"date"=>Time.parse("20130207Z"), "story_id"=>"52c18c569f372005e0000286", "view_source"=>"1"}, "count"=>4}, {"_id"=>{"date"=>Time.parse("20130209Z"), "story_id"=>"5320cade72ec727673000402", "view_source"=>"1"}, "count"=>2}, {"_id"=>{"date"=>Time.parse("20130206Z"), "story_id"=>"52c18c569f372005e0000286", "view_source"=>"1"}, "count"=>2}]
+		views_distribution_by_view_source = [{"_id"=>{"date"=>Time.parse("20130209Z"), "story_id"=>BSON::ObjectId("5320cade72ec727673000402"), "view_source"=>"0"}, "count"=>2}, {"_id"=>{"date"=>Time.parse("20130209Z"), "story_id"=>BSON::ObjectId("52c18c569f372005e0000286"), "view_source"=>"1"}, "count"=>3}, {"_id"=>{"date"=>Time.parse("20130207Z"), "story_id"=>BSON::ObjectId("5320cade72ec727673000402"), "view_source"=>"0"}, "count"=>2}, {"_id"=>{"date"=>Time.parse("20130208Z"), "story_id"=>BSON::ObjectId("5320cade72ec727673000402"), "view_source"=>"0"}, "count"=>5}, {"_id"=>{"date"=>Time.parse("20130207Z"), "story_id"=>BSON::ObjectId("5320cade72ec727673000402"), "view_source"=>"1"}, "count"=>3}, {"_id"=>{"date"=>Time.parse("20130209Z"), "story_id"=>BSON::ObjectId("52c18c569f372005e0000286"), "view_source"=>"0"}, "count"=>1}, {"_id"=>{"date"=>Time.parse("20130208Z"), "story_id"=>BSON::ObjectId("52c18c569f372005e0000286"), "view_source"=>"1"}, "count"=>3}, {"_id"=>{"date"=>Time.parse("20130206Z"), "story_id"=>BSON::ObjectId("52c18c569f372005e0000286"), "view_source"=>"0"}, "count"=>10}, {"_id"=>{"date"=>Time.parse("20130207Z"), "story_id"=>BSON::ObjectId("52c18c569f372005e0000286"), "view_source"=>"0"}, "count"=>3}, {"_id"=>{"date"=>Time.parse("20130207Z"), "story_id"=>BSON::ObjectId("52c18c569f372005e0000286"), "view_source"=>"1"}, "count"=>4}, {"_id"=>{"date"=>Time.parse("20130209Z"), "story_id"=>BSON::ObjectId("5320cade72ec727673000402"), "view_source"=>"1"}, "count"=>2}, {"_id"=>{"date"=>Time.parse("20130206Z"), "story_id"=>BSON::ObjectId("52c18c569f372005e0000286"), "view_source"=>"1"}, "count"=>2}]
 
 		#story_views = Analytics.get_story_views_for_stories(START_DATE,END_DATE,STORIES)
-		story_views = [{"_id"=>{"date"=>Time.parse("20130209Z"), "story_id"=>"5320cade72ec727673000402"}, "count"=>1},
-						{"_id"=>{"date"=>Time.parse("20130209Z"), "story_id"=>"52c18c569f372005e0000286"}, "count"=>1},
-						{"_id"=>{"date"=>Time.parse("20130208Z"), "story_id"=>"5320cade72ec727673000402"}, "count"=>3},
-						{"_id"=>{"date"=>Time.parse("20130207Z"), "story_id"=>"52c18c569f372005e0000286"}, "count"=>3},
-						{"_id"=>{"date"=>Time.parse("20130207Z"), "story_id"=>"5320cade72ec727673000402"}, "count"=>1},
-						{"_id"=>{"date"=>Time.parse("20130206Z"), "story_id"=>"52c18c569f372005e0000286"}, "count"=>6}]
+		story_views = [{"_id"=>{"date"=>Time.parse("20130209Z"), "story_id"=>BSON::ObjectId("5320cade72ec727673000402")}, "count"=>1},
+						{"_id"=>{"date"=>Time.parse("20130209Z"), "story_id"=>BSON::ObjectId("52c18c569f372005e0000286")}, "count"=>1},
+						{"_id"=>{"date"=>Time.parse("20130208Z"), "story_id"=>BSON::ObjectId("5320cade72ec727673000402")}, "count"=>3},
+						{"_id"=>{"date"=>Time.parse("20130207Z"), "story_id"=>BSON::ObjectId("52c18c569f372005e0000286")}, "count"=>3},
+						{"_id"=>{"date"=>Time.parse("20130207Z"), "story_id"=>BSON::ObjectId("5320cade72ec727673000402")}, "count"=>1},
+						{"_id"=>{"date"=>Time.parse("20130206Z"), "story_id"=>BSON::ObjectId("52c18c569f372005e0000286")}, "count"=>6}]
 		
 		#remake_views = Analytics.get_remake_views_for_stories(START_DATE,END_DATE,STORIES)
-		remake_views = [{"_id"=>{"date"=>Time.parse("20130209Z"), "story_id"=>"5320cade72ec727673000402"}, "count"=>3},
-						{"_id"=>{"date"=>Time.parse("20130209Z"), "story_id"=>"52c18c569f372005e0000286"}, "count"=>3},
-						{"_id"=>{"date"=>Time.parse("20130208Z"), "story_id"=>"5320cade72ec727673000402"}, "count"=>2},
-						{"_id"=>{"date"=>Time.parse("20130208Z"), "story_id"=>"52c18c569f372005e0000286"}, "count"=>3},
-						{"_id"=>{"date"=>Time.parse("20130207Z"), "story_id"=>"52c18c569f372005e0000286"}, "count"=>4},
-						{"_id"=>{"date"=>Time.parse("20130207Z"), "story_id"=>"5320cade72ec727673000402"}, "count"=>4},
-						{"_id"=>{"date"=>Time.parse("20130206Z"), "story_id"=>"52c18c569f372005e0000286"}, "count"=>6}]
+		remake_views = [{"_id"=>{"date"=>Time.parse("20130209Z"), "story_id"=>BSON::ObjectId("5320cade72ec727673000402")}, "count"=>3},
+						{"_id"=>{"date"=>Time.parse("20130209Z"), "story_id"=>BSON::ObjectId("52c18c569f372005e0000286")}, "count"=>3},
+						{"_id"=>{"date"=>Time.parse("20130208Z"), "story_id"=>BSON::ObjectId("5320cade72ec727673000402")}, "count"=>2},
+						{"_id"=>{"date"=>Time.parse("20130208Z"), "story_id"=>BSON::ObjectId("52c18c569f372005e0000286")}, "count"=>3},
+						{"_id"=>{"date"=>Time.parse("20130207Z"), "story_id"=>BSON::ObjectId("52c18c569f372005e0000286")}, "count"=>4},
+						{"_id"=>{"date"=>Time.parse("20130207Z"), "story_id"=>BSON::ObjectId("5320cade72ec727673000402")}, "count"=>4},
+						{"_id"=>{"date"=>Time.parse("20130206Z"), "story_id"=>BSON::ObjectId("52c18c569f372005e0000286")}, "count"=>6}]
 
 		data = Analytics.get_data_total_views_for_story_for_day(START_DATE,END_DATE,story_views,remake_views,views_distribution_by_view_source,STORIES)
 

@@ -57,7 +57,6 @@ class Analytics
    
   def self.get_good_remakes_sorted_by_date_buckets(start_date,end_date,stories_array)
     match = {"$match" => { created_at:{"$gte"=>start_date, "$lt"=>add_days(end_date,1)}, share_link: {"$exists"=>true}, story_id: {"$in"=> stories_array}}}
-
     proj1={"$project" => {"_id" => 1, "created_at" => 1, 
       "h" => {"$hour" => "$created_at"}, "m" => {"$minute" => "$created_at"}, "s" => {"$second" => "$created_at"}, "ml" => {"$millisecond" =>  "$created_at"}}}
 
@@ -440,12 +439,8 @@ end
   def self.get_pct_of_shared_videos_for_date_range_out_of_all_created_movies(start_date,end_date,stories_array)  
     #res of this query returns all remakes for dates, sorted by date buckets: {"_id"=>{"date"=>2014-07-15 00:00:00 UTC}, "list"=>[BSON::ObjectId('53c524e670b35d0a7c00001a'), BSON::ObjectId('53c5633770b35d77a2000001')]}
     remakes_sorted_by_date_buckets = get_good_remakes_sorted_by_date_buckets(start_date,end_date,stories_array)
-
-    # {"_id"=>{"remake_id"=>BSON::ObjectId('53bc0a2770b35d3c590000bf')}}
     all_shared_remakes_for_dates = get_shares_grouped_by_remake_id(start_date,end_date)
-    
     final_data = gen_data_pct_of_shared_videos_out_of_all_created_movies(start_date,end_date,remakes_sorted_by_date_buckets, all_shared_remakes_for_dates)
-
     return final_data
   end
 

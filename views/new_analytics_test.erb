@@ -30,7 +30,7 @@
 
 <style>
 
-/*body {
+body {
   font: 14px sans-serif;
 }
  
@@ -57,7 +57,7 @@
 
 .arc path {
   stroke: #fff;
-}*/
+}
 
 
 </style>
@@ -147,7 +147,7 @@
 
                 $('#story_selector').multiselect();
 
-                $('#dpStartDate').datepicker('setDate', new Date(2014, 06, 06));
+                $('#dpStartDate').datepicker('setDate', new Date(2013, 01, 06));
                 $('#dpStartDate').datepicker('update');
                 //$('#dpStartDate').val('');
                 
@@ -155,7 +155,7 @@
                     format: "yyyy-mm-dd"
                 });  
 
-                $('#dpEndDate').datepicker('setDate', new Date(2014, 06, 09));
+                $('#dpEndDate').datepicker('setDate', new Date(2013, 01, 09));
                 $('#dpEndDate').datepicker('update');
                 //$('#dpEndDate').val('');
 
@@ -184,7 +184,6 @@
 
                   $.get('/analytics', {"start_date": sd, "end_date": ed, "stories": selected_stories}, function( data, status, xhr){
                   json_data = $.parseJSON(data);
-                  console.log(json_data);
                   for (k = 0; k < json_data.length; k++)
                   {
                     data_set = json_data[k];
@@ -195,6 +194,8 @@
 
                     data_for_chart = [];
                     console.log("preparing data:" + data_label);
+                    console.log("pre-data")
+                    console.log(data_series);
 
                     switch (currentDropDownSelection) {
                       case "Day":
@@ -213,21 +214,19 @@
                  
                     $(label_name).text(data_label);
 
+                    console.log("visualizing graph: " + data_label);
+                    console.log("data_for_chart")
+                    console.log(data_for_chart)
+
                     switch (data_type) {
                       case NormalFractionGraphType:
-                        console.log("visualizing graph: " + data_label);
                         drawD3LineChart(data_for_chart,chart_name);
-                        console.log("finished drawing: " + data_label);
                         break;  
                       case NormalValueGraphType:                     
-                        console.log("visualizing graph: " + data_label);
                         drawD3LineChart(data_for_chart,chart_name);
-                        console.log("finished drawing: " + data_label);
                         break;
                       case AvgValueGraphType:
-                        console.log("visualizing graph: " + data_label);
                         drawD3LineChart(data_for_chart,chart_name);
-                        console.log("finished drawing: " + data_label);
                         break;
                       case StoryViewsGraphType:
                         innerColumns = {
@@ -237,7 +236,6 @@
                         genStackedAndGroupBarChart(data_for_chart,innerColumns,chart_name);
                         break;
                       case PieChartGraphType:
-                        console.log("===========chart name ==============" + chart_name);
                         drawD3PieChart(data_for_chart,chart_name);
                         break;
                       default:
