@@ -101,7 +101,7 @@ class Analytics
   end
 
   def self.get_movie_making_users_sorted_by_date_buckets(start_date,end_date,stories_array)
-    date_range = {"$match" => { created_at:{"$gte"=>start_date, "$lt"=>add_days(end_date,1)}, story_id: {"$in"=> stories_array}}}
+    date_range = {"$match" => { created_at:{"$gte"=>start_date, "$lt"=>add_days(end_date,1)}, share_link:{"$exists"=>true}, story_id: {"$in"=> stories_array}}}
 
     proj1={"$project" => {"_id" => 0, "created_at" => 1, "user_id" => 1,
       "h" => {"$hour" => "$created_at"}, "m" => {"$minute" => "$created_at"}, "s" => {"$second" => "$created_at"}, "ml" => {"$millisecond" =>  "$created_at"}}}

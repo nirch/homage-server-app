@@ -39,14 +39,14 @@ class ServerClientKPITest < MiniTest::Unit::TestCase
 	end
 
 	def setup 
-		generateUserActivity
+		#generateUserActivity
 	end
 
 	def teardown 
-		REMAKES.remove(created_at: {"$gte"=>START_DATE , "$lt"=>add_days(END_DATE,1)})
-		VIEWS.remove(start_time: {"$gte"=>START_DATE , "$lt"=>add_days(END_DATE,1)})
-		SHARES.remove(created_at: {"$gte"=>START_DATE , "$lt"=>add_days(END_DATE,1)})
-		SESSIONS.remove(start_time: {"$gte"=>START_DATE , "$lt"=>add_days(END_DATE,1)})
+		#REMAKES.remove(created_at: {"$gte"=>START_DATE , "$lt"=>add_days(END_DATE,1)})
+		#VIEWS.remove(start_time: {"$gte"=>START_DATE , "$lt"=>add_days(END_DATE,1)})
+		#SHARES.remove(created_at: {"$gte"=>START_DATE , "$lt"=>add_days(END_DATE,1)})
+		#SESSIONS.remove(start_time: {"$gte"=>START_DATE , "$lt"=>add_days(END_DATE,1)})
 	end
 
 	#measurements
@@ -153,7 +153,7 @@ class ServerClientKPITest < MiniTest::Unit::TestCase
 
 	def test_get_good_remakes_sorted_by_date_buckets		
 		data = Analytics.get_good_remakes_sorted_by_date_buckets(START_DATE,END_DATE,STORIES)
-		expected_res = {"2013-02-06"=>5, "2013-02-07"=>6, "2013-02-08"=>1, "2013-02-09"=>8}
+		expected_res = {"2013-02-06"=>5, "2013-02-07"=>6, "2013-02-08"=>2, "2013-02-09"=>8}
 		for datum in data do
 			date = datum["_id"]["date"].strftime "%Y-%m-%d"
 			res = datum["list"].count
@@ -187,7 +187,7 @@ class ServerClientKPITest < MiniTest::Unit::TestCase
 	def test_get_movie_making_users_sorted_by_date_buckets		
 		data = Analytics.get_movie_making_users_sorted_by_date_buckets(START_DATE,END_DATE,STORIES)
 
-		expected_res = {"2013-02-06"=>2, "2013-02-07"=>2, "2013-02-08"=>1, "2013-02-09"=>2}
+		expected_res = {"2013-02-06"=>2, "2013-02-07"=>2, "2013-02-08"=>2, "2013-02-09"=>2}
 		
 		for datum in data do
 			date = datum["_id"]["date"].strftime "%Y-%m-%d"
@@ -461,7 +461,7 @@ class ServerClientKPITest < MiniTest::Unit::TestCase
 	def test_get_user_distibution_per_number_of_remakes
 		
 		res = Analytics.get_user_distibution_per_number_of_remakes(START_DATE,END_DATE,3)
-		expected_res = {0=>1, 1=>0, 2=>0, "3 and more"=>2}
+		expected_res = {0=>0, 1=>1, 2=>0, "3 and more"=>2}
 		assert_equal(expected_res,res)
 	end
 end

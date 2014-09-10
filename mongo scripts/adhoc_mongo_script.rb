@@ -10,17 +10,67 @@ remakes = test_db.collection("Remakes")
 prod_db = Mongo::MongoClient.from_uri("mongodb://Homage:homageIt12@troup.mongohq.com:10057/Homage_Prod").db
 prod_users = prod_db.collection("Users")
 prod_remakes = prod_db.collection("Remakes")
+prod_shares = prod_db.collection("Shares")
+prod_sessions = prod_db.collection("Sessions")
 
-remakes = ["53ecdebe0be0440cdc000009","53ee5f2f0be0445d5d00000b","53ee10210be0443520000008","53ee6d690be0446c45000006","53ee820f0be0447547000009","53ee91a90be044754700001e","53ef08270be0443897000015","53ef61560be0447457000003","53efbd5a0be04428b9000004","53f018a80be0445c23000008","53f0b3480be044333e00000d","53f0fe0b0be0445ecc000001","53f128290be0447785000001","53f1e5500be0445cff000003","53f20ac20be044732b000007","53f222480be04475b8000014","53f2ee050be0447036000001","53f3521d0be0442536000008","53f3d4250be04469b6000011","53f4b4a30be04468aa000002","53f4db890be0447c81000008","53f4ebf60be0440625000003","53f510ee0be0441c67000002","53f525dc0be0441f7c00000b","53f541030be04433c0000001","53f608300be0441f65000002","53f6c24e0be0447cfc000005","53f6a7f60be04474e3000003","53f751dd0be0445511000001","53f76d190be0445511000008","53f7bf230be0440444000006","53f7f0ac0be044238c000005","53f87e5b0be044495c00000b","53f8803b0be044772d000001","53f891c60be0447ee5000006","53f8aec70be0440ae0000008","53f8e7fb0be0442ecf000002","53f8fe320be04439db000005","53f930340be044569a000001","53f999cc0be0440b50000007","53f99b1f0be0440b50000008","53f9f3d70be04416f8000018","53fa1bbd0be0445662000001","53fa73a90be0440355000007","53fa8c420be0440b15000005","53fa9da80be0441d81000005","53fab8610be044202a000014"]
-puts remakes.count
-
-for remake_id in remakes do
-	remake = prod_remakes.find_one(BSON::ObjectId.from_string(remake_id))
-	puts remake_id + ": " + remake["status"].to_s
-	# homage_server_uri = URI.parse("http://homage-server-app-prod.elasticbeanstalk.com/render")
-	# response = Net::HTTP.post_form(homage_server_uri, {"remake_id" => remake_id.to_s})
-	# puts response
+def median(array)
+  sorted = array.sort
+  len = sorted.length
+  return (sorted[(len - 1) / 2] + sorted[len / 2]) / 2.0
 end
+
+
+res = prod_sessions.find({start_time: {"$gte"=>Time.parse("20140830Z"),"$lt"=>Time.parse("20140831Z")}})
+puts res.count
+
+array = Array.new()
+result = 0.0
+for session in res do
+	puts session["duration_in_minutes"]
+	result += session["duration_in_minutes"].to_f
+	array.push(session["duration_in_minutes"].to_f)
+end
+
+puts "median"
+puts median(array)
+
+puts "avg"
+puts result/res.count
+
+
+# res = prod_remakes.find({created_at: {"$gte"=>Time.parse("20140910Z"),"$lt"=>Time.parse("20140911Z")}, share_link:{"$exists"=>true}})
+# puts res.count
+
+# user_ids = Set.new
+# remake_ids = Array.new
+# for remake in res do
+# 	user_ids.add(remake["user_id"])
+# 	remake_ids.push(remake["_id"])
+# end
+
+# puts "user_ids count"
+# puts user_ids.count
+
+# res = prod_shares.find({created_at: {"$gte"=>Time.parse("20140902Z"),"$lt"=>Time.parse("20140911Z")}, remake_id:{"$in"=>remake_ids}})
+
+# remake_ids = Set.new
+# user_ids = Set.new
+# for share in res do
+# 	user_ids.add(share["user_id"])
+# end
+
+# puts user_ids.count
+
+# remakes = ["53ecdebe0be0440cdc000009","53ee5f2f0be0445d5d00000b","53ee10210be0443520000008","53ee6d690be0446c45000006","53ee820f0be0447547000009","53ee91a90be044754700001e","53ef08270be0443897000015","53ef61560be0447457000003","53efbd5a0be04428b9000004","53f018a80be0445c23000008","53f0b3480be044333e00000d","53f0fe0b0be0445ecc000001","53f128290be0447785000001","53f1e5500be0445cff000003","53f20ac20be044732b000007","53f222480be04475b8000014","53f2ee050be0447036000001","53f3521d0be0442536000008","53f3d4250be04469b6000011","53f4b4a30be04468aa000002","53f4db890be0447c81000008","53f4ebf60be0440625000003","53f510ee0be0441c67000002","53f525dc0be0441f7c00000b","53f541030be04433c0000001","53f608300be0441f65000002","53f6c24e0be0447cfc000005","53f6a7f60be04474e3000003","53f751dd0be0445511000001","53f76d190be0445511000008","53f7bf230be0440444000006","53f7f0ac0be044238c000005","53f87e5b0be044495c00000b","53f8803b0be044772d000001","53f891c60be0447ee5000006","53f8aec70be0440ae0000008","53f8e7fb0be0442ecf000002","53f8fe320be04439db000005","53f930340be044569a000001","53f999cc0be0440b50000007","53f99b1f0be0440b50000008","53f9f3d70be04416f8000018","53fa1bbd0be0445662000001","53fa73a90be0440355000007","53fa8c420be0440b15000005","53fa9da80be0441d81000005","53fab8610be044202a000014"]
+# puts remakes.count
+
+# for remake_id in remakes do
+# 	remake = prod_remakes.find_one(BSON::ObjectId.from_string(remake_id))
+# 	puts remake_id + ": " + remake["status"].to_s
+# 	# homage_server_uri = URI.parse("http://homage-server-app-prod.elasticbeanstalk.com/render")
+# 	# response = Net::HTTP.post_form(homage_server_uri, {"remake_id" => remake_id.to_s})
+# 	# puts response
+# end
 
 
 

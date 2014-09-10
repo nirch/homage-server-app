@@ -145,9 +145,19 @@ body {
                     format: "yyyy-mm-dd"
                 }); 
 
-                $('#story_selector').multiselect();
+                $('#story_selector').multiselect({
+                            includeSelectAllOption: true,
+                            enableCaseInsensitiveFiltering: true,
+                            maxHeight: 300
+                  });
 
-                $('#dpStartDate').datepicker('setDate', new Date(2013, 01, 06));
+                dp_start_date = new Date();
+                dp_start_date = dp_start_date.setDate(dp_start_date.getDate()-14);
+                dp_start_date = new Date(dp_start_date);
+
+                dp_end_date = new Date();
+
+                $('#dpStartDate').datepicker('setDate', dp_start_date);
                 $('#dpStartDate').datepicker('update');
                 //$('#dpStartDate').val('');
                 
@@ -155,7 +165,7 @@ body {
                     format: "yyyy-mm-dd"
                 });  
 
-                $('#dpEndDate').datepicker('setDate', new Date(2013, 01, 09));
+                $('#dpEndDate').datepicker('setDate', dp_end_date);
                 $('#dpEndDate').datepicker('update');
                 //$('#dpEndDate').val('');
 
@@ -168,7 +178,8 @@ body {
                     data_set = json_data[i];
                     story_id = data_set["_id"]["$oid"].toString();
                     story_name = data_set["name"];
-                    data[i] = {"label": story_name , "value": story_id};
+                    active = data_set["active"]
+                    if (active == true) data.push({"label": story_name , "value": story_id});
                   }
 
                   $('#story_selector').multiselect('dataprovider',data);
