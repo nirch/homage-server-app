@@ -1,6 +1,6 @@
 source 'http://rubygems.org'
 gem 'sinatra'
-gem 'mongo'
+gem 'mongo', '~> 1.9'
 gem 'bson_ext'
 gem 'json'
 gem 'sinatra-security'
