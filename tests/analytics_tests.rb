@@ -113,8 +113,6 @@ class AnalyticsTest < MiniTest::Unit::TestCase
 	    assert @session
 	end
 
-	def test_pct_of_shared_videos_for_date_range_out_of_all_created_movies
-	end
 
 
 	def teardown

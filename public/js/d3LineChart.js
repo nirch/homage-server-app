@@ -9,9 +9,6 @@ function drawD3LineChart(data,chart_name) {
 	var maxDataPointsForDots = 50,
 	transitionDuration = 1000;
 
-	console.log("drawD3LineChart begin . chart name: " + chart_name + " data: ");
-	console.log(data);
-	
 	var margin = 40;
 	var max = d3.max(data, function(d) { return d.value });
 	var min = 0;

@@ -10,9 +10,6 @@ ViewSourceAndroid = 1
 ViewSourceWeb     = 2
 
 function genDataForDaysDisplay(start_date,end_date,data_type,data_series) {
-	console.log("genDataForDaysDisplay start - preparing data for visualization");
-	console.log("data_series: ")
-	console.log(data_series);
 	sd = new Date(start_date);
 	ed = new Date(end_date);
 
@@ -22,8 +19,6 @@ function genDataForDaysDisplay(start_date,end_date,data_type,data_series) {
 
 	if (data_type == StoryViewsGraphType) {
 		data_series = aggregateStoryViews(start_date,end_date,data_series);
-		console.log("aggregated_data_series");
-		console.log(data_series);
 	}
 
 	if (data_type == PieChartGraphType) {
@@ -85,14 +80,10 @@ function genDataForDaysDisplay(start_date,end_date,data_type,data_series) {
 		}
 	}	
 
-	console.log("genDataForDaysDisplay end - data for display:");
-	console.log(final_result);
 	return final_result;
 }
 
 function genDataForWeeksDisplay(start_date,end_date,data_type,data_series) {
-	console.log("genDataForWeeksDisplay start: " + start_date +  "to " + end_date + " -preparing data for visualization");
-	console.log(data_series);
 	sd = new Date(start_date);
 	ed = new Date(end_date);
 
@@ -109,8 +100,6 @@ function genDataForWeeksDisplay(start_date,end_date,data_type,data_series) {
 
 	if (data_type == StoryViewsGraphType) {
 		data_series = aggregateStoryViews(start_date,end_date,data_series);
-		console.log("aggregated_data_series");
-		console.log(data_series);
 	}
 
 	if (data_type == PieChartGraphType) {
@@ -125,14 +114,11 @@ function genDataForWeeksDisplay(start_date,end_date,data_type,data_series) {
 
 		while (id <= ed) {
 			date_key = genDataKeyFormatForDate(id);
-			console.log("date_key: " + date_key);
 
 			if (data_series[date_key]) {
-				console.log("found data set:");
 				data_set = data_series[date_key];
-				console.log(data_set);
+				
 			} else {
-				console.log("did not find data set for: " + date_key + ". setting to 0");
 				data_set = 0;
 			}	
 
@@ -165,11 +151,8 @@ function genDataForWeeksDisplay(start_date,end_date,data_type,data_series) {
 					break;
 			}
 
-			console.log("nominator_sum: " + nominator_sum);
-			console.log("denominator_sum: " + denominator_sum);
 
 			if (id.getDay() == 6 || +id == +ed ) { //its saturday or the end of the data set, need to sum of the week and make a new sum
-				console.log("summing up the chunk that end on(including): " + id.toString());
 				
 				if (data_type == StoryViewsGraphType) {
 					final_result.push({"date": id, "remake views": remake_views, "story views": story_views,
@@ -194,8 +177,6 @@ function genDataForWeeksDisplay(start_date,end_date,data_type,data_series) {
 		}
 	}
 	
-	console.log("genDataForWeeksDisplay end - data for display");
-	console.log(final_result);
 	return final_result
 }
 
@@ -256,15 +237,11 @@ function aggregateStoryViews(start_date,end_date,data_series) {
 
 	for (var story_id_key in data_series) {
 		single_story_obj = data_series[story_id_key];
-		console.log("single_story_obj");
-		console.log(single_story_obj);
 
 		for (date_key in single_story_obj) {
-			console.log(" date_key : " + date_key);
-			single_story_data_for_date = single_story_obj[date_key];
-			console.log("single_story_data_for_date")
-			console.log(single_story_data_for_date);
 
+			single_story_data_for_date = single_story_obj[date_key];
+			
 			if (single_story_data_for_date.hasOwnProperty("remake_views"))
 			 aggregated_data_series[date_key]["remake_views"] += single_story_data_for_date["remake_views"];
 			if (single_story_data_for_date.hasOwnProperty("story_views"))

@@ -48,8 +48,8 @@ var defaultSettings = {
 		location: "left"
 	},
 	size: {
-		canvasHeight: 500,
-		canvasWidth: 500,
+		canvasHeight: 300,
+		canvasWidth: 300,
 		pieInnerRadius: "0%",
 		pieOuterRadius: null
 	},
@@ -382,9 +382,6 @@ var helpers = {
 				finalColors.push(colors[i]);
 			}
 		}
-
-		console.log("final_colors")
-		console.log(finalColors);
 		return finalColors;
 	},
 
@@ -1250,7 +1247,6 @@ var segments = {
 				var color = colors[i];
 				if (pie.options.misc.gradient.enabled) {
 					color = "url(#" + pie.cssPrefix + "grad" + i + ")";
-					console.log("here 1. color:" + color);
 				}
 				return color;
 			})
@@ -1356,7 +1352,6 @@ var segments = {
 				var color = pie.options.colors[index];
 				if (pie.options.misc.gradient.enabled) {
 					color = "url(#" + pie.cssPrefix + "grad" + index + ")";
-					console.log("here 1. color:" + color);
 				}
 				segment.style("fill", color);
 			}

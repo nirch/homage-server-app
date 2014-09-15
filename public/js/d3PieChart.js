@@ -1,7 +1,4 @@
 function drawD3PieChart(data,chart_name) {
-
-	console.log("pie chart name is: " + chart_name);
-
 	var _chart_area = chart_name.replace(/^#/, "");
 	chart_area = document.getElementById(_chart_area);
 	svg = d3.select(chart_area).select('svg');
@@ -67,7 +64,5 @@ function drawD3PieChart(data,chart_name) {
 		}
 	}
 });
-	console.log("created pie:");
-	console.log(pie);
 
 }

@@ -27,8 +27,6 @@ function genStackedAndGroupBarChart(data,innerColumns,chart_name) {
   var color = d3.scale.ordinal()
   .range(["#98abc5", "#8a89a6", "#7b6888", "#6b486b", "#a05d56", "#d0743c", "#ff8c00"]);
  
-  console.log("chart name is: " + chart_name);
-
   var _chart_area = chart_name.replace(/^#/, "");
   chart_area = document.getElementById(_chart_area);
   svg = d3.select(chart_area).select('svg');
@@ -52,8 +50,6 @@ function genStackedAndGroupBarChart(data,innerColumns,chart_name) {
   
   columnHeaders = [];
   for (key in innerColumns) {
-    console.log("key:");
-    console.log(key);
   	columnHeaders = columnHeaders.concat(innerColumns[key]);
   };
   
