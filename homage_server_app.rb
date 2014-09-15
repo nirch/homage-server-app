@@ -71,7 +71,7 @@ before do
 	userAgentStr = request.env["HTTP_USER_AGENT"].to_s
 	$user_agent = UserAgentParser.parse(userAgentStr)
 	$user_os = $user_agent.os.to_s
-	logger.info "request.env: " + request.env.to_s
+	logger.debug "request.env: " + request.env.to_s
 	logger.info "params=" + params.to_s
 end
 
