@@ -1307,9 +1307,12 @@ end
 
 get '/play/:remake_id' do
 	remake_id = BSON::ObjectId.from_string(params[:remake_id])
+	puts "remake_id" + remake_id.to_s
 
 	remakes = settings.db.collection("Remakes")
 	@remake = remakes.find_one(remake_id)
+	puts "remake"
+	puts @remake
 
 	users = settings.db.collection("Users")
 	if BSON::ObjectId.legal?(@remake["user_id"]) then
@@ -1318,13 +1321,19 @@ get '/play/:remake_id' do
 		@user = users.find_one({_id: @remake["user_id"]})
 	end
 
+	puts "user"
+	puts @user
+
 	stories = settings.db.collection("Stories")
 	@story = stories.find_one(@remake["story_id"])
+
+	puts "story"
+	puts @story
 
 	headers \
 		"X-Frame-Options"   => "ALLOW-FROM http://play.homage.it/"
 
-	erb :video
+	erb :HMGMiniSite
 end
 
 get '/analytics' do
