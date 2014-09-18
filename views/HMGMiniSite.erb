@@ -10,42 +10,47 @@
 	<link rel="stylesheet" type="text/css" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">  
   	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
   	<script type="text/javascript" src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
-  	<link rel="stylesheet" type="text/css" href="/css/videoPlayerSA.css">
   	<script src="/js/share.min.js"></script>
+  	<link href="http://use.typekit.net/c/d265a8/bryant-web-compressed:n5,din-condensed-web:n4,ff-din-web:n6,proxima-nova:n4:n7.TK3:P:2,ZwM:P:2,ZQp:P:2,b5w:P:2,bBh:P:2/d?3bb2a6e53c9684ffdc9a9bf71f5b2a623df248a4a1ae63c32599068729727de965daa678f740453dc16162c199f9142f587470d85d20c26d71325967c5624c299524dc93c42009d6e29527b95e246c0ef0686ea811180f14f23b94acc9d3f8d0db9ab3dca5ec7a2f9e3589e81185bbfd60f3dc" rel="stylesheet">
+  	<link rel="stylesheet" type="text/css" href="/css/videoPlayerSA.css">
 </head>
 
 <body>
 	
 	<div class="container-fluid">
 		<div class="row">
-			<div class="col-sm-4 top">
+			<div class="col-lg-2 col-sm-4 top left-side">
 				<a href="http://homage.it/app"/>
 					<img src="http://homage.it/wp-content/themes/homage/images/homeLogo.png"></img>
-				</a>
-				
+				</a>				
 			</div>
 
-			<div class="col-sm-8 top">
+			<div class="col-lg-10 col-sm-8 visible-lg visible-md visible-sm hidden-xs top">
 				<div id="menu">
-					<div class="menu-menu-1-container">
-						<ul id="menu-menu-2" class="menu">
-							<li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-8">
-								<a href="http://googleplay.com">
-									<img src="http://homage.it/wp-content/themes/homage/images/googlePlay.png"/>
-								</a>
-							</li>
-
-							<li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-7">
-								<a href="https://itunes.apple.com/us/app/homage/id851746600?l=iw&amp;ls=1&amp;mt=8">
-									<img src="http://homage.it/wp-content/themes/homage/images/appStore.png"/>
-								</a>
-							</li>
-							
-						</ul>
-					</div>
-				</div>	
+					<a href="https://play.google.com/store/apps/details?id=com.homage.app">
+						<img class="right-margin" src="http://homage.it/wp-content/themes/homage/images/googlePlay.png"/>
+					</a>
+					<a href="https://itunes.apple.com/us/app/homage/id851746600?l=iw&amp;ls=1&amp;mt=8">
+						<img class="right-margin" src="http://homage.it/wp-content/themes/homage/images/appStore.png"/>
+					</a>
+				</div>
 			</div>
 		</div>
+
+		<div class="row">
+			<div class="col-xs-12 hidden-lg hidden-md hidden-sm visible-xs">
+				 <div id="menu">
+					<a href="http://googleplay.com">
+						<img src="http://homage.it/wp-content/themes/homage/images/googlePlay.png"/>
+					</a>
+					<a href="https://itunes.apple.com/us/app/homage/id851746600?l=iw&amp;ls=1&amp;mt=8">
+						<img src="http://homage.it/wp-content/themes/homage/images/appStore.png"/>
+					</a>
+				</div>
+				
+			</div>
+		</div>
+
 
 		<div class="row">
 			<div class="col-md-12 hidden-xs upper_spacer">
@@ -54,7 +59,11 @@
 
 		<div class="row">
 			<div class="col-md-12">
-				<h1>
+				<h1 class="remake_description_header">
+					#<%= @story["share_message"]%>
+				</h1>
+
+				<h1 class='remake_description_body'>					
 						<% if @user["facebook"] then %>
 						<%= @user["facebook"]["first_name"] %>'s remake for <%= @story["name"]%>
 						<% elsif @user["email"] then %>
@@ -65,7 +74,7 @@
 				</h1>
 
 				<div class="videocontent">
-					<video class="video-js video-js vjs-default-skin vjs-big-play-centered" width="auto" height="auto" controls="controls" 
+					<video id="video_player" class="video-js video-js vjs-default-skin vjs-big-play-centered" width="auto" height="auto" controls="controls" 
 							poster=<%= @remake["thumbnail"]%> 
 							data-setup="{}">
 							<source src=<%= @remake["video"]%> type="video/mp4"/>
@@ -89,12 +98,100 @@
 </body>
 
 <script>
+
+	var share_link = '<%= @remake["share_link"] %>'
+	var share_message = '<%= @story["share_message"] %>'
+	var twitt = share_message.concat(": \n");
+	var thumbnail = '<%= @remake["thumbnail"] %>'
+
+	console.log("share_link"  + share_link.toString());
+	console.log("share_message" + share_message.toString());
+	console.log(thumbnail);
+	
 	config = {
     	ui: {
     		flyout: 'bottom center'
-        }
-    }
+        },
+        networks: {
+    		google_plus: {
+      			url: share_link
+    		},
+    		twitter: {
+      			url: share_link,
+      			description: twitt
+    		},
+    		facebook: {
+      			url: share_link,
+      			load_sdk: true,
+      			app_id: '447743458659084', // Facebook app id for tracking shares. if provided, will use the facebook API
+      			title: share_message,
+      			//caption: // caption to be shared alongside your link to Facebook [Default: null]
+      			description: share_message,
+      			image: thumbnail
+    		},
+    		pinterest: {
+      			url:  share_link,   // the url you'd like to share to Pinterest [Default: config.url]
+      			image:  thumbnail,
+      			description: share_message,   // text to be shared alongside your link to Pinterest [Default: config.description]
+    		},
+    		email: {
+      			title:     share_message,
+      			description:  share_link,
+    		}
+    	}
+  	}
 
     var share = new Share(".shareContainer", config);
+
+    var stopReported = false;
+		var playReported = false;
+
+		videojs('video_player').ready(function(){
+			var myPlayer = this;
+			var videoTitle = '<%= @story["name"] + " - " + @remake["_id"].to_s %>'
+			var remakeId = '<%= @remake["_id"].to_s %>'
+			var objectId = new ObjectId().toString();
+
+			var trackVideoSrart = function(){
+				// Tracking in our Server
+				$.post('/remake/view', {"view_id":objectId, "remake_id":remakeId, "playback_event":0, "originating_screen":11}, function(data,status){
+    				playReported = true;
+  				});
+
+				// Tracking in Google Analytics
+				if (typeof ga !== 'undefined') ga('send', 'event', 'Videos', 'Started', videoTitle);
+			};
+
+			var trackVideoEnd = function(){
+				// Tracking in our Server
+				$.post('/remake/view', {"view_id":objectId, "remake_id":remakeId, "playback_event":1, "originating_screen":11, "total_duration":myPlayer.duration(), "playback_duration":myPlayer.currentTime()}, function(data,status){
+    				stopReported = true;
+  				});
+
+				// Tracking in Google Analytics
+				if (typeof ga !== 'undefined') ga('send', 'event', 'Videos', 'Ended', videoTitle);				
+			};
+
+			myPlayer.one("play", trackVideoSrart)
+			myPlayer.one("ended", trackVideoEnd)
+
+			// Event for page unload to track the end of the view
+			$(window).bind('beforeunload', function(){
+				// Tracking only if we already tracked play and didn'y track stop
+  				if (playReported && !stopReported) {
+	  				// Tracking in our Server (doing a sync call because the page is about to close)
+	  				$.ajax({
+				        type: 'POST',
+				        async: false,
+				        url: '/remake/view',
+				        data: {"view_id":objectId, "remake_id":remakeId, "playback_event":1, "originating_screen":11, "total_duration":myPlayer.duration(), "playback_duration":myPlayer.currentTime()},
+				        complete: function(xhr, status){ }
+				    });
+
+					// Tracking in Google Analytics
+					if (typeof ga !== 'undefined') ga('send', 'event', 'Videos', 'Ended', videoTitle);				
+  				}
+  			});
+		});
 </script>
 

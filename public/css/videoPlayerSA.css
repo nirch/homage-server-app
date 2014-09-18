@@ -11,31 +11,35 @@ body {
 	overflow-x: hidden;
 }
 
+.container-fluid
+{
+	/*background-image: url("/resources/testBG.png");*/
+}
+
+@font-face {
+font-family: "bryant-web-compressed";
+src: url("/resources/Bryant-MediumCompressed.otf") format("opentype");
+}
+
+@font-face {
+font-family: "proxima-nova";
+src: url("/resources/ProximaNova-Light.otf") format("opentype");
+}
+
 .top  {
 	border-bottom: 2px solid #434343;
-    height: 70px;
+    height: 100%;
     margin: 0 auto;
-    /*padding: 20px 0;*/
+    padding: 20px 0;
  }
 
-.leftSide {
-	float: left;
-	/*width: 339px;*/
-	text-align: center;
+
+.right-margin {
+	margin-right: 30px !important
+}
+
+.left-side {
 	border-right: 2px solid #434343;
-	/*box-sizing: content-box;*/
-}
-
-.col-sm-8 {
-
-}
-
-.col-sm-4 {
-	
-}
-
-.col-xs-12 {
-	height: 0px;
 }
 
 .upper_spacer {
@@ -53,6 +57,51 @@ body {
 	margin: 0 auto;
 }
 
+.shareContainer label {
+  -webkit-transition: all .3s ease;
+  transition:         all .3s ease;
+  background: #ff7d5f !important;
+  border-radius: 5px;
+  color: #333;
+  cursor: pointer;
+  font-size: 16px;
+  
+  margin: 0;
+  padding: 5px 10px;
+}
+
+.shareContainer label span {
+	font-family: "bryant-web-compressed" !important;
+}
+
+.remake_description_header
+{
+	text-shadow: none;
+	color: #ff7d5f;
+}
+
+.remake_description_body
+{
+	text-shadow: none;
+	color: gray;
+	font-family: "proxima-nova" !important;
+	font-size: 30px;
+}
+
+
+
+/*.share-button.sharer-0 label {
+  -webkit-transition: all .3s ease;
+  transition:         all .3s ease;
+  background: #a29baa;
+  border-radius: 5px;
+  color: #333;
+  cursor: pointer;
+  font-size: 16px;
+  margin: 0;
+  padding: 5px 10px;
+}*/
+
 #menu { 
 	margin:0 auto;
 	/*width: 335px; */
@@ -62,6 +111,8 @@ body {
 	text-transform: uppercase;
 	padding: 5px 0 !important;
 	position: relative; z-index: 999;
+	height: 59px;
+	white-space: nowrap;
 }
 
 #menu ul {list-style-type: none; margin: 0 0 0 23px; padding: 0;}
@@ -93,6 +144,8 @@ html{font-size:100%;}body{text-align:center;display:block;font-size:100%;font-fa
 }
 
 .fluid-width-video-wrapper /*.video-js*/ {position: absolute;top: 0;left: 0;width: 100%!important;height: 100%!important;}
+
+h1 {padding: 0 0 46px; font-size: 45px; font-family: "bryant-web-compressed"; font-style: normal; font-weight: 500;text-transform: uppercase; margin: 0 auto;	}
 
 /*MediaElement*/
 /*.mejs-container {
