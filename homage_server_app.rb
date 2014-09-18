@@ -71,7 +71,7 @@ before do
 	userAgentStr = request.env["HTTP_USER_AGENT"].to_s
 	$user_agent = UserAgentParser.parse(userAgentStr)
 	$user_os = $user_agent.os.to_s
-	logger.info "request.env: " + request.env.to_s
+	logger.debug "request.env: " + request.env.to_s
 	logger.info "params=" + params.to_s
 end
 
@@ -164,13 +164,25 @@ get '/stories' do
 
 	stories_json_array = Array.new
 	for story in stories do
+
+		allow_story = true
+		if story["active_users"] then
+			active_users = story["active_users"]
+			if params[:app_info] && params[:app_info][:user_id] then
+				user_id = params[:app_info][:user_id]
+				allow_story = false unless active_users.include?(user_id)
+			else
+				allow_story = false
+			end
+		end
+
 		# Adding the remakes per story
-		if remakes_num && remakes_num > 0 then
+		if allow_story && remakes_num && remakes_num > 0 then
 			story_remakes = settings.db.collection("Remakes").find({story_id:story["_id"], status: RemakeStatus::Done, user_id:{"$in" => public_users}, grade:{"$ne" => -1}}).sort(grade:-1).limit(remakes_num);
 			story[:remakes] = story_remakes.to_a
 		end
 
-		stories_json_array.push(story.to_json)
+		stories_json_array.push(story.to_json) if allow_story
 	end
 
 	logger.info "Returning " + stories_json_array.count.to_s + " stories"
