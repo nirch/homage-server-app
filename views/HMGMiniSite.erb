@@ -24,7 +24,7 @@
 		<div class="row">
 			<div class="col-lg-2 col-sm-4 top left-side">
 				<a href="http://homage.it/app"/>
-					<img src="http://homage.it/wp-content/themes/homage/images/homeLogo.png"></img>
+					<img class="logo" src="http://homage.it/wp-content/themes/homage/images/homeLogo.png"></img>
 				</a>				
 			</div>
 
@@ -42,48 +42,44 @@
 	</div>
 	<div class="container_fluid rafi">
 		<div class="row">
-			<div class="col-xs-12 hidden-lg hidden-md hidden-sm visible-xs">
-				 <div id="menu">
-					<a href="http://googleplay.com">
-						<img src="http://homage.it/wp-content/themes/homage/images/googlePlay.png"/>
-					</a>
-					<a href="https://itunes.apple.com/us/app/homage/id851746600?l=iw&amp;ls=1&amp;mt=8">
-						<img src="http://homage.it/wp-content/themes/homage/images/appStore.png"/>
-					</a>
-				</div>
-				
-			</div>
-		</div>
-
-
-		<div class="row">
 			<div class="col-md-12 hidden-xs upper_spacer">
 			</div>
 		</div>
 
 		<div class="row">
-			<div class="col-md-12">
-				<h1 class="remake_description_header">
-					#<%= @story["share_message"]%>
-				</h1>
+			<div class="col-md-2 filler">
 
-				<h1 class='remake_description_body'>					
-						<% if @user["facebook"] then %>
-						<%= @user["facebook"]["first_name"] %>'s remake for <%= @story["name"]%>
-						<% elsif @user["email"] then %>
-						<%= @user["email"].split("@")[0].slice(0,1).capitalize + @user["email"].split("@")[0].slice(1..-1) %>'s remake for <%= @story["name"]%>
-						<% else %>
-						Remake for <%= @story["name"]%>
-						<% end %>
-				</h1>
+			</div>
 
-				<div class="videocontent">
-					<video id="video_player" class="video-js video-js vjs-default-skin vjs-big-play-centered" width="auto" height="auto" controls="controls" 
-							poster=<%= @remake["thumbnail"]%> 
-							data-setup="{}">
-							<source src=<%= @remake["video"]%> type="video/mp4"/>
-					</video>
+			<div class="col-md-8">
+				<div class="video_player_container">
+
+					<h1 class="remake_description_header">
+						#<%= @story["share_message"]%>
+					</h1>
+
+					<div class="videocontent">
+						<video id="video_player" class="video-js video-js vjs-default-skin vjs-big-play-centered" width="auto" height="auto" controls="controls" 
+								poster=<%= @remake["thumbnail"]%> 
+								data-setup="{}">
+								<source src=<%= @remake["video"]%> type="video/mp4"/>
+						</video>
+					</div>
+
+					<h1 class='remake_description_body'>					
+							<% if @user["facebook"] then %>
+							<%= @user["facebook"]["first_name"] %>'s remake for <%= @story["name"]%>
+							<% elsif @user["email"] then %>
+							<%= @user["email"].split("@")[0].slice(0,1).capitalize + @user["email"].split("@")[0].slice(1..-1) %>'s remake for <%= @story["name"]%>
+							<% else %>
+							Remake for <%= @story["name"]%>
+							<% end %>
+					</h1>
 				</div>
+			</div>
+
+			<div class="col-md-2 filler">
+
 			</div>
 		</div>
 
@@ -95,6 +91,20 @@
 		<div class="row">
 			<div class="col-md-12">
 				<div class="shareContainer"></div>
+			</div>
+		</div>
+
+		<div class="row">
+			<div class="col-xs-12 hidden-lg hidden-md hidden-sm visible-xs">
+				 <div id="menu_full_row">
+					<a href="http://googleplay.com">
+						<img src="http://homage.it/wp-content/themes/homage/images/googlePlay.png"/>
+					</a>
+					<a href="https://itunes.apple.com/us/app/homage/id851746600?l=iw&amp;ls=1&amp;mt=8">
+						<img src="http://homage.it/wp-content/themes/homage/images/appStore.png"/>
+					</a>
+				</div>
+				
 			</div>
 		</div>
 	</div>		
@@ -112,6 +122,7 @@
 	console.log(thumbnail);
 	
 	config = {
+		image: thumbnail,
     	ui: {
     		flyout: 'bottom center'
         },
