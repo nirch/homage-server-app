@@ -37,11 +37,11 @@ src: url("/resources/ProximaNova-Light.otf") format("opentype");
 }
 
 .upper_spacer {
-	height: 70px;
+	height: 80px;
 }
 
 .bottom_spacer {
-	height: 20px;
+	height: 15px;
 }
 
 .shareContainer
@@ -207,7 +207,7 @@ h1 {padding: 0 0 46px; font-size: 45px; font-family: "bryant-web-compressed"; fo
 
 .vimeovideowrap, .content, .youtubevideowrap, #disqus_thread, .videocontent {
 	width:100%;
-	max-width: 1280px;
+	max-width: 640px;
 	margin: 0 auto;
 }
 .videocontent2 {
@@ -358,10 +358,17 @@ body {
 
 /* Portrait tablets and medium desktops */
 @media (min-width: 992px) and (max-width: 1199px) {
+
+}
+
+@media (max-height: 640px) {
 	.upper_spacer {
 		height: 5px;
 	}
 
+	.bottom_spacer {
+		height: 5px;
+	}
 }
 
 /* Portrait tablets and small desktops */
