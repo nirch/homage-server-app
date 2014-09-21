@@ -294,7 +294,7 @@ body {
     left:0;
     top: 0;
 
-    background-image: url("/resources/siteBG.svg");
+    /*background-image: url("/resources/siteBG.svg");*/
 	background-repeat: no-repeat;
 	background-size: 100% 100%;
 
@@ -312,7 +312,6 @@ body {
 
 .video_player_container h1 {
 	padding: 3px 0px 0px 10px;
-	text-align: left;
 }
 
 /*WebKit Browser*/
