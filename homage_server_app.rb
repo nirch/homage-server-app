@@ -1095,7 +1095,7 @@ end
 #analytics routes
 post '/remake/share' do
 	remake_id = BSON::ObjectId.from_string(params[:remake_id])
-	user_id =  BSON::ObjectId.from_string(params[:user_id])
+	user_id =  BSON::ObjectId.from_string(params[:user_id]) if params[:user_id]
 	share_method = params[:share_method].to_i
 
 	logger.info "creating share entity for Remake " + remake_id.to_s + " for user " + user_id.to_s

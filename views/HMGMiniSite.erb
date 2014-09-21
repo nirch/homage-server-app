@@ -10,7 +10,7 @@
 	<link rel="stylesheet" type="text/css" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">  
   	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
   	<script type="text/javascript" src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
-  	<script src="/js/share.min.js"></script>
+  	<script src="/js/share.js"></script>
   	<link href="http://use.typekit.net/c/d265a8/bryant-web-compressed:n5,din-condensed-web:n4,ff-din-web:n6,proxima-nova:n4:n7.TK3:P:2,ZwM:P:2,ZQp:P:2,b5w:P:2,bBh:P:2/d?3bb2a6e53c9684ffdc9a9bf71f5b2a623df248a4a1ae63c32599068729727de965daa678f740453dc16162c199f9142f587470d85d20c26d71325967c5624c299524dc93c42009d6e29527b95e246c0ef0686ea811180f14f23b94acc9d3f8d0db9ab3dca5ec7a2f9e3589e81185bbfd60f3dc" rel="stylesheet">
   	<link rel="stylesheet" type="text/css" href="/css/videoPlayerSA.css">
 </head>
@@ -111,16 +111,33 @@
 </body>
 
 <script>
-
 	var share_link = '<%= @remake["share_link"] %>'
 	var share_message = '<%= @story["share_message"] %>'
 	var twitt = share_message.concat(": \n");
+	var remakeId = '<%= @remake["_id"].to_s %>'
 	var thumbnail = '<%= @remake["thumbnail"] %>'
+
+	CopyUrlShareMethod = 0
+	FacebookShareMethod = 1
+	WhatsappShareMethod = 2
+	EmailShareMethod = 3 
+	MessageShareMethod = 4
+	WeiboShareMethod = 5
+	TwitterShareMethod = 6
+	GooglePlusShareMethod = 7
+	PinterestShareMethod = 8
+
 
 	console.log("share_link"  + share_link.toString());
 	console.log("share_message" + share_message.toString());
 	console.log(thumbnail);
-	
+
+	var reportShare = function(share_method){
+		// Tracking in our Server
+		$.post('/remake/share', {"remake_id":remakeId,"share_method":share_method}, function(data,status){
+		});
+	};
+
 	config = {
 		image: thumbnail,
     	ui: {
@@ -128,29 +145,60 @@
         },
         networks: {
     		google_plus: {
-      			url: share_link
+    			before: function() {
+		        	this.url = share_link
+		        	return this;
+		     	},
+		      	after: function() {
+		        	reportShare(GooglePlusShareMethod);
+		      	}
     		},
     		twitter: {
-      			url: share_link,
-      			description: twitt
+    			before: function() {
+		        	this.url = share_link;
+		        	this.description = twitt;
+		        	return this;
+		     	},
+		      	after: function() {
+		        	reportShare(TwitterShareMethod);
+		      	}
     		},
     		facebook: {
-      			url: share_link,
-      			load_sdk: true,
-      			app_id: '447743458659084', // Facebook app id for tracking shares. if provided, will use the facebook API
-      			title: share_message,
-      			//caption: // caption to be shared alongside your link to Facebook [Default: null]
-      			description: share_message,
-      			image: thumbnail
+    			before: function() {
+		        	this.url = share_link;
+		        	this.load_sdk = true;
+		        	this.app_id = '447743458659084';
+		        	this.title = share_message;
+		        	this.description = share_message;
+		        	this.image = thumbnail;      	
+		        	return this;
+		     	},
+		      	after: function() {
+		        	reportShare(FacebookShareMethod);
+		      	}
     		},
     		pinterest: {
-      			url:  share_link,   // the url you'd like to share to Pinterest [Default: config.url]
-      			image:  thumbnail,
-      			description: share_message,   // text to be shared alongside your link to Pinterest [Default: config.description]
+
+    			before: function() {
+		        	this.url = share_link;
+		        	this.description = share_message;
+		        	this.image = thumbnail;      	
+		        	return this;
+		     	},
+		      	after: function() {
+		        	reportShare(PinterestShareMethod);
+		      	}
     		},
     		email: {
-      			title:     share_message,
-      			description:  share_link,
+
+    			before: function() {
+		        	this.title = share_message;
+		        	this.description = share_link;	
+		        	return this;
+		     	},
+		      	after: function() {
+		        	reportShare(EmailShareMethod);
+		      	}
     		}
     	}
   	}
