@@ -23,7 +23,8 @@ world_cup_coach_id = BSON::ObjectId.from_string("53bffcbbf0c5349d4600058f")
 f1_id = BSON::ObjectId.from_string("53c7d110c05d603a910003d6")
 street_fighter_id = BSON::ObjectId.from_string("53ce9bc405f0f6e8f2000655")
 hello_nyan_kitty_id = BSON::ObjectId.from_string("53ec8c014b7b616933000122")
-
+mako_lehava = BSON::ObjectId.from_string("5416aecfcfe5e6a8580009d1")
+big_bro = BSON::ObjectId.from_string("5416e9d962ec2977e7000298")
 
 stories_to_copy = Set.new [
 	# dive_school_id, 
@@ -39,7 +40,9 @@ stories_to_copy = Set.new [
 	#world_cup_coach_id,
 	#f1_id,
 	#street_fighter_id,
-	hello_nyan_kitty_id
+	#hello_nyan_kitty_id,
+	#mako_lehava,
+	big_bro
 	]
 
 for story_id in stories_to_copy do
