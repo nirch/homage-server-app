@@ -10,7 +10,7 @@
 	<link rel="stylesheet" type="text/css" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">  
   	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
   	<script type="text/javascript" src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
-  	<script src="/js/share.js"></script>
+  	<script src="/js/share.min.js"></script>
   	<!-- <link href="http://use.typekit.net/c/d265a8/bryant-web-compressed:n5,din-condensed-web:n4,ff-din-web:n6,proxima-nova:n4:n7.TK3:P:2,ZwM:P:2,ZQp:P:2,b5w:P:2,bBh:P:2/d?3bb2a6e53c9684ffdc9a9bf71f5b2a623df248a4a1ae63c32599068729727de965daa678f740453dc16162c199f9142f587470d85d20c26d71325967c5624c299524dc93c42009d6e29527b95e246c0ef0686ea811180f14f23b94acc9d3f8d0db9ab3dca5ec7a2f9e3589e81185bbfd60f3dc" rel="stylesheet"> -->
   	<link rel="stylesheet" type="text/css" href="/css/videoPlayerSA.css">
 
@@ -164,11 +164,14 @@
 		        	reportShare(TwitterShareMethod);
 		      	}
     		},
-    		facebook: {
+    		facebook: {	
+		       	app_id:'447743458659084',
+		       	load_sdk: true,
+    			
     			before: function() {
 		        	this.url = share_link;
-		        	this.load_sdk = true;
-		        	this.app_id = '447743458659084';
+		        	/*this.load_sdk = true;
+		        	this.app_id = '447743458659084';*/
 		        	this.title = share_message;
 		        	this.description = share_message;
 		        	this.image = thumbnail;      	
