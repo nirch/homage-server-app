@@ -165,15 +165,12 @@
 		      	}
     		},
     		facebook: {
-    			before: function() {
-		        	this.url = share_link;
-		        	this.load_sdk = true;
-		        	this.app_id = '447743458659084';
-		        	this.title = share_message;
-		        	this.description = share_message;
-		        	this.image = thumbnail;      	
-		        	return this;
-		     	},
+		        	url: share_link,
+		        	load_sdk: true,
+		        	app_id: '447743458659084',
+		        	title: share_message,
+		        	description: share_message,
+		        	image: thumbnail,
 		      	after: function() {
 		        	reportShare(FacebookShareMethod);
 		      	}
