@@ -13,6 +13,7 @@ require 'chartkick'
 require 'aws-sdk'
 require 'active_support/core_ext'
 require 'user_agent_parser'
+require 'sinatra/subdomain'
 require File.expand_path '../mongo scripts/Analytics.rb', __FILE__
 
 current_session_ID = nil
@@ -42,6 +43,8 @@ configure :production do
 	set :homage_server_render_uri, URI.parse("http://homage-render-prod-elb-882305239.us-east-1.elb.amazonaws.com:4567/render")
 
 	set :logging, Logger::INFO
+
+	set :play_subdomain, :play
 end
 
 configure :test do
@@ -65,6 +68,7 @@ configure :test do
 	set :homage_server_render_uri, URI.parse("http://54.83.32.172:4567/render")
 	set :logging, Logger::DEBUG
 
+	set :play_subdomain, :'play-test'
 end
 
 before do
@@ -141,6 +145,124 @@ module ViewSource
 	Web = 2
 end
 
+
+#################
+# Play Subdomain
+#################
+
+subdomain settings.play_subdomain do
+	get '/intro' do
+		erb :intro
+	end
+
+	#get '/play/DemoDay' do
+	get %r{^/diveschool/?$}i do
+		dive_school_story_id = BSON::ObjectId.from_string("52de83db8bc427751c000305")
+		#@remakes = settings.db.collection("Remakes").find({story_id: dive_school_story_id, status:RemakeStatus::Done})
+		@remakes = settings.db.collection("Remakes").find({story_id: dive_school_story_id, demo:true}).sort(_id: 1)
+		@heading = "Dive School"
+		@grade = false
+
+		erb :demoday
+	end 
+
+	get '/date/:from_date' do
+		from_date = Time.parse(params[:from_date])
+
+		@remakes = settings.db.collection("Remakes").find(created_at:{"$gte"=>from_date}, status:3).sort(created_at:-1)
+		@heading = @remakes.count.to_s + " Remakes from " + from_date.strftime("%d/%m/%Y")
+		@grade = true
+
+		erb :demoday
+	end
+
+	get '/public/date/:from_date' do
+		from_date = Time.parse(params[:from_date])
+
+		# Getting all the public users
+		public_users_cursor = settings.db.collection("Users").find({is_public:true})
+		public_users = Array.new
+
+		for user in public_users_cursor do
+			public_users.push(user["_id"])
+		end
+
+		# Getting all the completed remakes of the public users
+		@remakes = settings.db.collection("Remakes").find({created_at:{"$gte"=>from_date}, status: RemakeStatus::Done, user_id:{"$in" => public_users}}).sort(created_at:-1)
+		@heading = @remakes.count.to_s + " Public Remakes from " + from_date.strftime("%d/%m/%Y")
+		@grade = true
+
+		erb :demoday
+	end
+
+	#play routes
+	get '/deleted/date/:from_date' do
+		from_date = Time.parse(params[:from_date])
+
+		@remakes = settings.db.collection("Remakes").find(created_at:{"$gte"=>from_date}, status:5).sort(created_at:-1)
+		@heading = @remakes.count.to_s + " Remakes from " + from_date.strftime("%d/%m/%Y")
+		@grade = false
+
+		erb :demoday
+	end
+
+	get '/stories' do
+		superior_man_id = BSON::ObjectId.from_string("535e8fc981360cd22f0003d4")
+
+		# Getting all the public users
+		public_users_cursor = settings.db.collection("Users").find({is_public:true})
+		public_users = Array.new
+		for user in public_users_cursor do
+			public_users.push(user["_id"])
+		end
+
+		@stories = settings.db.collection("Stories").find(active:true)
+
+		erb :stories
+	end
+
+	get '/story/:story_id' do
+		story_id = BSON::ObjectId.from_string(params[:story_id])
+
+		# Getting all the public users
+		public_users_cursor = settings.db.collection("Users").find({is_public:true})
+		public_users = Array.new
+		for user in public_users_cursor do
+			public_users.push(user["_id"])
+		end
+
+		@remakes = settings.db.collection("Remakes").find(story_id:story_id, status:RemakeStatus::Done, grade:{"$gte"=>1}, user_id:{"$in" => public_users}).sort(grade:-1)
+
+		@heading = settings.db.collection("Stories").find_one(story_id)["name"]
+
+		@grade = false
+
+		erb :demoday
+	end
+
+	get '/:remake_id' do
+		remake_id = BSON::ObjectId.from_string(params[:remake_id])
+
+		remakes = settings.db.collection("Remakes")
+		@remake = remakes.find_one(remake_id)
+
+		users = settings.db.collection("Users")
+		if BSON::ObjectId.legal?(@remake["user_id"]) then
+			@user = users.find_one(@remake["user_id"])
+		else
+			@user = users.find_one({_id: @remake["user_id"]})
+		end
+
+		stories = settings.db.collection("Stories")
+		@story = stories.find_one(@remake["story_id"])
+
+		erb :HMGMiniSite
+	end
+end
+
+###################
+# All Other Routes
+###################
 
 # Get all stories
 get '/stories' do
@@ -1023,61 +1145,6 @@ get '/download/:filename' do
 	send_file downloadPath #, :type => 'video/mp4', :disposition => 'inline'
 end
 
-get '/play/intro' do
-	headers \
-		"X-Frame-Options"   => "ALLOW-FROM http://play.homage.it/"
-
-	erb :intro
-end
-
-#get '/play/DemoDay' do
-get %r{^/play/diveschool/?$}i do
-	headers \
-		"X-Frame-Options"   => "ALLOW-FROM http://play.homage.it/"
-
-	dive_school_story_id = BSON::ObjectId.from_string("52de83db8bc427751c000305")
-	#@remakes = settings.db.collection("Remakes").find({story_id: dive_school_story_id, status:RemakeStatus::Done})
-	@remakes = settings.db.collection("Remakes").find({story_id: dive_school_story_id, demo:true}).sort(_id: 1)
-	@heading = "Dive School"
-	@grade = false
-
-	erb :demoday
-end 
-
-get '/play/date/:from_date' do
-	from_date = Time.parse(params[:from_date])
-
-	@remakes = settings.db.collection("Remakes").find(created_at:{"$gte"=>from_date}, status:3).sort(created_at:-1)
-	@heading = @remakes.count.to_s + " Remakes from " + from_date.strftime("%d/%m/%Y")
-	@grade = true
-
-	headers \
-		"X-Frame-Options"   => "ALLOW-FROM http://play.homage.it/"
-
-	erb :demoday
-end
-
-get '/play/public/date/:from_date' do
-	from_date = Time.parse(params[:from_date])
-
-	# Getting all the public users
-	public_users_cursor = settings.db.collection("Users").find({is_public:true})
-	public_users = Array.new
-
-	for user in public_users_cursor do
-		public_users.push(user["_id"])
-	end
-
-	# Getting all the completed remakes of the public users
-	@remakes = settings.db.collection("Remakes").find({created_at:{"$gte"=>from_date}, status: RemakeStatus::Done, user_id:{"$in" => public_users}}).sort(created_at:-1)
-	@heading = @remakes.count.to_s + " Public Remakes from " + from_date.strftime("%d/%m/%Y")
-	@grade = true
-
-	headers \
-		"X-Frame-Options"   => "ALLOW-FROM http://play.homage.it/"
-
-	erb :demoday
-end
 
 
 post '/update/grade' do
@@ -1262,92 +1329,6 @@ post '/user/session_end' do
 	return user_session.to_json
 end
 
-#play routes
-get '/play/deleted/date/:from_date' do
-	from_date = Time.parse(params[:from_date])
-
-	@remakes = settings.db.collection("Remakes").find(created_at:{"$gte"=>from_date}, status:5).sort(created_at:-1)
-	@heading = @remakes.count.to_s + " Remakes from " + from_date.strftime("%d/%m/%Y")
-	@grade = false
-
-	headers \
-		"X-Frame-Options"   => "ALLOW-FROM http://play.homage.it/"
-
-	erb :demoday
-end
-
-get '/play/stories' do
-	superior_man_id = BSON::ObjectId.from_string("535e8fc981360cd22f0003d4")
-
-	# Getting all the public users
-	public_users_cursor = settings.db.collection("Users").find({is_public:true})
-	public_users = Array.new
-	for user in public_users_cursor do
-		public_users.push(user["_id"])
-	end
-
-	@stories = settings.db.collection("Stories").find(active:true)
-
-	headers \
-		"X-Frame-Options"   => "ALLOW-FROM http://play.homage.it/"
-
-	erb :stories
-end
-
-get '/play/story/:story_id' do
-	story_id = BSON::ObjectId.from_string(params[:story_id])
-
-	# Getting all the public users
-	public_users_cursor = settings.db.collection("Users").find({is_public:true})
-	public_users = Array.new
-	for user in public_users_cursor do
-		public_users.push(user["_id"])
-	end
-
-	@remakes = settings.db.collection("Remakes").find(story_id:story_id, status:RemakeStatus::Done, grade:{"$gte"=>1}, user_id:{"$in" => public_users}).sort(grade:-1)
-
-	@heading = settings.db.collection("Stories").find_one(story_id)["name"]
-
-	@grade = false
-
-	headers \
-		"X-Frame-Options"   => "ALLOW-FROM http://play.homage.it/"
-
-	erb :demoday
-end
-
-
-get '/play/:remake_id' do
-	remake_id = BSON::ObjectId.from_string(params[:remake_id])
-	puts "remake_id" + remake_id.to_s
-
-	remakes = settings.db.collection("Remakes")
-	@remake = remakes.find_one(remake_id)
-	puts "remake"
-	puts @remake
-
-	users = settings.db.collection("Users")
-	if BSON::ObjectId.legal?(@remake["user_id"]) then
-		@user = users.find_one(@remake["user_id"])
-	else
-		@user = users.find_one({_id: @remake["user_id"]})
-	end
-
-	puts "user"
-	puts @user
-
-	stories = settings.db.collection("Stories")
-	@story = stories.find_one(@remake["story_id"])
-
-	puts "story"
-	puts @story
-
-	headers \
-		"X-Frame-Options"   => "ALLOW-FROM http://play.homage.it/"
-
-	erb :HMGMiniSite
-end
-
 get '/analytics' do
 
 	Analytics.init_db(settings.db)
@@ -1424,3 +1405,4 @@ get '/test/push/:user_id' do
 
 	"done"
 end
+
