@@ -44,7 +44,7 @@
 		<select onchange="location = this.options[this.selectedIndex].value;">
 		  <option value=""></option>
 		  <% for story in @stories do %>
-		  	<option value="<%= "/play/story/" + story["_id"].to_s %>"><%= story["name"] %></option>
+		  	<option value="<%= "/story/" + story["_id"].to_s %>"><%= story["name"] %></option>
 		  <% end %>
 		</select>
 	</div>

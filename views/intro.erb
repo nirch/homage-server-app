@@ -1,7 +1,12 @@
 <!DOCTYPE html>
 <head>
 	<title>Homage</title>
-	<script type="text/javascript" src="//cdn.sublimevideo.net/js/w5ui0013.js"></script>
+
+	<link href="//vjs.zencdn.net/4.6/video-js.css" rel="stylesheet">
+	<script src="//vjs.zencdn.net/4.6/video.js"></script>
+	<style type="text/css">
+  		.vjs-default-skin { color: #FF7D57; }
+	</style>
 
 	<!-- Latest compiled and minified CSS -->
 	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
@@ -49,8 +54,13 @@
 			Welcome to Homage!
 		</h1>
 
-		<video id="0" class="sublime" poster="http://d293iqusjtyr94.cloudfront.net/Intro/Homage_Intro_Thumbnail.jpg" data-sharing-url="http://play.homage.it/intro" width="640" height="360" data-uid="0" preload="none">
-		  <source src="http://d293iqusjtyr94.cloudfront.net/Intro/Homage_Intro_Video.mp4" data-quality="hd" />
+		<video id="video_1" class="video-js vjs-default-skin vjs-big-play-centered" 
+			controls preload="auto" width="640" height="360"
+			poster="http://d293iqusjtyr94.cloudfront.net/Intro/Homage_Intro_Thumbnail.jpg"
+			data-setup='{"example_option":true}'>
+			<source src="http://d293iqusjtyr94.cloudfront.net/Intro/Homage_Intro_Video.mp4" type='video/mp4' />
+			<p class="vjs-no-js">To view this video please enable JavaScript, and consider upgrading to a web browser that <a href="http://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a></p>
 		</video>
+
 	</div>
 </body>

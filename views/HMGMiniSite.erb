@@ -70,7 +70,7 @@
 
         lowsrc      = remake["thumbnail"];
         fullsrc     = remake["thumbnail"];
-        description = remake["story_name"];
+        description = remake["_id"]["$oid"];
         category    = remake["story_name"];
         remake_id   = remake["_id"]["$oid"];
 
@@ -90,6 +90,7 @@
             console.log("selectedCellIndex: " + selectedCellIndex);
             remake = all_remakes[selectedCellIndex];
             remake_id = remake["_id"].toString();
+            console.log("remake: " + remake_id)
             path = '/play/' + remake_id;
             location.href = path;
           },
