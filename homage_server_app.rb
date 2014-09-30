@@ -190,6 +190,33 @@ get '/stories' do
 	stories_result = "[" + stories_json_array.join(",") + "]"
 end
 
+get '/remakes' do
+	# input
+	skip = params[:skip].to_i if params[:skip] # Optional
+	limit = params[:limit].to_i if params[:limit] # Optional
+
+	story_names = Hash.new;
+	stories = settings.db.collection("Stories").find({}, {fields: {after_effects: 0}})
+	for story in stories do
+		story_id = story["_id"]
+		story_names[story_id] = story["name"]
+	end
+	
+	remakes = settings.db.collection("Remakes").find({ share_link:{"$exists"=>true}, status: 3},{fields: {footages: 0}}).sort({created_at: -1})
+	remakes = remakes.skip(skip) if skip
+	remakes = remakes.limit(limit) if limit
+
+	remakes_result = Array.new;
+	for remake in remakes do
+		story_id = remake["story_id"]
+		story_name = story_names[story_id];
+		remake["story_name"] = story_name;
+		remakes_result.push(remake);
+	end
+
+	remakes_result = remakes_result.to_json
+end
+
 
 # Returns a given story id
 get '/story/:story_id' do
@@ -1345,6 +1372,21 @@ get '/play/:remake_id' do
 	headers \
 		"X-Frame-Options"   => "ALLOW-FROM http://play.homage.it/"
 
+	erb :HMGVideoPlayer
+end
+
+get '/minisite' do
+
+	#match = {"$match" => { share_link:{"$exists"=>true}, status: 3}}
+
+	#sort = {"$sort" => { created_at: -1 }} #descending order
+
+	#limit = {"$limit" => 25}
+
+    #proj={"$project" => {"_id" => 1, "created_at" => 1, "user_id" => 1, "thumbnail" => 
+    #  "h" => {"$hour" => "$created_at"}, "m" => {"$minute" => "$created_at"}, "s" => {"$second" => "$created_at"}, "ml" => {"$millisecond" =>  "$created_at"}}}
+
+    #group={"$group" => { "_id" => { "date" => "$created_at"}, "list" => {"$push" => "$user_id"}}}
 	erb :HMGMiniSite
 end
 

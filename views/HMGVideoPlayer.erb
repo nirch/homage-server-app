@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   	<title>Homage | <%= @story["share_message"]%></title>
+
+   	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimum-scale=1.0, maximum-scale=1.0">
+   	
+   	<link href="http://vjs.zencdn.net/4.8/video-js.css" rel="stylesheet">
+	<script src="http://vjs.zencdn.net/4.8/video.js"></script>
+	<link rel="stylesheet" type="text/css" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">  
+  	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+  	<script type="text/javascript" src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+  	<script src="/js/share.min.js"></script>
+  	<!-- <link href="http://use.typekit.net/c/d265a8/bryant-web-compressed:n5,din-condensed-web:n4,ff-din-web:n6,proxima-nova:n4:n7.TK3:P:2,ZwM:P:2,ZQp:P:2,b5w:P:2,bBh:P:2/d?3bb2a6e53c9684ffdc9a9bf71f5b2a623df248a4a1ae63c32599068729727de965daa678f740453dc16162c199f9142f587470d85d20c26d71325967c5624c299524dc93c42009d6e29527b95e246c0ef0686ea811180f14f23b94acc9d3f8d0db9ab3dca5ec7a2f9e3589e81185bbfd60f3dc" rel="stylesheet"> -->
+  	<link rel="stylesheet" type="text/css" href="/css/videoPlayerSA.css">
+
+	<link rel="icon" type="image/x-icon" href="/resources/favicon.ico"/>
+
+  	<!-- script for creating a BSON objectID -->
+	<script src="/js/Objectid.js"></script>
+	
+</head>
+
+<body>	
+	<div class="blurBG">
+
+	</div>
+
+	<div class="container-fluid">
+		<div class="row">
+			<div class="col-lg-2 col-sm-4 top left-side">
+				<a href="http://homage.it/app"/>
+					<img class="logo" src="http://homage.it/wp-content/themes/homage/images/homeLogo.png"></img>
+				</a>				
+			</div>
+
+			<div class="col-lg-10 col-sm-8 visible-lg visible-md visible-sm hidden-xs top">
+				<div id="menu">
+					<a href="https://play.google.com/store/apps/details?id=com.homage.app">
+						<img class="right-margin" src="http://homage.it/wp-content/themes/homage/images/googlePlay.png"/>
+					</a>
+					<a href="https://itunes.apple.com/us/app/homage/id851746600?l=iw&amp;ls=1&amp;mt=8">
+						<img class="right-margin" src="http://homage.it/wp-content/themes/homage/images/appStore.png"/>
+					</a>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="container_fluid">
+		<div class="row">
+			<div class="col-md-12 hidden-xs upper_spacer">
+			</div>
+		</div>
+
+		<div class="row">
+			<div class="col-md-3 filler">
+
+			</div>
+
+			<div class="col-md-6">
+				<div class="video_player_container">
+
+					<h1 class="remake_description_header">
+						#<%= @story["share_message"]%>
+					</h1>
+
+					<div class="videocontent">
+						<video id="video_player" class="video-js video-js vjs-default-skin vjs-big-play-centered" width="auto" height="auto" controls="controls" 
+								poster=<%= @remake["thumbnail"]%> 
+								data-setup="{}">
+								<source src=<%= @remake["video"]%> type="video/mp4"/>
+						</video>
+					</div>
+
+					<h1 class='remake_description_body'>					
+							<% if @user["facebook"] then %>
+							<%= @user["facebook"]["first_name"] %>'s remake for <%= @story["name"]%>
+							<% elsif @user["email"] then %>
+							<%= @user["email"].split("@")[0].slice(0,1).capitalize + @user["email"].split("@")[0].slice(1..-1) %>'s remake for <%= @story["name"]%>
+							<% else %>
+							Remake for <%= @story["name"]%>
+							<% end %>
+					</h1>
+				</div>
+			</div>
+
+			<div class="col-md-3 filler">
+
+			</div>
+		</div>
+
+		<div class="row">
+			<div class="col-md-12 bottom_spacer">
+			</div>
+		</div>	
+
+		<div class="row">
+			<div class="col-md-12">
+				<div class="shareContainer"></div>
+			</div>
+		</div>
+
+		<div class="row">
+			<div class="col-xs-12 hidden-lg hidden-md hidden-sm visible-xs">
+				 <div id="menu_full_row">
+					<a href="http://googleplay.com">
+						<img src="http://homage.it/wp-content/themes/homage/images/googlePlay.png"/>
+					</a>
+					<a href="https://itunes.apple.com/us/app/homage/id851746600?l=iw&amp;ls=1&amp;mt=8">
+						<img src="http://homage.it/wp-content/themes/homage/images/appStore.png"/>
+					</a>
+				</div>
+				
+			</div>
+		</div>
+	</div>		
+</body>
+
+<script>
+	var share_link = '<%= @remake["share_link"] %>'
+	var share_message = '<%= @story["share_message"] %>'
+	var twitt = share_message.concat(": \n");
+	var remakeId = '<%= @remake["_id"].to_s %>'
+	var thumbnail = '<%= @remake["thumbnail"] %>'
+
+	CopyUrlShareMethod = 0
+	FacebookShareMethod = 1
+	WhatsappShareMethod = 2
+	EmailShareMethod = 3 
+	MessageShareMethod = 4
+	WeiboShareMethod = 5
+	TwitterShareMethod = 6
+	GooglePlusShareMethod = 7
+	PinterestShareMethod = 8
+
+	var reportShare = function(share_method){
+		// Tracking in our Server
+		$.post('/remake/share', {"remake_id":remakeId,"share_method":share_method}, function(data,status){
+		});
+	};
+
+	config = {
+		image: thumbnail,
+    	ui: {
+    		flyout: 'bottom center'
+        },
+        networks: {
+    		google_plus: {
+    			before: function() {
+		        	this.url = share_link;
+		        	return this;
+		     	},
+		      	after: function() {
+		        	reportShare(GooglePlusShareMethod);
+		      	}
+    		},
+    		twitter: {
+    			before: function() {
+		        	this.url = share_link;
+		        	this.description = twitt;
+		        	return this;
+		     	},
+		      	after: function() {
+		        	reportShare(TwitterShareMethod);
+		      	}
+    		},
+    		
+    		facebook: {	
+		       	app_id:'447743458659084',
+		       	load_sdk: true,
+    			
+    			before: function() {
+		        	this.url = share_link;
+		        	/*this.load_sdk = true;
+		        	this.app_id = '447743458659084';*/
+		        	this.title = share_message;
+		        	this.description = share_message;
+		        	this.image = thumbnail;      	
+		        	return this;
+		     	},
+
+		      	after: function() {
+		        	reportShare(FacebookShareMethod);
+		      	}
+    		},
+    		pinterest: {
+
+    			before: function() {
+		        	this.url = share_link;
+		        	this.description = share_message;
+		        	this.image = thumbnail;      	
+		        	return this;
+		     	},
+		      	after: function() {
+		        	reportShare(PinterestShareMethod);
+		      	}
+    		},
+    		email: {
+
+    			before: function() {
+		        	this.title = share_message;
+		        	this.description = share_link;	
+		        	return this;
+		     	},
+		      	after: function() {
+		        	reportShare(EmailShareMethod);
+		      	}
+    		}
+    	}
+  	}
+
+    var share = new Share(".shareContainer", config);
+
+    var stopReported = false;
+		var playReported = false;
+
+		videojs('video_player').ready(function(){
+			var myPlayer = this;
+			var videoTitle = '<%= @story["name"] + " - " + @remake["_id"].to_s %>'
+			var remakeId = '<%= @remake["_id"].to_s %>'
+			var objectId = new ObjectId().toString();
+
+			var trackVideoSrart = function(){
+				// Tracking in our Server
+				$.post('/remake/view', {"view_id":objectId, "remake_id":remakeId, "playback_event":0, "originating_screen":11}, function(data,status){
+    				playReported = true;
+  				});
+
+				// Tracking in Google Analytics
+				if (typeof ga !== 'undefined') ga('send', 'event', 'Videos', 'Started', videoTitle);
+			};
+
+			var trackVideoEnd = function(){
+				// Tracking in our Server
+				$.post('/remake/view', {"view_id":objectId, "remake_id":remakeId, "playback_event":1, "originating_screen":11, "total_duration":myPlayer.duration(), "playback_duration":myPlayer.currentTime()}, function(data,status){
+    				stopReported = true;
+  				});
+
+				// Tracking in Google Analytics
+				if (typeof ga !== 'undefined') ga('send', 'event', 'Videos', 'Ended', videoTitle);				
+			};
+
+			myPlayer.one("play", trackVideoSrart)
+			myPlayer.one("ended", trackVideoEnd)
+
+			// Event for page unload to track the end of the view
+			$(window).bind('beforeunload', function(){
+				// Tracking only if we already tracked play and didn'y track stop
+  				if (playReported && !stopReported) {
+	  				// Tracking in our Server (doing a sync call because the page is about to close)
+	  				$.ajax({
+				        type: 'POST',
+				        async: false,
+				        url: '/remake/view',
+				        data: {"view_id":objectId, "remake_id":remakeId, "playback_event":1, "originating_screen":11, "total_duration":myPlayer.duration(), "playback_duration":myPlayer.currentTime()},
+				        complete: function(xhr, status){ }
+				    });
+
+					// Tracking in Google Analytics
+					if (typeof ga !== 'undefined') ga('send', 'event', 'Videos', 'Ended', videoTitle);				
+  				}
+  			});
+		});
+</script>
+

@@ -19,7 +19,7 @@ class Analytics
        @@shares_collection = @@db.collection("Shares")
        @@views_collection = @@db.collection("Views")
        @@sessions_collection = @@db.collection("Sessions")
-        @@stories_collection = @@db.collection("Stories")
+       @@stories_collection = @@db.collection("Stories")
    end
 
    #measurements
