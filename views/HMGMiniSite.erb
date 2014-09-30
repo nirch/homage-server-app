@@ -57,10 +57,19 @@
   var limit = 30;
   var gallery = null;
   var all_remakes = [];
+  var currentlyLoadingImgs = false;
 
-  function fetch_remakes(skip)
+  $('body').on("finished_loading_images", function() {
+    currentlyLoadingImgs = false;
+    if  ($(window).scrollTop() == $(document).height() - $(window).height()) {
+            fetch_remakes();
+    }
+  });
+
+  function fetch_remakes()
   {
     var single_batch_remakes = [];
+    currentlyLoadingImgs = true;
 
     $.get('/remakes', {skip: skip, limit: limit} , function(data, status, xhr){
       json_data = $.parseJSON(data)
@@ -70,7 +79,7 @@
 
         lowsrc      = remake["thumbnail"];
         fullsrc     = remake["thumbnail"];
-        description = remake["_id"]["$oid"];
+        description = i+skip + ": " + remake["_id"]["$oid"];
         category    = remake["story_name"];
         remake_id   = remake["_id"]["$oid"];
 
@@ -87,11 +96,9 @@
           disableSliderOnClick: true,
           onCellClick: function(e) {
             var selectedCellIndex = gallery.getSelectedCell();
-            console.log("selectedCellIndex: " + selectedCellIndex);
             remake = all_remakes[selectedCellIndex];
             remake_id = remake["_id"].toString();
-            console.log("remake: " + remake_id)
-            path = '/play/' + remake_id;
+            path = '/' + remake_id;
             location.href = path;
           },
           load: function(next) {
@@ -103,18 +110,21 @@
         var data = single_batch_remakes;
         gallery.loadMore(data);
       }
+
+      skip += limit;
+      
     });
   }
 
-  $(window).scroll(function(){
-      if  ($(window).scrollTop() == $(document).height() - $(window).height()){
-            fetch_remakes(skip);
-            skip += limit;
+  $(window).scroll(function() {
+      if  ($(window).scrollTop() == $(document).height() - $(window).height()) {
+        if (!currentlyLoadingImgs) { 
+          fetch_remakes();
+        }
       }
   }); 
 
-  fetch_remakes(skip)
-  skip += limit;
+  fetch_remakes();
   
 </script>
 </body>

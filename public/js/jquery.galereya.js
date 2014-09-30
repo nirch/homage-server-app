@@ -355,6 +355,7 @@
             index = index || 0;
 
             if (index >= $imgs.length) {
+                $('body').trigger("finished_loading_images");
                 return;
             }
 
@@ -752,6 +753,7 @@
         this.prevSlide = function () {
             $sliderPrev.click();
         };
+
         /**
          * Load additional images to the galereya.
          * @param items - is an object like in the load function.
@@ -768,13 +770,12 @@
                     $img = createImage(item.lowsrc);
                     createCell($img, item);
                 }
-
                 loadImages(startIndex, currentCategory);
             }
         };
 
         this.getSelectedCell = function() {
-            return lastSelectedIndex;
+        return lastSelectedIndex;
         }
 
         constructor();

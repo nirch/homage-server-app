@@ -145,6 +145,32 @@ module ViewSource
 	Web = 2
 end
 
+get '/remakes' do
+		# input
+		skip = params[:skip].to_i if params[:skip] # Optional
+		limit = params[:limit].to_i if params[:limit] # Optional
+
+		story_names = Hash.new;
+		stories = settings.db.collection("Stories").find({}, {fields: {after_effects: 0}})
+		for story in stories do
+			story_id = story["_id"]
+			story_names[story_id] = story["name"]
+		end
+		
+		remakes = settings.db.collection("Remakes").find({ share_link:{"$exists"=>true}, status: 3},{fields: {footages: 0}}).sort({created_at: -1})
+		remakes = remakes.skip(skip) if skip
+		remakes = remakes.limit(limit) if limit
+
+		remakes_result = Array.new;
+		for remake in remakes do
+			story_id = remake["story_id"]
+			story_name = story_names[story_id];
+			remake["story_name"] = story_name;
+			remakes_result.push(remake);
+		end
+
+		remakes_result = remakes_result.to_json
+end
 
 #################
 # Play Subdomain
@@ -240,6 +266,22 @@ subdomain settings.play_subdomain do
 		erb :demoday
 	end
 
+	get '/minisite' do
+
+	#match = {"$match" => { share_link:{"$exists"=>true}, status: 3}}
+
+	#sort = {"$sort" => { created_at: -1 }} #descending order
+
+	#limit = {"$limit" => 25}
+
+    #proj={"$project" => {"_id" => 1, "created_at" => 1, "user_id" => 1, "thumbnail" => 
+    #  "h" => {"$hour" => "$created_at"}, "m" => {"$minute" => "$created_at"}, "s" => {"$second" => "$created_at"}, "ml" => {"$millisecond" =>  "$created_at"}}}
+
+    #group={"$group" => { "_id" => { "date" => "$created_at"}, "list" => {"$push" => "$user_id"}}}
+		erb :HMGMiniSite
+	end
+
+	
 	get '/:remake_id' do
 		remake_id = BSON::ObjectId.from_string(params[:remake_id])
 
@@ -256,8 +298,10 @@ subdomain settings.play_subdomain do
 		stories = settings.db.collection("Stories")
 		@story = stories.find_one(@remake["story_id"])
 
-		erb :HMGMiniSite
+		erb :HMGVideoPlayer
 	end
+
+	
 end
 
 ###################
@@ -312,32 +356,6 @@ get '/stories' do
 	stories_result = "[" + stories_json_array.join(",") + "]"
 end
 
-get '/remakes' do
-	# input
-	skip = params[:skip].to_i if params[:skip] # Optional
-	limit = params[:limit].to_i if params[:limit] # Optional
-
-	story_names = Hash.new;
-	stories = settings.db.collection("Stories").find({}, {fields: {after_effects: 0}})
-	for story in stories do
-		story_id = story["_id"]
-		story_names[story_id] = story["name"]
-	end
-	
-	remakes = settings.db.collection("Remakes").find({ share_link:{"$exists"=>true}, status: 3},{fields: {footages: 0}}).sort({created_at: -1})
-	remakes = remakes.skip(skip) if skip
-	remakes = remakes.limit(limit) if limit
-
-	remakes_result = Array.new;
-	for remake in remakes do
-		story_id = remake["story_id"]
-		story_name = story_names[story_id];
-		remake["story_name"] = story_name;
-		remakes_result.push(remake);
-	end
-
-	remakes_result = remakes_result.to_json
-end
 
 
 # Returns a given story id
@@ -1356,106 +1374,6 @@ post '/user/session_end' do
 	return user_session.to_json
 end
 
-#play routes
-get '/play/deleted/date/:from_date' do
-	from_date = Time.parse(params[:from_date])
-
-	@remakes = settings.db.collection("Remakes").find(created_at:{"$gte"=>from_date}, status:5).sort(created_at:-1)
-	@heading = @remakes.count.to_s + " Remakes from " + from_date.strftime("%d/%m/%Y")
-	@grade = false
-
-	headers \
-		"X-Frame-Options"   => "ALLOW-FROM http://play.homage.it/"
-
-	erb :demoday
-end
-
-get '/play/stories' do
-	superior_man_id = BSON::ObjectId.from_string("535e8fc981360cd22f0003d4")
-
-	# Getting all the public users
-	public_users_cursor = settings.db.collection("Users").find({is_public:true})
-	public_users = Array.new
-	for user in public_users_cursor do
-		public_users.push(user["_id"])
-	end
-
-	@stories = settings.db.collection("Stories").find(active:true)
-
-	headers \
-		"X-Frame-Options"   => "ALLOW-FROM http://play.homage.it/"
-
-	erb :stories
-end
-
-get '/play/story/:story_id' do
-	story_id = BSON::ObjectId.from_string(params[:story_id])
-
-	# Getting all the public users
-	public_users_cursor = settings.db.collection("Users").find({is_public:true})
-	public_users = Array.new
-	for user in public_users_cursor do
-		public_users.push(user["_id"])
-	end
-
-	@remakes = settings.db.collection("Remakes").find(story_id:story_id, status:RemakeStatus::Done, grade:{"$gte"=>1}, user_id:{"$in" => public_users}).sort(grade:-1)
-
-	@heading = settings.db.collection("Stories").find_one(story_id)["name"]
-
-	@grade = false
-
-	headers \
-		"X-Frame-Options"   => "ALLOW-FROM http://play.homage.it/"
-
-	erb :demoday
-end
-
-
-get '/play/:remake_id' do
-	remake_id = BSON::ObjectId.from_string(params[:remake_id])
-	puts "remake_id" + remake_id.to_s
-
-	remakes = settings.db.collection("Remakes")
-	@remake = remakes.find_one(remake_id)
-	puts "remake"
-	puts @remake
-
-	users = settings.db.collection("Users")
-	if BSON::ObjectId.legal?(@remake["user_id"]) then
-		@user = users.find_one(@remake["user_id"])
-	else
-		@user = users.find_one({_id: @remake["user_id"]})
-	end
-
-	puts "user"
-	puts @user
-
-	stories = settings.db.collection("Stories")
-	@story = stories.find_one(@remake["story_id"])
-
-	puts "story"
-	puts @story
-
-	headers \
-		"X-Frame-Options"   => "ALLOW-FROM http://play.homage.it/"
-
-	erb :HMGVideoPlayer
-end
-
-get '/minisite' do
-
-	#match = {"$match" => { share_link:{"$exists"=>true}, status: 3}}
-
-	#sort = {"$sort" => { created_at: -1 }} #descending order
-
-	#limit = {"$limit" => 25}
-
-    #proj={"$project" => {"_id" => 1, "created_at" => 1, "user_id" => 1, "thumbnail" => 
-    #  "h" => {"$hour" => "$created_at"}, "m" => {"$minute" => "$created_at"}, "s" => {"$second" => "$created_at"}, "ml" => {"$millisecond" =>  "$created_at"}}}
-
-    #group={"$group" => { "_id" => { "date" => "$created_at"}, "list" => {"$push" => "$user_id"}}}
-	erb :HMGMiniSite
-end
 
 get '/analytics' do
 
