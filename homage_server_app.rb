@@ -1184,11 +1184,11 @@ post '/update_text' do
     #redirect back
 end
 
-get '/download/:filename' do
-	downloadPath = settings.outputFolder + params[:filename]
-	puts "download file path: #{downloadPath}"
-	send_file downloadPath #, :type => 'video/mp4', :disposition => 'inline'
-end
+# get '/download/:filename' do
+# 	downloadPath = settings.outputFolder + params[:filename]
+# 	puts "download file path: #{downloadPath}"
+# 	send_file downloadPath #, :type => 'video/mp4', :disposition => 'inline'
+# end
 
 
 
@@ -1450,5 +1450,9 @@ get '/test/push/:user_id' do
 	send_push_notification_to_user(user_id, alert, custom_data)
 
 	"done"
+end
+
+get '/download/ios' do
+	redirect "https://itunes.apple.com/us/app/id851746600", 302
 end
 
