@@ -1456,3 +1456,6 @@ get '/download/ios' do
 	redirect "https://itunes.apple.com/us/app/id851746600", 302
 end
 
+get '/download/android' do
+	redirect "https://play.google.com/store/apps/details?id=com.homage.app", 302
+end
