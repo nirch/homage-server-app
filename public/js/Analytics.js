@@ -9,13 +9,20 @@ ViewSourceIos     = 0
 ViewSourceAndroid = 1
 ViewSourceWeb     = 2
 
-function genDataForDaysDisplay(start_date,end_date,data_type,data_series) {
+function genDataForDaysDisplay(start_date,end_date,data_type,data_series,data_format) {
 	sd = new Date(start_date);
 	ed = new Date(end_date);
 
 	id = sd;
 	color = 0;
 	final_result = [];
+
+	x_date_series        = ["x"];
+	remake_views_series  = ["remake views"];
+	story_views_series   = ["story views"];
+	ios_views_series     = ["iOS views"];
+	android_views_series = ["Android views"];
+	web_views_series     = ["web views"];
 
 	if (data_type == StoryViewsGraphType) {
 		data_series = aggregateStoryViews(start_date,end_date,data_series);
@@ -39,37 +46,54 @@ function genDataForDaysDisplay(start_date,end_date,data_type,data_series) {
 			switch (data_type) {
 				case NormalFractionGraphType:
 				if (data_set == 0) {
-					final_result.push({"date": id, "value": 0});
+					data_set = [0,0];
+				}
+
+				if (data_set[1] == 0) {
+					nom_value   = data_format["nominator"];
+					denom_value = data_format["denominator"];
+					info = "Value: " + 0 + ", " + data_format["nominator"] + 0 + ", " + data_format["denominator"] + 0 
+					final_result.push({"date": id, "value": 0, "info": info});
 				} else {
-					val = (data_set[0]/data_set[1]).toFixed(3)/1;
-					final_result.push({"date": id, "value": val});
+					value = (data_set[0]/data_set[1]).toFixed(3)/1;
+					info = "Value: " +  value + ", " 
+							+ data_format["nominator"] + data_set[0] + ", " + data_format["denominator"] + data_set[1];
+					final_result.push({"date": id, "value": value, "info": info});
 				}
 				break;
 				case NormalValueGraphType:
-				final_result.push({"date": id, "value": data_set});
+				value = data_set;
+				info = "Value: " + value;
+				final_result.push({"date": id, "value": value, "info": info});
 				break;
 				case AvgValueGraphType:
-				val = data_set.toFixed(3)/1;
-				final_result.push({"date": id, "value": val});
+				value = data_set.toFixed(3)/1;
+				info = "Value: " + value;
+				final_result.push({"date": id, "value": value, "info": info});
 				break;
 				case StoryViewsGraphType:		
+				x_date_series.push(id);
+
 				remake_views = 0
 				if (data_set.hasOwnProperty("remake_views")) remake_views = data_set["remake_views"];
+				remake_views_series.push(remake_views);
 
 				story_views = 0
 				if (data_set.hasOwnProperty("story_views")) story_views = data_set["story_views"];
+				story_views_series.push(story_views);
 				
 				ios_views = 0
 				if (data_set.hasOwnProperty(ViewSourceIos)) ios_views = data_set[ViewSourceIos];
+				ios_views_series.push(ios_views);
 				
 				android_views = 0
 				if (data_set.hasOwnProperty(ViewSourceAndroid)) android_views = data_set[ViewSourceAndroid];
+				android_views_series.push(android_views);
 
 				web_views = 0
 				if (data_set.hasOwnProperty(ViewSourceWeb)) web_views = data_set[ViewSourceWeb];
+				web_views_series.push(web_views);
 
-				final_result.push({"date":date_key, "remake views": remake_views, "story views": story_views,
-				 "ios views":ios_views, "android views":android_views, "web views":web_views});
 				break;
 				case UndefinedGraphType:
 				console.log("undefined graph type");
@@ -80,15 +104,25 @@ function genDataForDaysDisplay(start_date,end_date,data_type,data_series) {
 		}
 	}	
 
+	if (data_type == StoryViewsGraphType) {
+		final_result = [x_date_series,remake_views_series,story_views_series,ios_views_series,android_views_series,web_views_series];
+	}
+
 	return final_result;
 }
 
-function genDataForWeeksDisplay(start_date,end_date,data_type,data_series) {
+function genDataForWeeksDisplay(start_date,end_date,data_type,data_series,data_format) {
 	sd = new Date(start_date);
 	ed = new Date(end_date);
 
 	
 	id = sd;
+	x_date_series        = ["x"];
+	remake_views_series  = ["remake views"];
+	story_views_series   = ["story views"];
+	ios_views_series     = ["iOS views"];
+	android_views_series = ["Android views"];
+	web_views_series     = ["web views"];
 	final_result = [];
 	nominator_sum = 0;
 	denominator_sum = 0;
@@ -111,13 +145,12 @@ function genDataForWeeksDisplay(start_date,end_date,data_type,data_series) {
 		});
 
 	} else {
-
+		week_start = id;
 		while (id <= ed) {
 			date_key = genDataKeyFormatForDate(id);
 
 			if (data_series[date_key]) {
-				data_set = data_series[date_key];
-				
+				data_set = data_series[date_key];		
 			} else {
 				data_set = 0;
 			}	
@@ -151,30 +184,56 @@ function genDataForWeeksDisplay(start_date,end_date,data_type,data_series) {
 					break;
 			}
 
-
 			if (id.getDay() == 6 || +id == +ed ) { //its saturday or the end of the data set, need to sum of the week and make a new sum
-				
 				if (data_type == StoryViewsGraphType) {
-					final_result.push({"date": id, "remake views": remake_views, "story views": story_views,
-					 "ios views":ios_views, "android views":android_views, "web views":web_views});
+					x_date_series.push(id);
+					remake_views_series.push(remake_views);
+					ios_views_series.push(ios_views);
+					android_views_series.push(android_views);
+					web_views_series.push(web_views);
+
 					remake_views = 0;
 					story_views = 0;
 					ios_views = 0; 
 					android_views = 0;
 					web_views = 0
 
-				} else if (data_type == NormalValueGraphType || data_type == NormalFractionGraphType || data_type == AvgValueGraphType) {			
-					if (denominator_sum != 0) {
-						final_result.push({"date": id, "value": nominator_sum / denominator_sum}); 
+				} else if (data_type == NormalValueGraphType || data_type == NormalFractionGraphType) {			
+					week_info = "Time frame: " + week_start + " to: " + id;
+					if (denominator_sum == 0) {
+						info = "Value: " + 0 + ", " + 
+								data_format["nominator"] + 0 + ", " + data_format["denominator"] + 0 + ", " + 
+								week_info;
+						final_result.push({"date": id, "value": 0, "info": info}); 
+					} else {
+						value = (nominator_sum / denominator_sum).toFixed(3)/1;
+						info = "Value: " + value + ", " + 
+								data_format["nominator"] + nominator_sum + ", " + data_format["denominator"] + denominator_sum + ", " + 
+								week_info;
+						final_result.push({"date": id, "value": value, "info": info}); 
 					}
 					
 					nominator_sum = 0;
 					denominator_sum = 0;
+				
+				} else if (data_type == AvgValueGraphType) {
+					week_info = "Time frame: " + week_start + " to: " + id;
+					value = (nominator_sum / denominator_sum).toFixed(3)/1;
+					info = "Value: " + value + ", " + week_info;
+					final_result.push({"date": id, "value": value, "info": info}); 
+					nominator_sum = 0;
+					denominator_sum = 0;
 				}
+
+				week_start = addDays(id,1);
 			}
 
 			id = addDays(id,1);
 		}
+	}
+
+	if (data_type == StoryViewsGraphType) {
+		final_result = [x_date_series,remake_views_series,story_views_series,ios_views_series,android_views_series,web_views_series];
 	}
 	
 	return final_result

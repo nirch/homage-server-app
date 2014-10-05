@@ -240,8 +240,19 @@
 				if (typeof ga !== 'undefined') ga('send', 'event', 'Videos', 'Ended', videoTitle);				
 			};
 
-			myPlayer.one("play", trackVideoSrart)
-			myPlayer.one("ended", trackVideoEnd)
+			first = true;
+			myPlayer.on("play", function() {
+				if (first) {
+					first = false;
+					trackVideoSrart
+				}				
+			})
+			myPlayer.on("ended", function() {
+				first = true;
+				trackVideoEnd;
+				myPlayer.posterImage.show();
+			});
+			
 
 			// Event for page unload to track the end of the view
 			$(window).bind('beforeunload', function(){

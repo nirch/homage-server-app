@@ -1397,17 +1397,20 @@ get '/analytics' do
 	######
 	@heading1 = "% of shared videos out of all created movies "
 	@data1    = Analytics.get_pct_of_shared_videos_for_date_range_out_of_all_created_movies(start_date,end_date,bson_story_array)
+	puts "% of shared videos out of all created movies:"
+	puts @data1
+	@value_format1 = {nominator: "shared video: " , denominator: "Total Videos for day: "}
 	######
 	@heading2 = "% of users that shared at least once out of all active users"
 	@data2    = Analytics.get_pct_of_users_who_shared_at_list_once_for_date_range(start_date,end_date,bson_story_array) 
+	@value_format2 = {nominator: "Sharing users: " , denominator: "Total users for day: "}
     #####
 	#@heading3 = "distribution of movie making between users from date: " + launch_date.iso8601
 	#@data3    = Analytics.get_distribution_of_remakes_between_users_from_date(launch_date)
 	#####
 	@heading4 = "views for story" 
 	@data4 = Analytics.get_total_views_for_story_for_date_range(start_date,end_date,bson_story_array)
-	puts @heading4
-	puts @data4
+	
 	######
 	@heading5 = "avg session time between dates"
 	@data5 = Analytics.get_avg_session_time_for_date_range(start_date,end_date)
@@ -1417,12 +1420,15 @@ get '/analytics' do
 	######
 	@heading7 = "% of failed remakes"
 	@data7 = Analytics.get_pct_of_failed_remakes_for_date_range(start_date,end_date,bson_story_array)
+	@value_format7 = {nominator: "Failed remakes: " , denominator: "Total remakes for day: "}
 
 	puts "=============== presenting Anaytlics ==============="
-	return [["line" , KPIGraphType::NormalFractionGraphType, @heading1, @data1], ["line", KPIGraphType::NormalFractionGraphType, @heading2, @data2],
-	 ["stacked grouped bars" , KPIGraphType::StoryViewsGraphType, @heading4,  @data4],
-	 ["line" , KPIGraphType::AvgValueGraphType, @heading5, @data5], ["pie", KPIGraphType::PieChartGraphType ,@heading6, @data6],
-	 ["line", KPIGraphType::NormalFractionGraphType ,@heading7, @data7]].to_json
+	return [["line" , KPIGraphType::NormalFractionGraphType, @heading1, @data1, @value_format1],
+	 		["line", KPIGraphType::NormalFractionGraphType, @heading2, @data2, @value_format2],
+	 		["stacked grouped bars" , KPIGraphType::StoryViewsGraphType, @heading4,  @data4],
+	 		["line" , KPIGraphType::AvgValueGraphType, @heading5, @data5],
+	 		["pie", KPIGraphType::PieChartGraphType ,@heading6, @data6],
+	 		["line", KPIGraphType::NormalFractionGraphType ,@heading7, @data7, @value_format7]].to_json
 	#erb :analytics
 end
 

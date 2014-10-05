@@ -1,6 +1,6 @@
 
 function drawD3LineChart(data,chart_name) {
-	var w = 450,
+	var w = 550,
 	h = 275;
 
 	var monthNames = [ "January", "February", "March", "April", "May", "June",
@@ -155,9 +155,9 @@ function drawD3LineChart(data,chart_name) {
         gravity: 'w', 
         html: true, 
         title: function() {
-          var d = this.__data__;
-	  var pDate = d.date;
-          return 'Date: ' + pDate.getDate() + " " + monthNames[pDate.getMonth()] + " " + pDate.getFullYear() + '<br>Value: ' + d.value; 
+          	var d = this.__data__;
+	  		var pDate = d.date;
+          	return 'Date: ' + pDate.getDate() + " " + monthNames[pDate.getMonth()] + " " + pDate.getFullYear() + '<br>' + d.info; 
         }
       });
 }

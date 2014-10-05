@@ -141,6 +141,7 @@
                 if (options.length === 0) {
                     return this.nonSelectedText + ' <b class="caret"></b>';
                 }
+
                 else {
                     if (options.length > this.numberDisplayed) {
                         return options.length + ' ' + this.nSelectedText + ' <b class="caret"></b>';
@@ -152,6 +153,10 @@
 
                             selected += label + ', ';
                         });
+
+                        /*if (options.length == selected.length) {
+                               return this.allSelectedText + ' <b class="caret"></b>';
+                        }*/
                         return selected.substr(0, selected.length - 2) + ' <b class="caret"></b>';
                     }
                 }
@@ -248,6 +253,7 @@
             preventInputChangeEvent: false,
             nonSelectedText: 'None selected',
             nSelectedText: 'selected',
+            //allSelectedText: 'All selected',
             numberDisplayed: 3,
             disableIfEmpty: false,
             templates: {
@@ -881,7 +887,13 @@
          */
         selectAll: function () {
             var allCheckboxes = $("li input[type='checkbox']:enabled", this.$ul);
-            var visibleCheckboxes = allCheckboxes.filter(":visible");
+            
+            // TODO: this row below is a hack. if multiseclect creates bugs, check if this line had not fucked all up   
+            var visibleCheckboxes = allCheckboxes
+            //var visibleCheckboxes = allCheckboxes.filter(":visible");
+            
+            //
+
             var allCheckboxesCount = allCheckboxes.length;
             var visibleCheckboxesCount = visibleCheckboxes.length;
                 
@@ -1073,7 +1085,8 @@
                 }
             }
         },
-        
+
+    
         /**
          * Update the button text and its title based on the currently selected options.
          */
