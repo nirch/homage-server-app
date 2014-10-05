@@ -29,7 +29,6 @@ function genDataForDaysDisplay(start_date,end_date,data_type,data_series,data_fo
 	}
 
 	if (data_type == PieChartGraphType) {
-		console.log("detected pie chart");
 		Object.keys(data_series).forEach(function(key) {
 			//var colors = ["#2484c1","#0c6197","#4daa4b","#90c469","#daca61","#e4a14b","#e98125"];
 			//j = Math.floor(Math.random() * colors.length) + 1;
@@ -96,7 +95,7 @@ function genDataForDaysDisplay(start_date,end_date,data_type,data_series,data_fo
 
 				break;
 				case UndefinedGraphType:
-				console.log("undefined graph type");
+				//console.log("undefined graph type");
 				final_result.push({"date": id, "value": {}});
 				break;
 			}
@@ -137,7 +136,6 @@ function genDataForWeeksDisplay(start_date,end_date,data_type,data_series,data_f
 	}
 
 	if (data_type == PieChartGraphType) {
-		console.log("detected pie chart");
 		Object.keys(data_series).forEach(function(key) {
 			var colors = ["#2484c1","#0c6197","#4daa4b","#90c469","#daca61","#e4a14b","#e98125"];
 			i = Math.floor(Math.random() * colors.length) + 1;
@@ -179,7 +177,7 @@ function genDataForWeeksDisplay(start_date,end_date,data_type,data_series,data_f
 					break;
 
 				case UndefinedGraphType:
-					console.log("undefined graph type");
+					//console.log("undefined graph type");
 					final_result.push({"date": id, "value": {}});
 					break;
 			}

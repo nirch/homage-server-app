@@ -23,26 +23,28 @@ world_cup_coach_id = BSON::ObjectId.from_string("53bffcbbf0c5349d4600058f")
 f1_id = BSON::ObjectId.from_string("53c7d110c05d603a910003d6")
 street_fighter_id = BSON::ObjectId.from_string("53ce9bc405f0f6e8f2000655")
 hello_nyan_kitty_id = BSON::ObjectId.from_string("53ec8c014b7b616933000122")
-mako_lehava = BSON::ObjectId.from_string("5416aecfcfe5e6a8580009d1")
-big_bro = BSON::ObjectId.from_string("5416e9d962ec2977e7000298")
+mako_lehava_id = BSON::ObjectId.from_string("5416aecfcfe5e6a8580009d1")
+big_bro_id = BSON::ObjectId.from_string("5416e9d962ec2977e7000298")
+hologram_id = BSON::ObjectId.from_string("541030fdcfe5e61df90001a1")
 
 stories_to_copy = Set.new [
-	# dive_school_id, 
-	# aliens_id, 
-	# monster_attack_id, 
-	# oscar_id, 
-	# dumb_n_helpless_id, 
-	# turbo_ski_id, 
-	# superior_man_id, 
-	# the_interpreter_id,
-    #world_cup_brazil_id,
-	#world_cup_argentina_id,
-	#world_cup_coach_id,
-	#f1_id,
-	#street_fighter_id,
-	#hello_nyan_kitty_id,
-	#mako_lehava,
-	big_bro
+	dive_school_id, 
+	aliens_id, 
+	monster_attack_id, 
+	oscar_id, 
+	dumb_n_helpless_id, 
+	turbo_ski_id, 
+	superior_man_id, 
+	the_interpreter_id,
+    world_cup_brazil_id,
+	world_cup_argentina_id,
+	world_cup_coach_id,
+	f1_id,
+	street_fighter_id,
+	hello_nyan_kitty_id,
+	hologram_id,
+	mako_lehava_id,
+	big_bro_id
 	]
 
 for story_id in stories_to_copy do

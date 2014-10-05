@@ -86,13 +86,15 @@ for remake_s3_object in remake_s3_objects do
 
 	if remake_s3_object.key.include? "raw_scene" then
 		scene_id = basename[-1,1].to_i # The last char is the scene_id
-		conour_url = story["scenes"][scene_id - 1]["contours"]["360"]["contour_remote"]
+		contour_orig_url = story["scenes"][scene_id - 1]["contours"]["360"]["contour_remote"]
+		contour_face_url = File.dirname(contour_orig_url) + "/Face/" + File.basename(contour_orig_url,".*") + "-face.ctr"
+
 		extension = ".ctr"
 		download_to_path = download_folder + basename + extension
 
-		puts "Downloading file " + File.basename(conour_url) + "..."
+		puts "Downloading file " + File.basename(contour_face_url) + "..."
 		open(download_to_path, 'wb') do |file|
-			file << open(conour_url).read
+			file << open(contour_face_url).read
 		end
 	end
 end

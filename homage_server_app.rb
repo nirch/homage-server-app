@@ -14,6 +14,7 @@ require 'aws-sdk'
 require 'active_support/core_ext'
 require 'user_agent_parser'
 require 'sinatra/subdomain'
+require 'mixpanel-ruby'
 require File.expand_path '../mongo scripts/Analytics.rb', __FILE__
 
 current_session_ID = nil
@@ -41,6 +42,9 @@ configure :production do
 	# Production AE server connection
 	set :homage_server_foreground_uri, URI.parse("http://homage-render-prod-elb-882305239.us-east-1.elb.amazonaws.com:4567/footage")
 	set :homage_server_render_uri, URI.parse("http://homage-render-prod-elb-882305239.us-east-1.elb.amazonaws.com:4567/render")
+
+	# Setting MixPanel only in prodution
+	set :mixpanel, Mixpanel::Tracker.new("7d575048f24cb2424cd5c9799bbb49b1")
 
 	set :logging, Logger::INFO
 
@@ -145,6 +149,12 @@ module ViewSource
 	Web = 2
 end
 
+module AppInstallFrom
+	AppInvite = "AppInvite"
+	MiniSite  = "MiniSite"
+	HomageSite = "HomageSite"
+end
+
 get '/remakes' do
 		# input
 		skip = params[:skip].to_i if params[:skip] # Optional
@@ -171,6 +181,23 @@ get '/remakes' do
 
 		remakes_result = remakes_result.to_json
 end
+
+get '/ios' do
+ 	shared_from = "Undeifined"
+	src = params[:src] if params[:src];
+
+	settings.mixpanel.track("12345", "InstalliOS", {"shared_from"=>shared_from}) if settings.respond_to?(:mixpanel)	
+	redirect "https://itunes.apple.com/us/app/id851746600", 302
+end
+
+get '/android' do
+	shared_from = "Undeifined"
+	src = params[:src] if params[:src];
+
+	settings.mixpanel.track("12345", "InstallAndroid", {"shared_from"=>shared_from}) if settings.respond_to?(:mixpanel)	
+	redirect "https://play.google.com/store/apps/details?id=com.homage.app", 302
+end
+
 
 #################
 # Play Subdomain
@@ -1184,11 +1211,11 @@ post '/update_text' do
     #redirect back
 end
 
-get '/download/:filename' do
-	downloadPath = settings.outputFolder + params[:filename]
-	puts "download file path: #{downloadPath}"
-	send_file downloadPath #, :type => 'video/mp4', :disposition => 'inline'
-end
+# get '/download/:filename' do
+# 	downloadPath = settings.outputFolder + params[:filename]
+# 	puts "download file path: #{downloadPath}"
+# 	send_file downloadPath #, :type => 'video/mp4', :disposition => 'inline'
+# end
 
 
 
@@ -1389,7 +1416,7 @@ get '/analytics' do
 	start_date =  Time.parse(_start_date.strftime("%Y%m%dZ"))
 	end_date   =  Time.parse(_end_date.strftime("%Y%m%dZ"))
 
-	puts "/analytics: start_date " + start_date.iso8601 + " end date: " + end_date.iso8601
+	logger.info "analytics period: start_date " + start_date.iso8601 + " end date: " + end_date.iso8601
 
 	launch_date = Time.parse("20140430Z")
 	Analytics.init_db(settings.db)
@@ -1397,8 +1424,6 @@ get '/analytics' do
 	######
 	@heading1 = "% of shared videos out of all created movies "
 	@data1    = Analytics.get_pct_of_shared_videos_for_date_range_out_of_all_created_movies(start_date,end_date,bson_story_array)
-	puts "% of shared videos out of all created movies:"
-	puts @data1
 	@value_format1 = {nominator: "shared video: " , denominator: "Total Videos for day: "}
 	######
 	@heading2 = "% of users that shared at least once out of all active users"
@@ -1422,14 +1447,12 @@ get '/analytics' do
 	@data7 = Analytics.get_pct_of_failed_remakes_for_date_range(start_date,end_date,bson_story_array)
 	@value_format7 = {nominator: "Failed remakes: " , denominator: "Total remakes for day: "}
 
-	puts "=============== presenting Anaytlics ==============="
 	return [["line" , KPIGraphType::NormalFractionGraphType, @heading1, @data1, @value_format1],
 	 		["line", KPIGraphType::NormalFractionGraphType, @heading2, @data2, @value_format2],
 	 		["stacked grouped bars" , KPIGraphType::StoryViewsGraphType, @heading4,  @data4],
 	 		["line" , KPIGraphType::AvgValueGraphType, @heading5, @data5],
 	 		["pie", KPIGraphType::PieChartGraphType ,@heading6, @data6],
 	 		["line", KPIGraphType::NormalFractionGraphType ,@heading7, @data7, @value_format7]].to_json
-	#erb :analytics
 end
 
 get '/test_analytics' do
@@ -1457,4 +1480,3 @@ get '/test/push/:user_id' do
 
 	"done"
 end
-

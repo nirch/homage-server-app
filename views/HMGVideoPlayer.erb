@@ -244,12 +244,12 @@
 			myPlayer.on("play", function() {
 				if (first) {
 					first = false;
-					trackVideoSrart
+					trackVideoSrart();
 				}				
 			})
 			myPlayer.on("ended", function() {
 				first = true;
-				trackVideoEnd;
+				trackVideoEnd();
 				myPlayer.posterImage.show();
 			});
 			

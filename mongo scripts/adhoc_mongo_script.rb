@@ -6,6 +6,7 @@ require 'aws-sdk'
 test_db = Mongo::MongoClient.from_uri("mongodb://Homage:homageIt12@paulo.mongohq.com:10008/Homage").db
 users = test_db.collection("Users")
 remakes = test_db.collection("Remakes")
+stories = test_db.collection("Stories")
 
 prod_db = Mongo::MongoClient.from_uri("mongodb://Homage:homageIt12@troup.mongohq.com:10057/Homage_Prod").db
 prod_users = prod_db.collection("Users")
@@ -19,79 +20,100 @@ AWS.config(aws_config)
 s3 = AWS::S3.new
 s3_bucket = s3.buckets['homageapp']
 
+fix_stories = stories.find(active_from: {"$exists"=>true})
+for story in fix_stories do
+	next if story["name"] == "Test"
+	puts story["name"]
+	scene_id = 1
+	for scene in story["scenes"]
+		#puts "scene id=" + scene_id.to_s
+		contour = scene["contours"]["360"]["contour"]
+		#puts "contour=" + contour
+
+		#face_contour = contour.split(".")[0] + "-face" + ".ctr"
+		#puts "face contour=" + face_contour
+		#new_contour = contour
+		
+		#result = stories.update({_id: story["_id"], "scenes.id" => scene_id}, {"$set" => {"scenes.$.contours.360.contour" => face_contour}})
+		#puts result
 
 
-successful_upload_num = 0
-scenes_to_process = 0
-failed_users = Set.new
-date = Time.parse("20140923Z")
-failed_remakes = prod_remakes.find(created_at:{"$gte"=>date}, render_start:{"$exists"=>true}, render_end:{"$exists"=>false})
-remakes_to_fix = Array.new
-puts "Total Failed Remakes = " + failed_remakes.count.to_s
-for remake in failed_remakes do
-	fix_remake = true
-	raw_scene_prefix = "Remakes/" + remake["_id"].to_s + "/raw_scene"
-	s3_objects = s3_bucket.objects.with_prefix(raw_scene_prefix)
-
-	if s3_objects.count == remake["footages"].count then
-		successful_upload_num += 1
-		#puts "status = " + remake["status"].to_s
-		failed_users.add(remake["user_id"])
-
-		for footage in remake["footages"] do
-			processed_scene_prefix = "Remakes/" + remake["_id"].to_s + "/processed_scene_" + footage["scene_id"].to_s
-			s3_processed_objects = s3_bucket.objects.with_prefix(processed_scene_prefix)
-			if s3_processed_objects.count == 0 then
-				# resend scene to processing
-				remake_id = remake["_id"].to_s
-				scene_id = footage["scene_id"]
-				take_id = footage["take_id"]
-				puts '["' + remake_id + '", ' + '"' + scene_id.to_s + '", "' + take_id + '"],'
-				scenes_to_process += 1
-				fix_remake = false
-			end
-		end
-
-		remakes_to_fix.push(remake["_id"]) if fix_remake
-
-
-		# unprocessed_scenes = Array.new
-		# for footage in remake["footages"] do
-		# 	processed_scene_prefix = "Remakes/" + remake["_id"].to_s + "/processed_scene_" + footage["scene_id"].to_s
-		# 	s3_processed_objects = s3_bucket.objects.with_prefix(processed_scene_prefix)
-		# 	if s3_processed_objects.count == 0 then
-		# 		unprocessed_scenes.push(footage["scene_id"])
-		# 	end
-		# end
-
-		# if unprocessed_scenes.count > 0 then
-		# 	#puts remake["_id"].to_s + " has unprocessed scenes: " + unprocessed_scenes.to_s + " out of " + remake["footages"].count.to_s + " scenes" 
-		# else
-		# 	#puts remake["_id"].to_s + " (all scenes processed)"
-		# end
-	else
-		#upload_error_num += 1
+		scene_id += 1
 	end
 end
-puts "Scenes to process = " + scenes_to_process.to_s
-puts "Faild not due to upload = " + successful_upload_num.to_s
-puts "Remakes to fix = " + remakes_to_fix.count.to_s
-puts "Users failed not due to upload = " + failed_users.count.to_s
+#puts fix_stories.count
 
-emails = Array.new
-for user_id in failed_users do
-	user = prod_users.find_one(user_id)
-	emails.push(user["email"]) if user["email"]
-end
-puts "Users failed with email = " + emails.count.to_s
+# successful_upload_num = 0
+# scenes_to_process = 0
+# failed_users = Set.new
+# date = Time.parse("20140923Z")
+# failed_remakes = prod_remakes.find(created_at:{"$gte"=>date}, render_start:{"$exists"=>true}, render_end:{"$exists"=>false})
+# remakes_to_fix = Array.new
+# puts "Total Failed Remakes = " + failed_remakes.count.to_s
+# for remake in failed_remakes do
+# 	fix_remake = true
+# 	raw_scene_prefix = "Remakes/" + remake["_id"].to_s + "/raw_scene"
+# 	s3_objects = s3_bucket.objects.with_prefix(raw_scene_prefix)
 
-for email in emails do
-	puts email
-end
+# 	if s3_objects.count == remake["footages"].count then
+# 		successful_upload_num += 1
+# 		#puts "status = " + remake["status"].to_s
+# 		failed_users.add(remake["user_id"])
 
-for remake_id in remakes_to_fix do
-	puts '"' + remake_id.to_s + '",'
-end
+# 		for footage in remake["footages"] do
+# 			processed_scene_prefix = "Remakes/" + remake["_id"].to_s + "/processed_scene_" + footage["scene_id"].to_s
+# 			s3_processed_objects = s3_bucket.objects.with_prefix(processed_scene_prefix)
+# 			if s3_processed_objects.count == 0 then
+# 				# resend scene to processing
+# 				remake_id = remake["_id"].to_s
+# 				scene_id = footage["scene_id"]
+# 				take_id = footage["take_id"]
+# 				puts '["' + remake_id + '", ' + '"' + scene_id.to_s + '", "' + take_id + '"],'
+# 				scenes_to_process += 1
+# 				fix_remake = false
+# 			end
+# 		end
+
+# 		remakes_to_fix.push(remake["_id"]) if fix_remake
+
+
+# 		# unprocessed_scenes = Array.new
+# 		# for footage in remake["footages"] do
+# 		# 	processed_scene_prefix = "Remakes/" + remake["_id"].to_s + "/processed_scene_" + footage["scene_id"].to_s
+# 		# 	s3_processed_objects = s3_bucket.objects.with_prefix(processed_scene_prefix)
+# 		# 	if s3_processed_objects.count == 0 then
+# 		# 		unprocessed_scenes.push(footage["scene_id"])
+# 		# 	end
+# 		# end
+
+# 		# if unprocessed_scenes.count > 0 then
+# 		# 	#puts remake["_id"].to_s + " has unprocessed scenes: " + unprocessed_scenes.to_s + " out of " + remake["footages"].count.to_s + " scenes" 
+# 		# else
+# 		# 	#puts remake["_id"].to_s + " (all scenes processed)"
+# 		# end
+# 	else
+# 		#upload_error_num += 1
+# 	end
+# end
+# puts "Scenes to process = " + scenes_to_process.to_s
+# puts "Faild not due to upload = " + successful_upload_num.to_s
+# puts "Remakes to fix = " + remakes_to_fix.count.to_s
+# puts "Users failed not due to upload = " + failed_users.count.to_s
+
+# emails = Array.new
+# for user_id in failed_users do
+# 	user = prod_users.find_one(user_id)
+# 	emails.push(user["email"]) if user["email"]
+# end
+# puts "Users failed with email = " + emails.count.to_s
+
+# for email in emails do
+# 	puts email
+# end
+
+# for remake_id in remakes_to_fix do
+# 	puts '"' + remake_id.to_s + '",'
+# end
 
 
 # def median(array)

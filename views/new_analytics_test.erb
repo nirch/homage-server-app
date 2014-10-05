@@ -163,9 +163,6 @@ body {
                     }
 
                     data_for_chart = [];
-                    console.log("preparing data:" + data_label);
-                    console.log("pre-data")
-                    console.log(data_series);
 
                     switch (currentDropDownSelection) {
                       case "Day":
@@ -175,18 +172,13 @@ body {
                         data_for_chart = genDataForWeeksDisplay(sd,ed,data_type,data_series,data_format);
                         break;
                       case "Month":
-                        console.log("chose month");
+                        //TODO: complete
                         break;
                     }
 
                     chart_name = "#chart-" + k;
                     label_name = "#label-" + k;
-                 
                     $(label_name).text(data_label);
-
-                    console.log("visualizing graph: " + data_label);
-                    console.log("data_for_chart")
-                    console.log(data_for_chart)
 
                     switch (data_type) {
                       case NormalFractionGraphType:
@@ -199,22 +191,13 @@ body {
                         drawD3LineChart(data_for_chart,chart_name);
                         break;
                       case StoryViewsGraphType:
-                        console.log("current data for stacked column chart");
-                        console.log(data_for_chart);
                         drawC3StackedColumnChart(data_for_chart,chart_name);
-                        //old d3 implementation
-                        /*innerColumns = {
-                          "column1" : ["remake views","story views"],
-                          "column2" : ["ios views","android views","web views"]
-                        }
-                        genStackedAndGroupBarChart(data_for_chart,innerColumns,chart_name);*/
-
                         break;
                       case PieChartGraphType:
                         drawD3PieChart(data_for_chart,chart_name);
                         break;
                       default:
-                        console.error("undefined graph type");
+                        //console.error("undefined graph type");
                         break;  
                     }                
                   }
@@ -271,8 +254,6 @@ body {
                   sd = $('#dpStartDate').val();
                   ed = $('#dpEndDate').val();
                   selected_stories = $('#story_selector').val();
-                  console.log("selected stories:")
-                  console.log(selected_stories);
                   fetchAnalyticsData(sd,ed,selected_stories);
                   
                 });
@@ -282,31 +263,14 @@ body {
                   sd = $('#dpStartDate').val();
                   ed = $('#dpEndDate').val();
                   selected_stories = $('#story_selector').val();
-                  console.log("selected stories:")
-                  console.log(selected_stories);
                   fetchAnalyticsData(sd,ed,selected_stories);
                 });
 
                 $(function(){
                   $("#time_resolution li a").click(function(){
-
                     $("#time_resolution_button:first-child").text($(this).text());
                     val = $("#time_resolution_button:first-child").text();
                     $("#time_resolution_button:first-child").val($(this).text());
-
-                    switch (val) {
-                      case "Day":
-                        console.log('performing day operation');
-                        break;
-                      case "Week":
-                        console.log('performing week operation');
-                        break;
-                      case "Month":
-                        console.log('performing month operation');
-                        break;
-
-                    }
-
                     currentDropDownSelection = val;
                   });
                 });        

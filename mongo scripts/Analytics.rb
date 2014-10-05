@@ -211,7 +211,7 @@ class Analytics
   end
 
   def self.get_remake_views_for_stories(start_date,end_date,stories_array)
-    remake_views_match = {"$match" => {start_time:{"$gte"=>start_date, "$lt"=>add_days(end_date,1)}, story_id: {"$in"=> stories_array}, remake_id: {"$exists" => true}}}
+    remake_views_match = {"$match" => {start_time:{"$gte"=>start_date, "$lt"=>add_days(end_date,1)}, story_id: {"$in"=> stories_array}, remake_id: {"$exists" => true}, total_duration: {"$exists"=> true}}}
 
     proj1={"$project" => { "_id" => 1, "start_time" => 1, "remake_id" => 1, "story_id" => 1, "view_source"=> 1,
      "h" => {"$hour" => "$start_time"}, "m" => {"$minute" => "$start_time"}, "s" => {"$second" => "$start_time"}, "ml" => {"$millisecond" =>  "$start_time"}}}
@@ -225,7 +225,7 @@ class Analytics
 end
   
 def self.get_story_views_for_stories(start_date,end_date,stories_array)
-    story_views_match  = {"$match" => {start_time:{"$gte"=>start_date, "$lt"=>add_days(end_date,1)}, story_id: {"$in"=> stories_array}, remake_id: {"$exists" => false}}}
+    story_views_match  = {"$match" => {start_time:{"$gte"=>start_date, "$lt"=>add_days(end_date,1)}, story_id: {"$in"=> stories_array}, remake_id: {"$exists" => false}, total_duration: {"$exists"=> true}}}
 
     proj1={"$project" => { "_id" => 1, "start_time" => 1, "story_id" => 1, "view_source"=> 1,
      "h" => {"$hour" => "$start_time"}, "m" => {"$minute" => "$start_time"}, "s" => {"$second" => "$start_time"}, "ml" => {"$millisecond" =>  "$start_time"}}}
@@ -239,7 +239,7 @@ def self.get_story_views_for_stories(start_date,end_date,stories_array)
 end
 
   def self.get_view_distribution_by_view_source(start_date,end_date,stories_array)
-    views_match  = {"$match" => {start_time:{"$gte"=>start_date, "$lt"=>add_days(end_date,1)}, story_id: {"$in"=> stories_array}}}
+    views_match  = {"$match" => {start_time:{"$gte"=>start_date, "$lt"=>add_days(end_date,1)}, story_id: {"$in"=> stories_array}, total_duration: {"$exists"=> true}}}
     proj1={"$project" => { "_id" => 1, "start_time" => 1, "story_id" => 1, "view_source" => 1,
      "h" => {"$hour" => "$start_time"}, "m" => {"$minute" => "$start_time"}, "s" => {"$second" => "$start_time"}, "ml" => {"$millisecond" =>  "$start_time"}}}
 

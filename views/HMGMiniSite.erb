@@ -36,10 +36,10 @@
       <div class="col-lg-10 col-sm-8 visible-lg visible-md visible-sm hidden-xs top">
         <div id="menu">
           <a href="https://play.google.com/store/apps/details?id=com.homage.app">
-            <img class="right-margin" src="http://homage.it/wp-content/themes/homage/images/googlePlay.png"/>
+            <img class="right-margin homagePlayStoreLink" src="http://homage.it/wp-content/themes/homage/images/googlePlay.png"/>
           </a>
           <a href="https://itunes.apple.com/us/app/homage/id851746600?l=iw&amp;ls=1&amp;mt=8">
-            <img class="right-margin" src="http://homage.it/wp-content/themes/homage/images/appStore.png"/>
+            <img class="right-margin homageAppStoreLink" src="http://homage.it/wp-content/themes/homage/images/appStore.png"/>
           </a>
         </div>
       </div>
@@ -123,6 +123,15 @@
         }
       }
   }); 
+
+  $(".homageAppStoreLink").click(function() {
+    $.get('/ios', {"src": "minisite"});
+  });
+
+  $(".homagePlayStoreLink").click(function() {
+    $.get('/android', {"src": "minisite"});
+  });
+
 
   fetch_remakes();
   
