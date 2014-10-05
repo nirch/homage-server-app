@@ -14,6 +14,7 @@ require 'aws-sdk'
 require 'active_support/core_ext'
 require 'user_agent_parser'
 require 'sinatra/subdomain'
+require 'mixpanel-ruby'
 require File.expand_path '../mongo scripts/Analytics.rb', __FILE__
 
 current_session_ID = nil
@@ -41,6 +42,9 @@ configure :production do
 	# Production AE server connection
 	set :homage_server_foreground_uri, URI.parse("http://homage-render-prod-elb-882305239.us-east-1.elb.amazonaws.com:4567/footage")
 	set :homage_server_render_uri, URI.parse("http://homage-render-prod-elb-882305239.us-east-1.elb.amazonaws.com:4567/render")
+
+	# Setting MixPanel only in prodution
+	set :mixpanel, Mixpanel::Tracker.new("7d575048f24cb2424cd5c9799bbb49b1")
 
 	set :logging, Logger::INFO
 
@@ -145,6 +149,11 @@ module ViewSource
 	Web = 2
 end
 
+module AppInstallFrom
+	AppInvite = "AppInvite"
+	WebPlayer = "WebPlayer"
+end
+
 get '/remakes' do
 		# input
 		skip = params[:skip].to_i if params[:skip] # Optional
@@ -171,6 +180,17 @@ get '/remakes' do
 
 		remakes_result = remakes_result.to_json
 end
+
+get '/ios' do
+	settings.mixpanel.track("12345", "InstalliOS", {"shared_from"=>AppInstallFrom::AppInvite}) if settings.respond_to?(:mixpanel)	
+	redirect "https://itunes.apple.com/us/app/id851746600", 302
+end
+
+get '/android' do
+	settings.mixpanel.track("12345", "InstallAndroid", {"shared_from"=>AppInstallFrom::AppInvite}) if settings.respond_to?(:mixpanel)	
+	redirect "https://play.google.com/store/apps/details?id=com.homage.app", 302
+end
+
 
 #################
 # Play Subdomain
@@ -1450,12 +1470,4 @@ get '/test/push/:user_id' do
 	send_push_notification_to_user(user_id, alert, custom_data)
 
 	"done"
-end
-
-get '/download/ios' do
-	redirect "https://itunes.apple.com/us/app/id851746600", 302
-end
-
-get '/download/android' do
-	redirect "https://play.google.com/store/apps/details?id=com.homage.app", 302
 end
