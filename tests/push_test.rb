@@ -4,12 +4,12 @@ require 'houston'
 # conveniently use `Houston::Client.development` or `Houston::Client.production`.
 
 # Debug (Test)
-#APN = Houston::Client.development
-#APN.certificate = File.read("../certificates/homage_push_notification_dev.pem")
+# APN = Houston::Client.development
+# APN.certificate = File.read("../certificates/homage_push_notification_dev.pem")
 
-# Prodcution
+# # Prodcution
 APN = Houston::Client.production
-APN.certificate = File.read("../certificates/homage_push_notification_prod.pem")
+APN.certificate = File.read("../certificates/homage_push_notification_prod_150.pem")
 APN.passphrase = "homage"
 
 # An example of the token sent back when a device registers for notifications
@@ -20,8 +20,17 @@ APN.passphrase = "homage"
 #token = "<83b2deb3 26d549ac 5d045055 697a43e5 b8c3e2fb ddd2b74e e2d903ac 8cafd570>"
 #token = "<3613e36f b419bfca 0063ddd4 fcdf3374 20491e54 8545779d 793cf71b 4a003b8a>"
 
+# Nir (Tomer)
+#token = "<3613e36f b419bfca 0063ddd4 fcdf3374 20491e54 8545779d 793cf71b 4a003b8a>"
+
+# Aviv iPhone 5
+#token = "<ec0ad57f 4fcea35f 03e4fab9 1572a145 a2facdef b58a8203 4acdc1d8 186cac0b>"
+token = "<0a7b7b15 3f0fb335 0e252182 38675505 e739547b 47dd8ab2 60e39582 85fbe150>"
+#iPhone 4
+#token = "<d4d84b6b 923afc59 eb4767ab 73497e0f 3549d836 2028feab a3ac16d8 7927f090>"
+
 # Yoav production
-token = "<6d214c84 73a8d8a9 c807cca5 3a2751b8 be8d93bd d8e04ff0 a3c07009 affde3e7>"
+#token = "<6d214c84 73a8d8a9 c807cca5 3a2751b8 be8d93bd d8e04ff0 a3c07009 affde3e7>"
 
 # Create a notification that alerts a message to the user, plays a sound, and sets the badge on the app
 notification = Houston::Notification.new(device: token)
@@ -36,4 +45,5 @@ notification.sound = "default"
 notification.custom_data = {type: 2, story_id: "53b17db89a452198f80004a6"}
 
 # And... sent! That's all it takes.
-APN.push(notification)
+x = APN.push(notification)
+puts x
