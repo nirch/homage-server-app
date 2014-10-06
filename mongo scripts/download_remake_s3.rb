@@ -8,7 +8,7 @@ require 'open-uri'
 #download_folder = "C:/Development/Homage/Remakes/" + remake_id.to_s + "/"
 
 if !ARGV[0] || !ARGV[1] then 
-	puts "usage: download_remake_s3 {-p|-t} {-remake=<remake_id>|-date=YYYYMMDD} [-folder=<folder>]"
+	puts "usage: download_remake_s3 p|t <remake_id>|<YYYYMMDD> <destination_folder>"
 end
 
 puts "Production or Test? (p/t)"
