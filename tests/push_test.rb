@@ -8,9 +8,17 @@ require 'houston'
 # APN.certificate = File.read("../certificates/homage_push_notification_dev.pem")
 
 # # Prodcution
+# APN = Houston::Client.production
+# APN.certificate = File.read("../certificates/homage_push_notification_prod.pem")
+# APN.passphrase = "homage"
+
 APN = Houston::Client.production
-APN.certificate = File.read("../certificates/homage_push_notification_prod_150.pem")
+APN.certificate = File.read("../certificates/homage_push_notification_prod.pem")
 APN.passphrase = "homage"
+
+APN_NEW = Houston::Client.production
+APN_NEW.certificate = File.read("../certificates/homage_push_notification_prod_150.pem")
+APN_NEW.passphrase = "homage"
 
 # An example of the token sent back when a device registers for notifications
 # Tomer
@@ -28,6 +36,8 @@ APN.passphrase = "homage"
 token = "<0a7b7b15 3f0fb335 0e252182 38675505 e739547b 47dd8ab2 60e39582 85fbe150>"
 #iPhone 4
 #token = "<d4d84b6b 923afc59 eb4767ab 73497e0f 3549d836 2028feab a3ac16d8 7927f090>"
+#iPad
+#token = "<d5356c21 2ad2b3df 71864043 a618fe35 731c7d29 37d200a3 932f1f21 5333a1c0>"
 
 # Yoav production
 #token = "<6d214c84 73a8d8a9 c807cca5 3a2751b8 be8d93bd d8e04ff0 a3c07009 affde3e7>"
@@ -45,5 +55,5 @@ notification.sound = "default"
 notification.custom_data = {type: 2, story_id: "53b17db89a452198f80004a6"}
 
 # And... sent! That's all it takes.
-x = APN.push(notification)
-puts x
+APN.push(notification)
+APN_NEW.push(notification)
