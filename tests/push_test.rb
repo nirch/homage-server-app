@@ -4,21 +4,21 @@ require 'houston'
 # conveniently use `Houston::Client.development` or `Houston::Client.production`.
 
 # Debug (Test)
-# APN = Houston::Client.development
-# APN.certificate = File.read("../certificates/homage_push_notification_dev.pem")
+APN = Houston::Client.development
+APN.certificate = File.read("../certificates/homage_push_notification_dev.pem")
 
 # # Prodcution
 # APN = Houston::Client.production
 # APN.certificate = File.read("../certificates/homage_push_notification_prod.pem")
 # APN.passphrase = "homage"
 
-APN = Houston::Client.production
-APN.certificate = File.read("../certificates/homage_push_notification_prod.pem")
-APN.passphrase = "homage"
+# APN = Houston::Client.production
+# APN.certificate = File.read("../certificates/homage_push_notification_prod.pem")
+# APN.passphrase = "homage"
 
-APN_NEW = Houston::Client.production
-APN_NEW.certificate = File.read("../certificates/homage_push_notification_prod_150.pem")
-APN_NEW.passphrase = "homage"
+# APN_NEW = Houston::Client.production
+# APN_NEW.certificate = File.read("../certificates/homage_push_notification_prod_150.pem")
+# APN_NEW.passphrase = "homage"
 
 # An example of the token sent back when a device registers for notifications
 # Tomer
@@ -32,8 +32,8 @@ APN_NEW.passphrase = "homage"
 #token = "<3613e36f b419bfca 0063ddd4 fcdf3374 20491e54 8545779d 793cf71b 4a003b8a>"
 
 # Aviv iPhone 5
-#token = "<ec0ad57f 4fcea35f 03e4fab9 1572a145 a2facdef b58a8203 4acdc1d8 186cac0b>"
-token = "<0a7b7b15 3f0fb335 0e252182 38675505 e739547b 47dd8ab2 60e39582 85fbe150>"
+token = "<ec0ad57f 4fcea35f 03e4fab9 1572a145 a2facdef b58a8203 4acdc1d8 186cac0b>"
+#token = "<0a7b7b15 3f0fb335 0e252182 38675505 e739547b 47dd8ab2 60e39582 85fbe150>"
 #iPhone 4
 #token = "<d4d84b6b 923afc59 eb4767ab 73497e0f 3549d836 2028feab a3ac16d8 7927f090>"
 #iPad
@@ -56,4 +56,4 @@ notification.custom_data = {type: 2, story_id: "53b17db89a452198f80004a6"}
 
 # And... sent! That's all it takes.
 APN.push(notification)
-APN_NEW.push(notification)
+# APN_NEW.push(notification)
