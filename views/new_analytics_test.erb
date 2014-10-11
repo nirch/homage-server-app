@@ -161,18 +161,17 @@ body {
                     {
                       data_format = data_set[4];
                     }
-
-                    data_for_chart = [];
-
+              
+                    var data_for_chart;
                     switch (currentDropDownSelection) {
-                      case "Day":
-                        data_for_chart = genDataForDaysDisplay(sd,ed,data_type,data_series,data_format);
+                      case "Day": 
+                        data_for_chart = prepareDataForDaysDisplay(sd,ed,data_type,data_series,data_format);          
                         break;
                       case "Week":
-                        data_for_chart = genDataForWeeksDisplay(sd,ed,data_type,data_series,data_format);
+                        data_for_chart = aggregateDataForDisplay(sd,ed,data_type,data_series,data_format,'week');
                         break;
                       case "Month":
-                        //TODO: complete
+                        data_for_chart = aggregateDataForDisplay(sd,ed,data_type,data_series,data_format,'month');
                         break;
                     }
 

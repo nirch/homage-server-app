@@ -327,8 +327,6 @@ subdomain settings.play_subdomain do
 
 		erb :HMGVideoPlayer
 	end
-
-	
 end
 
 ###################
@@ -1272,6 +1270,7 @@ post '/remake/view' do
 
 		view = {_id:client_generated_view_id, remake_id:remake_id, story_id: story_id, start_time:Time.now, originating_screen:orig_screen}
 		view["user_id"] = user_id if user_id
+		logger.info "reporting view start: " + view.to_s
 		view_objectId = views.save(view)
 		
 		logger.info "New view saved in the DB with view id " + view_objectId.to_s
@@ -1293,8 +1292,10 @@ post '/remake/view' do
 		if !view then
 			logger.error "No matching start event for stop event: " + view_id.to_s
 		end
-		views.update({_id: view_id},{"$set" => {playback_duration: playback_duration, total_duration: total_duration, originating_screen:orig_screen, view_source: view_source}})
+		view_params = {playback_duration: playback_duration, total_duration: total_duration, originating_screen:orig_screen, view_source: view_source}
+		views.update({_id: view_id},{"$set" => view_params})
 		logger.info "view updated in the DB after stop with view id " + view_id.to_s
+		logger.info "view params: " + view_params.to_s
 		view = views.find_one(view_id)
 		return view.to_json
 	end
@@ -1424,11 +1425,11 @@ get '/analytics' do
 	######
 	@heading1 = "% of shared videos out of all created movies "
 	@data1    = Analytics.get_pct_of_shared_videos_for_date_range_out_of_all_created_movies(start_date,end_date,bson_story_array)
-	@value_format1 = {nominator: "shared video: " , denominator: "Total Videos for day: "}
+	@value_format1 = {nominator: "shared video: " , denominator: "Total videos for period:"}
 	######
 	@heading2 = "% of users that shared at least once out of all active users"
 	@data2    = Analytics.get_pct_of_users_who_shared_at_list_once_for_date_range(start_date,end_date,bson_story_array) 
-	@value_format2 = {nominator: "Sharing users: " , denominator: "Total users for day: "}
+	@value_format2 = {nominator: "Sharing users: " , denominator: "Total users for period:"}
     #####
 	#@heading3 = "distribution of movie making between users from date: " + launch_date.iso8601
 	#@data3    = Analytics.get_distribution_of_remakes_between_users_from_date(launch_date)

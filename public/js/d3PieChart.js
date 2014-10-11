@@ -6,7 +6,6 @@ function drawD3PieChart(data,chart_name) {
 	var empty = $(chart_area).is(':empty'); 
   
   	if ( !empty )  {
-		console.log("pie chart populized, removing");
 		chart_area.innerHTML = ""; // clear out the SVG
 		d3.select(chart_area).attr('d3pie', null);
 	}

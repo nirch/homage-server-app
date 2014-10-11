@@ -218,11 +218,12 @@
 			var myPlayer = this;
 			var videoTitle = '<%= @story["name"] + " - " + @remake["_id"].to_s %>'
 			var remakeId = '<%= @remake["_id"].to_s %>'
-			var objectId = new ObjectId().toString();
+			var currentUserId;
 
 			var trackVideoSrart = function(){
 				// Tracking in our Server
-				$.post('/remake/view', {"view_id":objectId, "remake_id":remakeId, "playback_event":0, "originating_screen":11}, function(data,status){
+				currentUserId = new ObjectId().toString();
+				$.post('/remake/view', {"view_id":currentUserId, "remake_id":remakeId, "playback_event":0, "originating_screen":11}, function(data,status){
     				playReported = true;
   				});
 
@@ -232,7 +233,7 @@
 
 			var trackVideoEnd = function(){
 				// Tracking in our Server
-				$.post('/remake/view', {"view_id":objectId, "remake_id":remakeId, "playback_event":1, "originating_screen":11, "total_duration":myPlayer.duration(), "playback_duration":myPlayer.currentTime()}, function(data,status){
+				$.post('/remake/view', {"view_id":currentUserId, "remake_id":remakeId, "playback_event":1, "originating_screen":11, "total_duration":myPlayer.duration(), "playback_duration":myPlayer.currentTime()}, function(data,status){
     				stopReported = true;
   				});
 
@@ -263,7 +264,7 @@
 				        type: 'POST',
 				        async: false,
 				        url: '/remake/view',
-				        data: {"view_id":objectId, "remake_id":remakeId, "playback_event":1, "originating_screen":11, "total_duration":myPlayer.duration(), "playback_duration":myPlayer.currentTime()},
+				        data: {"view_id":currentUserId, "remake_id":remakeId, "playback_event":1, "originating_screen":11, "total_duration":myPlayer.duration(), "playback_duration":myPlayer.currentTime()},
 				        complete: function(xhr, status){ }
 				    });
 
