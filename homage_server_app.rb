@@ -35,6 +35,10 @@ configure :production do
 	APN.certificate = File.read(File.expand_path("../certificates/homage_push_notification_prod.pem", __FILE__))
 	APN.passphrase = "homage"
 
+	APN_NEW = Houston::Client.production
+	APN_NEW.certificate = File.read(File.expand_path("../certificates/homage_push_notification_prod_150.pem", __FILE__))
+	APN_NEW.passphrase = "homage"
+
 	# Process Footage Queue
 	process_footage_queue_url = "https://sqs.us-east-1.amazonaws.com/509268258673/ProcessFootageQueue"
     set :process_footage_queue, AWS::SQS.new.queues[process_footage_queue_url]
@@ -57,11 +61,12 @@ configure :test do
 	set :db, db_connection.db()
 
 	# Push notification certificate
-	# APN = Houston::Client.development
-	# APN.certificate = File.read(File.expand_path("../certificates/homage_push_notification_dev.pem", __FILE__))
-	APN = Houston::Client.production
-	APN.certificate = File.read(File.expand_path("../certificates/homage_push_notification_prod.pem", __FILE__))
-	APN.passphrase = "homage"
+	APN = Houston::Client.development
+	APN.certificate = File.read(File.expand_path("../certificates/homage_push_notification_dev.pem", __FILE__))
+
+	APN_NEW = Houston::Client.production
+	APN_NEW.certificate = File.read(File.expand_path("../certificates/homage_push_notification_prod_150.pem", __FILE__))
+	APN_NEW.passphrase = "homage"
 
 	# Process Footage Queue
 	process_footage_queue_url = "https://sqs.us-east-1.amazonaws.com/509268258673/ProcessFootageQueueTest"
@@ -184,7 +189,7 @@ end
 
 get '/ios' do
  	shared_from = "Undeifined"
-	src = params[:src] if params[:src];
+	shared_from = params[:src] if params[:src]
 
 	settings.mixpanel.track("12345", "InstalliOS", {"shared_from"=>shared_from}) if settings.respond_to?(:mixpanel)	
 	redirect "https://itunes.apple.com/us/app/id851746600", 302
@@ -192,7 +197,7 @@ end
 
 get '/android' do
 	shared_from = "Undeifined"
-	src = params[:src] if params[:src];
+	shared_from = params[:src] if params[:src]
 
 	settings.mixpanel.track("12345", "InstallAndroid", {"shared_from"=>shared_from}) if settings.respond_to?(:mixpanel)	
 	redirect "https://play.google.com/store/apps/details?id=com.homage.app", 302
@@ -1126,7 +1131,8 @@ def send_push_notification(device_token, alert, custom_data)
 	notification.alert = alert
 	notification.custom_data = custom_data
 	notification.sound = "default"
-	APN.push(notification)	
+	APN.push(notification)
+	APN_NEW.push(notification)	
 end
 
 

@@ -20,27 +20,66 @@ AWS.config(aws_config)
 s3 = AWS::S3.new
 s3_bucket = s3.buckets['homageapp']
 
-fix_stories = stories.find(active_from: {"$exists"=>true})
-for story in fix_stories do
-	next if story["name"] == "Test"
-	puts story["name"]
-	scene_id = 1
-	for scene in story["scenes"]
-		#puts "scene id=" + scene_id.to_s
-		contour = scene["contours"]["360"]["contour"]
-		#puts "contour=" + contour
 
-		#face_contour = contour.split(".")[0] + "-face" + ".ctr"
-		#puts "face contour=" + face_contour
-		#new_contour = contour
+
+date = "fdd"
+x = Date.parse(date)
+puts x
+
+# remake_ids = [
+# "5430e39a0be0443f86000009", 
+# "5430e3ed0be0443f8600000a", 
+# "5430e44f0be0443f8600000b", 
+# "5430e5f30be0443f8600000f", 
+# "5430e67b0be0443f86000010", 
+# "5430e6dd0be0443f86000011", 
+# "5430e73e0be0443f86000013", 
+# "5430e7a40be0443f86000014", 
+# "5430e80e0be0444456000001", 
+# "5430ebba0be0443f86000017", 
+# "54322a1b0be0447060000001", 
+# "54322a630be0447060000003", 
+# "543232fe0be04463b4000006", 
+# ]
+
+
+# # for remake_id in remake_ids do
+# # 	remake = prod_remakes.find_one(BSON::ObjectId.from_string(remake_id))
+# # 	puts "remake: " + remake["_id"].to_s + "; status = " + remake["status"].to_s + "; render_start=" + remake["render_start"].to_s
+
+# # 	# response = Net::HTTP.post_form(prod_render, {"remake_id" => remake_id.to_s})
+# # 	# puts response
+# # end
+
+# date = Time.parse("20141005Z")
+# remakes = prod_remakes.find(render_start:{"$gte"=>date})
+# for remake in remakes do
+# 	puts "remake: " + remake["_id"].to_s + "; status = " + remake["status"].to_s + "; render_start=" + remake["render_start"].to_s
+# end
+
+
+
+# fix_stories = stories.find(active_from: {"$exists"=>true})
+# for story in fix_stories do
+# 	next if story["name"] == "Test"
+# 	puts story["name"]
+# 	scene_id = 1
+# 	for scene in story["scenes"]
+# 		#puts "scene id=" + scene_id.to_s
+# 		contour = scene["contours"]["360"]["contour"]
+# 		#puts "contour=" + contour
+
+# 		#face_contour = contour.split(".")[0] + "-face" + ".ctr"
+# 		#puts "face contour=" + face_contour
+# 		#new_contour = contour
 		
-		#result = stories.update({_id: story["_id"], "scenes.id" => scene_id}, {"$set" => {"scenes.$.contours.360.contour" => face_contour}})
-		#puts result
+# 		#result = stories.update({_id: story["_id"], "scenes.id" => scene_id}, {"$set" => {"scenes.$.contours.360.contour" => face_contour}})
+# 		#puts result
 
 
-		scene_id += 1
-	end
-end
+# 		scene_id += 1
+# 	end
+# end
 #puts fix_stories.count
 
 # successful_upload_num = 0
