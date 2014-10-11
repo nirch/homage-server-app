@@ -255,10 +255,8 @@
 				trackVideoEnd();
 				myPlayer.posterImage.show();
 			});
-			
 
-			// Event for page unload to track the end of the view
-			$(window).bind('beforeunload', function(){
+			function checkViewReportStatus () {
 				// Tracking only if we already tracked play and didn'y track stop
   				if (playReported && !stopReported) {
 	  				// Tracking in our Server (doing a sync call because the page is about to close)
@@ -267,12 +265,25 @@
 				        async: false,
 				        url: '/remake/view',
 				        data: {"view_id":currentUserId, "remake_id":remakeId, "playback_event":1, "originating_screen":11, "total_duration":myPlayer.duration(), "playback_duration":myPlayer.currentTime()},
-				        complete: function(xhr, status){ }
+				        complete: function(xhr, status) {
+				        	playReported = false;
+				        	stopReported = true; 
+				        }
 				    });
 
 					// Tracking in Google Analytics
 					if (typeof ga !== 'undefined') ga('send', 'event', 'Videos', 'Ended', videoTitle);				
   				}
+
+			}
+			
+			// Event for page unload to track the end of the view
+			$(window).bind('beforeunload', function(){
+				checkViewReportStatus();
+  			});
+
+  			$(window).bind('onunload', function(){
+				checkViewReportStatus();
   			});
 		});
 </script>
