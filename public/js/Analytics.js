@@ -273,8 +273,6 @@ function genDataForWeeksDisplay(start_date,end_date,data_type,data_series,data_f
 
 	if (data_type == StoryViewsGraphType) {
 		data_series = aggregateStoryViews(start_date,end_date,data_series);
-		console.log("Data for story views");
-		console.log(data_series);
 	}
 
 	if (data_type == PieChartGraphType) {

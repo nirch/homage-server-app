@@ -225,6 +225,7 @@
 				currentUserId = new ObjectId().toString();
 				$.post('/remake/view', {"view_id":currentUserId, "remake_id":remakeId, "playback_event":0, "originating_screen":11}, function(data,status){
     				playReported = true;
+    				stopReported = false;
   				});
 
 				// Tracking in Google Analytics
@@ -235,6 +236,7 @@
 				// Tracking in our Server
 				$.post('/remake/view', {"view_id":currentUserId, "remake_id":remakeId, "playback_event":1, "originating_screen":11, "total_duration":myPlayer.duration(), "playback_duration":myPlayer.currentTime()}, function(data,status){
     				stopReported = true;
+    				playReported = false;
   				});
 
 				// Tracking in Google Analytics
