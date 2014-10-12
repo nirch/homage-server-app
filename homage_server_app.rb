@@ -314,6 +314,9 @@ subdomain settings.play_subdomain do
 	end
 
 	
+	
+
+
 	get '/:remake_id' do
 		remake_id = BSON::ObjectId.from_string(params[:remake_id])
 
@@ -332,6 +335,25 @@ subdomain settings.play_subdomain do
 
 		erb :HMGVideoPlayer
 	end
+end
+
+get '/viewdebug/:remake_id' do
+		remake_id = BSON::ObjectId.from_string(params[:remake_id])
+
+		remakes = settings.db.collection("Remakes")
+		@remake = remakes.find_one(remake_id)
+
+		users = settings.db.collection("Users")
+		if BSON::ObjectId.legal?(@remake["user_id"]) then
+			@user = users.find_one(@remake["user_id"])
+		else
+			@user = users.find_one({_id: @remake["user_id"]})
+		end
+
+		stories = settings.db.collection("Stories")
+		@story = stories.find_one(@remake["story_id"])
+
+		erb :HMGVideoPlayer
 end
 
 ###################
@@ -1270,16 +1292,17 @@ post '/remake/view' do
 		remake_id = BSON::ObjectId.from_string(params[:remake_id])
 		user_id =  BSON::ObjectId.from_string(params[:user_id]) if params[:user_id]
 		orig_screen = params[:originating_screen].to_i
+		view_source = getViewSource($user_os)
 
 		remake = settings.db.collection("Remakes").find_one(remake_id)
 		story_id = remake["story_id"];
 
-		view = {_id:client_generated_view_id, remake_id:remake_id, story_id: story_id, start_time:Time.now, originating_screen:orig_screen}
+		view = {_id:client_generated_view_id, remake_id:remake_id, story_id: story_id, start_time:Time.now, originating_screen:orig_screen, view_source: view_source}
 		view["user_id"] = user_id if user_id
 		logger.info "reporting view start: " + view.to_s
 		view_objectId = views.save(view)
-		
 		logger.info "New view saved in the DB with view id " + view_objectId.to_s
+		
 		return view.to_json
 
 	elsif playback_event = PlaybackEventType::PlaybackEventStop then
@@ -1288,19 +1311,14 @@ post '/remake/view' do
 		user_id =  BSON::ObjectId.from_string(params[:user_id]) if params[:user_id]
 		playback_duration = params[:playback_duration].to_i
 		total_duration = params[:total_duration].to_i
-		orig_screen = params[:originating_screen].to_i
-		view_source = getViewSource($user_os)
 
-		#remakes.update({_id: remake_id}, {"$set" => {grade: grade}})
-		#users.update({_id: update_user_id}, {"$set" => {facebook: params[:facebook], email: params[:email], is_public: params[:is_public]}})
-		#remakes.update({_id: remake_id}, {"$set" => {status: RemakeStatus::Rendering, render_start:Time.now}})
 		view = views.find_one(view_id)
 		if !view then
 			logger.error "No matching start event for stop event: " + view_id.to_s
 		end
-		view_params = {playback_duration: playback_duration, total_duration: total_duration, originating_screen:orig_screen, view_source: view_source}
+		view_params = {playback_duration: playback_duration, total_duration: total_duration}
 		views.update({_id: view_id},{"$set" => view_params})
-		logger.info "view updated in the DB after stop with view id " + view_id.to_s
+		logger.info "view updated in the DB with view id " + view_id.to_s + "and view duration: " + playback_duration.to_s
 		logger.info "view params: " + view_params.to_s
 		view = views.find_one(view_id)
 		return view.to_json
@@ -1318,8 +1336,9 @@ post '/story/view' do
 		story_id = BSON::ObjectId.from_string(params[:story_id])
 		user_id =  BSON::ObjectId.from_string(params[:user_id])
 		orig_screen = params[:originating_screen].to_i
+		view_source = getViewSource($user_os)
 		
-		view = {_id:client_generated_view_id, user_id:user_id , story_id:story_id, start_time:Time.now}
+		view = {_id:client_generated_view_id, user_id:user_id , story_id:story_id, start_time:Time.now, originating_screen:orig_screen, view_source: view_source}
 		view_objectId = views.save(view)
 		
 		logger.info "New view saved in the DB with view id " + view_objectId.to_s
@@ -1331,8 +1350,6 @@ post '/story/view' do
 		user_id =  BSON::ObjectId.from_string(params[:user_id])
 		playback_duration = params[:playback_duration].to_i
 		total_duration = params[:total_duration].to_i
-		orig_screen = params[:originating_screen].to_i
-		view_source = getViewSource($user_os)
 
 		#remakes.update({_id: remake_id}, {"$set" => {grade: grade}})
 		#users.update({_id: update_user_id}, {"$set" => {facebook: params[:facebook], email: params[:email], is_public: params[:is_public]}})
@@ -1341,7 +1358,7 @@ post '/story/view' do
 		if !view then
 			logger.error "No matching start event for stop event: " + view_id.to_s
 		end
-		views.update({_id: view_id, },{"$set" => {playback_duration: playback_duration, total_duration: total_duration, originating_screen: orig_screen, view_source: view_source}})
+		views.update({_id: view_id, },{"$set" => {playback_duration: playback_duration, total_duration: total_duration}})
 		logger.info "view updated in the DB after stop with view id " + view_id.to_s
 		view = views.find_one(view_id)
 		return view.to_json

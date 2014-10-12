@@ -212,7 +212,8 @@
     var share = new Share(".shareContainer", config);
 
     var stopReported = false;
-		var playReported = false;
+	var playReported = false;
+	var view_pct_threshold = 0.5;
 
 		videojs('video_player').ready(function(){
 			var myPlayer = this;
@@ -226,6 +227,7 @@
 				$.post('/remake/view', {"view_id":currentUserId, "remake_id":remakeId, "playback_event":0, "originating_screen":11}, function(data,status){
     				playReported = true;
     				stopReported = false;
+    				thresholdReported = false;
   				});
 
 				// Tracking in Google Analytics
@@ -243,13 +245,28 @@
 				if (typeof ga !== 'undefined') ga('send', 'event', 'Videos', 'Ended', videoTitle);				
 			};
 
+			var trackVideoReachedViewThreshold = function() {
+				$.post('/remake/view', {"view_id":currentUserId, "remake_id":remakeId, "playback_event":1, "originating_screen":11, "total_duration":myPlayer.duration(), "playback_duration":myPlayer.currentTime()}, function(data,status){
+  				});
+			}
+
 			first = true;
 			myPlayer.on("play", function() {
 				if (first) {
 					first = false;
 					trackVideoSrart();
 				}				
-			})
+			});
+
+			myPlayer.on("timeupdate" , function() {
+				duration = myPlayer.currentTime();
+				total_duration = myPlayer.duration();
+				if (duration > (total_duration * view_pct_threshold) && !thresholdReported) {
+					trackVideoReachedViewThreshold();
+					thresholdReported = true;
+				}
+			});
+
 			myPlayer.on("ended", function() {
 				first = true;
 				trackVideoEnd();
@@ -279,10 +296,6 @@
 			
 			// Event for page unload to track the end of the view
 			$(window).bind('beforeunload', function(){
-				checkViewReportStatus();
-  			});
-
-  			$(window).bind('unload', function(){
 				checkViewReportStatus();
   			});
 		});
