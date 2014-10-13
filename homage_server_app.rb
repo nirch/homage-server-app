@@ -15,6 +15,7 @@ require 'active_support/core_ext'
 require 'user_agent_parser'
 require 'sinatra/subdomain'
 require 'mixpanel-ruby'
+require 'mail'
 require File.expand_path '../mongo scripts/Analytics.rb', __FILE__
 
 current_session_ID = nil
@@ -23,6 +24,18 @@ configure do
 	# Global configuration (regardless of the environment)
 	aws_config = {access_key_id: "AKIAJTPGKC25LGKJUCTA", secret_access_key: "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"}
 	AWS.config(aws_config)
+
+	# Using Amazon's SES for mail delivery
+	Mail.defaults do
+  		delivery_method :smtp, { 
+		    :address => 'email-smtp.us-east-1.amazonaws.com',
+		    :port => '587',
+		    :user_name => 'AKIAI2R3CISWP2RWKJGA',
+		    :password => 'At7lxX0rtF3814Kr4mwrZTWO39kFZ1Kg+iRMhi1pjWPp',
+		    :authentication => :plain,
+		    :enable_starttls_auto => true
+		  }
+	end
 end
 
 configure :production do
@@ -1538,32 +1551,35 @@ post '/contest/form' do
     text_file.puts "Feedback: " + feedback
     text_file.close
 
+    unique_id = BSON::ObjectId.new.to_s
+    name_with_unique = first_name + ' ' + last_name + ' (' + unique_id + ')'
+    s3_fodler = 'Uploads/' + name_with_unique + '/'
+
     # Uploading text file to S3
-    s3_text_destination = "Uploads/" + first_name + "_" + last_name + "/" + first_name + "_" + last_name + ".txt"
-    upload_to_s3_path("homage-contest", text_file.path, s3_text_destination)
+    s3_text_destination = s3_fodler + name_with_unique + ".txt"
+    upload_to_s3("homage-contest", text_file.path, s3_text_destination)
+
+    # Sending a mail about the new submission
+    Mail.deliver do
+	  from    'homage-server-app@homage.it'
+	  to      'nir@homage.it'
+	  subject 'New Contest Submission From: ' + name_with_unique
+	  body    File.read(text_file.path)
+	end
 
     # Deleting text file
     File.delete(text_file.path)
 
-    s3_destination = "Uploads/" + first_name + "_" + last_name + "/" + file_name
-    #upload_to_s3("homage-contest", file, s3_destination)
+    # Uploading the AE project - Doing it in another thread to avoid timeout
+    s3_destination = s3_fodler + file_name
+    Thread.new{
+	    upload_to_s3("homage-contest", file.path, s3_destination)
+	}
 
+    "Your application was successfully submitted. Good Luck!"
 end
 
-def upload_to_s3 (s3_bucket, file, s3_key, content_type=nil)
-	s3 = AWS::S3.new
-	bucket = s3.buckets[s3_bucket]
-	s3_object = bucket.objects[s3_key]
-
-	logger.info 'Uploading the file <' + file.path + '> to S3 path <' + s3_object.key + '>'
-	s3_object.write(file, {:content_type => content_type})
-	file.close
-	logger.info "Uploaded successfully to S3, url is: " + s3_object.public_url.to_s
-
-	return s3_object
-end
-
-def upload_to_s3_path (s3_bucket, file_path, s3_key)
+def upload_to_s3 (s3_bucket, file_path, s3_key)
 	s3 = AWS::S3.new
 	bucket = s3.buckets[s3_bucket]
 	s3_object = bucket.objects[s3_key]
