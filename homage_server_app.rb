@@ -1504,3 +1504,75 @@ get '/test/push/:user_id' do
 
 	"done"
 end
+
+get '/contest/form' do
+	erb :contest_form
+end
+
+post '/contest/form' do
+    first_name = params[:first_name]
+    last_name = params[:last_name]
+    email = params[:email]
+    country = params[:country]
+    address = params[:address]
+    birth_date = params[:birth_date]
+    gender = params[:gender]
+    about_submission = params[:about_submission]
+    profession = params[:profession]
+    feedback = params[:feedback]
+    file = params[:file][:tempfile]
+    file_name = params[:file][:filename]
+
+
+    # Text file to upload to S3
+    text_file = File.new(first_name + "_" + last_name + ".txt", "w+")
+    text_file.puts "First Name: " + first_name
+    text_file.puts "Last Name: " + last_name
+    text_file.puts "E-mail: " + email
+    text_file.puts "Country: " + country
+    text_file.puts "Address: " + address
+    text_file.puts "Birth Date: " + birth_date
+    text_file.puts "Gender: " + gender
+    text_file.puts "About Submission: " + about_submission
+    text_file.puts "Profession: " + profession
+    text_file.puts "Feedback: " + feedback
+    text_file.close
+
+    # Uploading text file to S3
+    s3_text_destination = "Uploads/" + first_name + "_" + last_name + "/" + first_name + "_" + last_name + ".txt"
+    upload_to_s3_path("homage-contest", text_file.path, s3_text_destination)
+
+    # Deleting text file
+    File.delete(text_file.path)
+
+    s3_destination = "Uploads/" + first_name + "_" + last_name + "/" + file_name
+    #upload_to_s3("homage-contest", file, s3_destination)
+
+end
+
+def upload_to_s3 (s3_bucket, file, s3_key, content_type=nil)
+	s3 = AWS::S3.new
+	bucket = s3.buckets[s3_bucket]
+	s3_object = bucket.objects[s3_key]
+
+	logger.info 'Uploading the file <' + file.path + '> to S3 path <' + s3_object.key + '>'
+	s3_object.write(file, {:content_type => content_type})
+	file.close
+	logger.info "Uploaded successfully to S3, url is: " + s3_object.public_url.to_s
+
+	return s3_object
+end
+
+def upload_to_s3_path (s3_bucket, file_path, s3_key)
+	s3 = AWS::S3.new
+	bucket = s3.buckets[s3_bucket]
+	s3_object = bucket.objects[s3_key]
+
+	logger.info 'Uploading the file <' + file_path + '> to S3 path <' + s3_object.key + '>'
+	s3_object.write(:file => file_path)
+	logger.info "Uploaded successfully to S3, url is: " + s3_object.public_url.to_s
+
+	return s3_object
+end
+
+
