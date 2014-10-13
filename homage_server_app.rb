@@ -1568,7 +1568,7 @@ post '/contest/form' do
     # Sending a mail about the new submission
     Mail.deliver do
 	  from    'homage-server-app@homage.it'
-	  to      'nir@homage.it'
+	  to      'ran@homage.it'
 	  subject 'New Contest Submission From: ' + name_with_unique
 	  body    File.read(text_file.path)
 	end
