@@ -216,6 +216,12 @@ get '/android' do
 	redirect "https://play.google.com/store/apps/details?id=com.homage.app", 302
 end
 
+get '/contest' do
+	settings.mixpanel.track("12345", "ContestFlyer") if settings.respond_to?(:mixpanel)	
+	redirect "https://www.smore.com/qbzm5", 302
+end
+
+
 
 #################
 # Play Subdomain
