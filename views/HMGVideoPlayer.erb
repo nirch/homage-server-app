@@ -117,11 +117,17 @@
 </body>
 
 <script>
+	
 	var share_link = '<%= @remake["share_link"] %>'
+	var origin_id  = '<%= @originating_share_id %>'
+	
 	var share_message = '<%= @story["share_message"] %>'
 	var twitt = share_message.concat(": \n");
 	var remakeId = '<%= @remake["_id"].to_s %>'
 	var thumbnail = '<%= @remake["thumbnail"] %>'
+	var share_link_prefix = '<%= @config["share_link_prefix"] %>'
+	var currentShareId;
+	var currentShareLink;
 
 	CopyUrlShareMethod = 0
 	FacebookShareMethod = 1
@@ -133,10 +139,19 @@
 	GooglePlusShareMethod = 7
 	PinterestShareMethod = 8
 
+	var genShareLink = function() {
+		currentShareId = new ObjectId().toString();
+		currentShareLink = share_link_prefix + "/" + currentShareId;
+		return currentShareLink;
+	}
+
 	var reportShare = function(share_method){
 		// Tracking in our Server
-		$.post('/remake/share', {"remake_id":remakeId,"share_method":share_method}, function(data,status){
-		});
+		$.post('/remake/share', {"share_id": currentShareId, "remake_id":remakeId, "share_method":share_method,
+								 "share_link": currentShareLink, "origin_id":origin_id, "share_status":"unknown"}, 
+								 function(data,status){
+								 }
+		);
 	};
 
 	config = {
@@ -144,10 +159,11 @@
     	ui: {
     		flyout: 'bottom center'
         },
+
         networks: {
     		google_plus: {
     			before: function() {
-		        	this.url = share_link;
+		        	this.url = genShareLink();
 		        	return this;
 		     	},
 		      	after: function() {
@@ -156,7 +172,7 @@
     		},
     		twitter: {
     			before: function() {
-		        	this.url = share_link;
+		        	this.url = genShareLink();
 		        	this.description = twitt;
 		        	return this;
 		     	},
@@ -170,7 +186,7 @@
 		       	load_sdk: true,
     			
     			before: function() {
-		        	this.url = share_link;
+		        	this.url = genShareLink();
 		        	/*this.load_sdk = true;
 		        	this.app_id = '447743458659084';*/
 		        	this.title = share_message;
@@ -184,9 +200,8 @@
 		      	}
     		},
     		pinterest: {
-
     			before: function() {
-		        	this.url = share_link;
+		        	this.url = genShareLink();
 		        	this.description = share_message;
 		        	this.image = thumbnail;      	
 		        	return this;
@@ -199,7 +214,7 @@
 
     			before: function() {
 		        	this.title = share_message;
-		        	this.description = share_link;	
+		        	this.description = genShareLink();	
 		        	return this;
 		     	},
 		      	after: function() {
@@ -209,7 +224,7 @@
     	}
   	}
 
-    var share = new Share(".shareContainer", config);
+    var share_widget = new Share(".shareContainer", config);
 
     var stopReported = false;
 	var playReported = false;
@@ -219,12 +234,12 @@
 			var myPlayer = this;
 			var videoTitle = '<%= @story["name"] + " - " + @remake["_id"].to_s %>'
 			var remakeId = '<%= @remake["_id"].to_s %>'
-			var currentUserId;
+			var currentViewId;
 
 			var trackVideoSrart = function(){
 				// Tracking in our Server
-				currentUserId = new ObjectId().toString();
-				$.post('/remake/view', {"view_id":currentUserId, "remake_id":remakeId, "playback_event":0, "originating_screen":11}, function(data,status){
+				currentViewId = new ObjectId().toString();
+				$.post('/remake/view', {"view_id":currentViewId, "remake_id":remakeId, "playback_event":0, "originating_screen":11, "origin_id":origin_id }, function(data,status){
     				playReported = true;
     				stopReported = false;
     				thresholdReported = false;
@@ -236,7 +251,7 @@
 
 			var trackVideoEnd = function(){
 				// Tracking in our Server
-				$.post('/remake/view', {"view_id":currentUserId, "remake_id":remakeId, "playback_event":1, "originating_screen":11, "total_duration":myPlayer.duration(), "playback_duration":myPlayer.currentTime()}, function(data,status){
+				$.post('/remake/view', {"view_id":currentViewId, "remake_id":remakeId, "origin_id":origin_id, "playback_event":1, "originating_screen":11, "total_duration":myPlayer.duration(), "playback_duration":myPlayer.currentTime()}, function(data,status){
     				stopReported = true;
     				playReported = false;
   				});
@@ -246,7 +261,7 @@
 			};
 
 			var trackVideoReachedViewThreshold = function() {
-				$.post('/remake/view', {"view_id":currentUserId, "remake_id":remakeId, "playback_event":1, "originating_screen":11, "total_duration":myPlayer.duration(), "playback_duration":myPlayer.currentTime()}, function(data,status){
+				$.post('/remake/view', {"view_id":currentViewId, "remake_id":remakeId, "playback_event":1, "origin_id":origin_id, "originating_screen":11, "total_duration":myPlayer.duration(), "playback_duration":myPlayer.currentTime()}, function(data,status){
   				});
 			}
 
@@ -281,7 +296,7 @@
 				        type: 'POST',
 				        async: false,
 				        url: '/remake/view',
-				        data: {"view_id":currentUserId, "remake_id":remakeId, "playback_event":1, "originating_screen":11, "total_duration":myPlayer.duration(), "playback_duration":myPlayer.currentTime()},
+				        data: {"view_id":currentViewId, "remake_id":remakeId, "playback_event":1, "origin_id":origin_id, "originating_screen":11, "total_duration":myPlayer.duration(), "playback_duration":myPlayer.currentTime()},
 				        complete: function(xhr, status) {
 				        	playReported = false;
 				        	stopReported = true; 
@@ -298,6 +313,8 @@
 			$(window).bind('beforeunload', function(){
 				checkViewReportStatus();
   			});
+
+
 		});
 </script>
 

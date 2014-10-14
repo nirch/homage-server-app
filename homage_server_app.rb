@@ -65,6 +65,8 @@ configure :production do
 
 	set :logging, Logger::INFO
 
+	set :share_link_prefix, "http://play.homage.it"
+
 	set :play_subdomain, :play
 end
 
@@ -89,6 +91,8 @@ configure :test do
 	set :homage_server_foreground_uri, URI.parse("http://54.83.32.172:4567/footage")
 	set :homage_server_render_uri, URI.parse("http://54.83.32.172:4567/render")
 	set :logging, Logger::DEBUG
+
+	set :share_link_prefix, "http://play-test.homage.it"
 
 	set :play_subdomain, :'play-test'
 end
@@ -318,28 +322,51 @@ subdomain settings.play_subdomain do
 	end
 
 	get '/minisite' do
-
-	#match = {"$match" => { share_link:{"$exists"=>true}, status: 3}}
-
-	#sort = {"$sort" => { created_at: -1 }} #descending order
-
-	#limit = {"$limit" => 25}
-
-    #proj={"$project" => {"_id" => 1, "created_at" => 1, "user_id" => 1, "thumbnail" => 
-    #  "h" => {"$hour" => "$created_at"}, "m" => {"$minute" => "$created_at"}, "s" => {"$second" => "$created_at"}, "ml" => {"$millisecond" =>  "$created_at"}}}
-
-    #group={"$group" => { "_id" => { "date" => "$created_at"}, "list" => {"$push" => "$user_id"}}}
 		erb :HMGMiniSite
 	end
 
-	
-	
+	get '/:entity_id' do
+		remakes = settings.db.collection("Remakes")
+		users   = settings.db.collection("Users")
+		shares  = settings.db.collection("Shares")
+		stories = settings.db.collection("Stories")
+		@config = getConfigDictionary();
+		
+		entity_id = BSON::ObjectId.from_string(params[:entity_id])
+		@share  = shares.find_one(entity_id)
+		if @share == nil then
+			@remake = remakes.find_one(entity_id)
+			@originating_share_id = ""
+		else 
+			remake_id = @share["remake_id"]
+			@remake = remakes.find_one(remake_id)
+			@originating_share_id = @share["_id"]
+			shares.update({_id: @originating_share_id},{"$set" => {share_status: true}})
+		end
 
+		
+		if BSON::ObjectId.legal?(@remake["user_id"]) then
+			@user = users.find_one(@remake["user_id"])
+		else
+			@user = users.find_one({_id: @remake["user_id"]})
+		end
 
-	get '/:remake_id' do
-		remake_id = BSON::ObjectId.from_string(params[:remake_id])
+		
+		@story = stories.find_one(@remake["story_id"])
+
+		erb :HMGVideoPlayer
+	end
+
+	get '/share/:share_id' do
+		share_id = BSON::ObjectId.from_string(params[:share_id])
+
+		@config = getConfigDictionary();
+
+		
 
 		remakes = settings.db.collection("Remakes")
+		remake_id = @originating_share["remake_id"]
+
 		@remake = remakes.find_one(remake_id)
 
 		users = settings.db.collection("Users")
@@ -354,25 +381,6 @@ subdomain settings.play_subdomain do
 
 		erb :HMGVideoPlayer
 	end
-end
-
-get '/viewdebug/:remake_id' do
-		remake_id = BSON::ObjectId.from_string(params[:remake_id])
-
-		remakes = settings.db.collection("Remakes")
-		@remake = remakes.find_one(remake_id)
-
-		users = settings.db.collection("Users")
-		if BSON::ObjectId.legal?(@remake["user_id"]) then
-			@user = users.find_one(@remake["user_id"])
-		else
-			@user = users.find_one({_id: @remake["user_id"]})
-		end
-
-		stories = settings.db.collection("Stories")
-		@story = stories.find_one(@remake["story_id"])
-
-		erb :HMGVideoPlayer
 end
 
 ###################
@@ -1276,20 +1284,46 @@ post '/update/grade' do
 	redirect back
 end
 
+def getConfigDictionary()
+	config = Hash.new 
+	config["share_link_prefix"] = settings.share_link_prefix;
+	return config
+end
+
+#config routes
+get '/config' do
+	config = getConfigDictionary();
+	return config.to_json
+end
+
 #analytics routes
 post '/remake/share' do
+	client_generated_share_id = BSON::ObjectId.from_string(params[:share_id])
 	remake_id = BSON::ObjectId.from_string(params[:remake_id])
-	user_id =  BSON::ObjectId.from_string(params[:user_id]) if params[:user_id]
+	user_id   =  BSON::ObjectId.from_string(params[:user_id]) if params[:user_id]
 	share_method = params[:share_method].to_i
+	origin_id  = params[:origin_id].to_s if params[:origin_id]
+	share_link = params[:share_link].to_s if params[:share_link] 
 
 	logger.info "creating share entity for Remake " + remake_id.to_s + " for user " + user_id.to_s
 
 	shares = settings.db.collection("Shares")
-	share = {user_id:user_id , remake_id:remake_id, share_method:share_method, created_at:Time.now }
+	share = {_id: client_generated_share_id, user_id:user_id , remake_id:remake_id, share_method:share_method,
+			  share_link:share_link, created_at:Time.now, origin_id:origin_id}
 	share_objectId = shares.save(share)
+
 	logger.info "New share saved in the DB with share id " + share_objectId.to_s
 	return share.to_json
 end
+
+put '/remake/share' do
+	share_id  = BSON::ObjectId.from_string(params[:share_id])
+	success   = params[:success]
+
+	shares = settings.db.collection("Shares")
+	shares.update({_id: share_id},{"$set" => {share_status: success}})
+end
+
 
 def getViewSource(user_os)
 	if (user_os =~ /ios/i) then
@@ -1498,8 +1532,8 @@ get '/analytics' do
 	 		["line", KPIGraphType::NormalFractionGraphType ,@heading7, @data7, @value_format7]].to_json
 end
 
-get '/test_analytics' do
-	erb :new_analytics_test
+get '/dashboard' do
+	erb :analytics_dashboard
 end
 
 get '/health/check' do
