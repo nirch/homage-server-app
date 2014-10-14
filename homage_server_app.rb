@@ -1338,12 +1338,13 @@ post '/remake/view' do
 		remake_id = BSON::ObjectId.from_string(params[:remake_id])
 		user_id =  BSON::ObjectId.from_string(params[:user_id]) if params[:user_id]
 		orig_screen = params[:originating_screen].to_i
+		origin_id  = params[:origin_id].to_s if params[:origin_id]
 		view_source = getViewSource($user_os)
 
 		remake = settings.db.collection("Remakes").find_one(remake_id)
 		story_id = remake["story_id"];
 
-		view = {_id:client_generated_view_id, remake_id:remake_id, story_id: story_id, start_time:Time.now, originating_screen:orig_screen, view_source: view_source}
+		view = {_id:client_generated_view_id, remake_id:remake_id, story_id: story_id, start_time:Time.now, origin_id:origin_id, originating_screen:orig_screen, view_source: view_source}
 		view["user_id"] = user_id if user_id
 		logger.info "reporting view start: " + view.to_s
 		view_objectId = views.save(view)

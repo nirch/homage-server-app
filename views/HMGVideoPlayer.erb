@@ -251,7 +251,7 @@
 
 			var trackVideoEnd = function(){
 				// Tracking in our Server
-				$.post('/remake/view', {"view_id":currentViewId, "remake_id":remakeId, "origin_id":origin_id, "playback_event":1, "originating_screen":11, "total_duration":myPlayer.duration(), "playback_duration":myPlayer.currentTime()}, function(data,status){
+				$.post('/remake/view', {"view_id":currentViewId, "remake_id":remakeId, "playback_event":1, "originating_screen":11, "total_duration":myPlayer.duration(), "playback_duration":myPlayer.currentTime()}, function(data,status){
     				stopReported = true;
     				playReported = false;
   				});
@@ -261,7 +261,7 @@
 			};
 
 			var trackVideoReachedViewThreshold = function() {
-				$.post('/remake/view', {"view_id":currentViewId, "remake_id":remakeId, "playback_event":1, "origin_id":origin_id, "originating_screen":11, "total_duration":myPlayer.duration(), "playback_duration":myPlayer.currentTime()}, function(data,status){
+				$.post('/remake/view', {"view_id":currentViewId, "remake_id":remakeId, "playback_event":1, "originating_screen":11, "total_duration":myPlayer.duration(), "playback_duration":myPlayer.currentTime()}, function(data,status){
   				});
 			}
 
