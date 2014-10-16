@@ -207,16 +207,18 @@ end
 get '/ios' do
  	shared_from = "Undeifined"
 	shared_from = params[:src] if params[:src]
+	origin_id = params[:origin_id] if params[:origin_id]
 
-	settings.mixpanel.track("12345", "InstalliOS", {"shared_from"=>shared_from}) if settings.respond_to?(:mixpanel)	
+	settings.mixpanel.track("12345", "InstalliOS", {"shared_from"=>shared_from, "origin_id"=>origin_id}) if settings.respond_to?(:mixpanel)	
 	redirect "https://itunes.apple.com/us/app/id851746600", 302
 end
 
 get '/android' do
 	shared_from = "Undeifined"
 	shared_from = params[:src] if params[:src]
+	origin_id = params[:origin_id] if params[:origin_id]
 
-	settings.mixpanel.track("12345", "InstallAndroid", {"shared_from"=>shared_from}) if settings.respond_to?(:mixpanel)	
+	settings.mixpanel.track("12345", "InstallAndroid", {"shared_from"=>shared_from, "origin_id"=>origin_id}) if settings.respond_to?(:mixpanel)	
 	redirect "https://play.google.com/store/apps/details?id=com.homage.app", 302
 end
 
@@ -1285,6 +1287,7 @@ end
 
 #config routes
 get '/config' do
+	logger.info "recieved additional config request from client"
 	config = getConfigDictionary();
 	return config.to_json
 end
@@ -1296,13 +1299,14 @@ post '/remake/share' do
 	user_id   =  BSON::ObjectId.from_string(params[:user_id]) if params[:user_id]
 	share_method = params[:share_method].to_i
 	origin_id  = params[:origin_id].to_s if params[:origin_id]
-	share_link = params[:share_link].to_s if params[:share_link] 
+	share_link = params[:share_link].to_s if params[:share_link]
+	share_status = params[:share_status] if params[:share_status] 
 
 	logger.info "creating share entity for Remake " + remake_id.to_s + " for user " + user_id.to_s
 
 	shares = settings.db.collection("Shares")
 	share = {_id: client_generated_share_id, user_id:user_id , remake_id:remake_id, share_method:share_method,
-			  share_link:share_link, created_at:Time.now, origin_id:origin_id}
+			  share_link:share_link, created_at:Time.now, origin_id:origin_id, share_status:share_status}
 	share_objectId = shares.save(share)
 
 	logger.info "New share saved in the DB with share id " + share_objectId.to_s

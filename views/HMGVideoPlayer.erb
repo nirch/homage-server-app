@@ -37,10 +37,10 @@
 			<div class="col-lg-10 col-sm-8 visible-lg visible-md visible-sm hidden-xs top">
 				<div id="menu">
 					<a href="https://play.google.com/store/apps/details?id=com.homage.app">
-						<img class="right-margin" src="http://homage.it/wp-content/themes/homage/images/googlePlay.png"/>
+						<img class="right-margin homagePlayStoreLink" src="http://homage.it/wp-content/themes/homage/images/googlePlay.png"/>
 					</a>
 					<a href="https://itunes.apple.com/us/app/homage/id851746600?l=iw&amp;ls=1&amp;mt=8">
-						<img class="right-margin" src="http://homage.it/wp-content/themes/homage/images/appStore.png"/>
+						<img class="right-margin homageAppStoreLink" src="http://homage.it/wp-content/themes/homage/images/appStore.png"/>
 					</a>
 				</div>
 			</div>
@@ -148,7 +148,7 @@
 	var reportShare = function(share_method){
 		// Tracking in our Server
 		$.post('/remake/share', {"share_id": currentShareId, "remake_id":remakeId, "share_method":share_method,
-								 "share_link": currentShareLink, "origin_id":origin_id, "share_status":"unknown"}, 
+								 "share_link": currentShareLink, "origin_id":origin_id}, 
 								 function(data,status){
 								 }
 		);
@@ -314,7 +314,13 @@
 				checkViewReportStatus();
   			});
 
+  			$(".homageAppStoreLink").click(function() {
+			    $.get('/ios', {"src": "minisite", "origin_id":origin_id});
+			});
 
+			$(".homagePlayStoreLink").click(function() {
+			   $.get('/android', {"src": "minisite", "origin_id":origin_id});
+			});
 		});
 </script>
 
