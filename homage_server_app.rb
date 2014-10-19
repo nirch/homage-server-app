@@ -102,7 +102,7 @@ before do
 	$user_agent = UserAgentParser.parse(userAgentStr)
 	puts "user_agent: " + $user_agent.to_s
 	$user_os = $user_agent.os.to_s
-	puts "user_os" + $user_os
+	puts "user_os: " + $user_os
 	puts $user_os
 	logger.debug "request.env: " + request.env.to_s
 	logger.info "params=" + params.to_s
@@ -320,6 +320,7 @@ subdomain settings.play_subdomain do
 	end
 
 	get '/minisite' do
+		puts "rafi????"
 		erb :HMGMiniSite
 	end
 
