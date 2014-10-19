@@ -192,6 +192,39 @@ class UserTest < MiniTest::Unit::TestCase
     assert_nil user
   end
 
+  def test_reset_password
+    post '/user', EMAIL_USER
+
+    json_response = JSON.parse(last_response.body)
+    assert json_response["_id"]["$oid"]
+    new_user_id = BSON::ObjectId.from_string(json_response["_id"]["$oid"])
+
+    # user has password
+    user = USERS.find_one(new_user_id)
+    assert user["password_hash"]
+
+    # delete password
+    USERS.update({_id: new_user_id}, {"$unset" => {password_hash: ""}})
+    user = USERS.find_one(new_user_id)
+    assert_nil user["password_hash"]
+
+    # new password
+    new_password_user = EMAIL_USER.clone
+    new_password_user[:password] = "newPassword"
+    post '/user', new_password_user
+
+    json_response = JSON.parse(last_response.body)
+    assert json_response["_id"]["$oid"]
+    new_password_id = BSON::ObjectId.from_string(json_response["_id"]["$oid"])
+
+    # checking that that the new user and the loged-in user both have the same user id
+    assert_equal new_user_id, new_password_id
+
+    USERS.remove({_id: new_user_id})
+    user = USERS.find_one(new_user_id)
+    assert_nil user
+  end
+
   def test_user_types
     assert_equal UserType::GuestUser, user_type(GUEST_USER.to_json)
     assert_equal UserType::FacebookUser, user_type(FACEBOOK_USER.to_json)    

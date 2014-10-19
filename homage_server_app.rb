@@ -530,17 +530,27 @@ def handle_password_login(user)
 			return nil, [403, [error_hash.to_json]], nil	
 		end
 
-		logger.info "Attempt to login with email <" + email + ">"
+		# Checking if the password exists in the DB. If so procedding with the authentication. If not assuming that the password was reseted
+		if user_exists["password_hash"]
+			logger.info "Attempt to login with email <" + email + ">"
 
-		authenticated = Sinatra::Security::Password::Hashing.check(user["password"], user_exists["password_hash"])
-		if authenticated then
-			logger.info "User <" + email + "> successfully authenticated"
-			add_devices(users, user, user_exists, user_exists["_id"])
-			return user_exists["_id"], nil, false
+			authenticated = Sinatra::Security::Password::Hashing.check(user["password"], user_exists["password_hash"])
+			if authenticated then
+				logger.info "User <" + email + "> successfully authenticated"
+				add_devices(users, user, user_exists, user_exists["_id"])
+				return user_exists["_id"], nil, false
+			else
+				logger.info "Authentication failed for user <" + email + ">"
+				error_hash = { :message => 'Authentication failed, invalid password', :error_code => ErrorCodes::InvalidPassword }
+				return nil, [401, [error_hash.to_json]], nil
+			end
 		else
-			logger.info "Authentication failed for user <" + email + ">"
-			error_hash = { :message => 'Authentication failed, invalid password', :error_code => ErrorCodes::InvalidPassword }
-			return nil, [401, [error_hash.to_json]], nil
+			# Password was reset, saving the new password (after encrypting it)
+			password_hash = Sinatra::Security::Password::Hashing.encrypt(user["password"])
+			user.delete("password")
+			users.update({_id: user_exists["_id"]}, {"$set" => {password_hash: password_hash}})
+			logger.info "User <" + email + "> successfully authenticated with new password"
+			return user_exists["_id"], nil, false
 		end
 	else
 		# Encrypt password (hash + salt)
