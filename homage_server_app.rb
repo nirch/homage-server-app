@@ -100,7 +100,9 @@ end
 before do
 	userAgentStr = request.env["HTTP_USER_AGENT"].to_s
 	$user_agent = UserAgentParser.parse(userAgentStr)
+	puts $user_agent
 	$user_os = $user_agent.os.to_s
+	puts $user_os
 	logger.debug "request.env: " + request.env.to_s
 	logger.info "params=" + params.to_s
 end
@@ -1334,28 +1336,31 @@ post '/remake/like' do
 	#inc remake like counter
 	remakes = settings.db.collection("Remakes")
 	remake = remakes.find_one(remake_id)
-	if (!remake["like_count"]) then
-		remakes.update({_id: remake_id},{"$set" => {like_count: 1}})
-	else 
-		like_count = remake["like_count"] + 1
-		remakes.update({_id: remake_id},{"$set" => {like_count: like_count}})
-	end
-
+	remakes.update({_id: remake_id},{"$inc" => {like_count: 1}})
+	
 	logger.info "New like saved in the DB with like id " + like_objectId.to_s
 end
 
 post 'remake/unlike' do
 	remake_id = BSON::ObjectId.from_string(params[:remake_id])
-	user_id   =  BSON::ObjectId.from_string(params[:user_id])
+	user_id   = BSON::ObjectId.from_string(params[:user_id])
+
+	likes = settings.db.collection("Likes")
+	like  = likes.find_one({remake_id: remake_id, user_id: user_id})
+	
+	if !like then 
+		return
+	end
+
+	likes.remove(like)
+	remake = settings.db.collection("Remakes").find_one(remake_id)
+	remakes.update({_id: remake_id},{"$inc" => {like_count: 1}})
 end
 	
 
-
-
-
-
-
 def getViewSource(user_os)
+	puts "getViewSource - user os: "
+	puts user_os
 	if (user_os =~ /ios/i) then
 		return ViewSource::IPhone
 	elsif (user_os =~ /android/i) then
