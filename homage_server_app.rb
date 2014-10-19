@@ -100,8 +100,9 @@ end
 before do
 	userAgentStr = request.env["HTTP_USER_AGENT"].to_s
 	$user_agent = UserAgentParser.parse(userAgentStr)
-	puts $user_agent
+	puts "user_agent: " + $user_agent.to_s
 	$user_os = $user_agent.os.to_s
+	puts "user_os" + $user_os
 	puts $user_os
 	logger.debug "request.env: " + request.env.to_s
 	logger.info "params=" + params.to_s
@@ -1369,8 +1370,6 @@ end
 	
 
 def getViewSource(user_os)
-	puts "getViewSource - user os: "
-	puts user_os
 	if (user_os =~ /ios/i) then
 		return ViewSource::IPhone
 	elsif (user_os =~ /android/i) then
