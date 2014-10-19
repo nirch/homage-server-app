@@ -354,31 +354,6 @@ subdomain settings.play_subdomain do
 
 		erb :HMGVideoPlayer
 	end
-
-	get '/share/:share_id' do
-		share_id = BSON::ObjectId.from_string(params[:share_id])
-
-		@config = getConfigDictionary();
-
-		
-
-		remakes = settings.db.collection("Remakes")
-		remake_id = @originating_share["remake_id"]
-
-		@remake = remakes.find_one(remake_id)
-
-		users = settings.db.collection("Users")
-		if BSON::ObjectId.legal?(@remake["user_id"]) then
-			@user = users.find_one(@remake["user_id"])
-		else
-			@user = users.find_one({_id: @remake["user_id"]})
-		end
-
-		stories = settings.db.collection("Stories")
-		@story = stories.find_one(@remake["story_id"])
-
-		erb :HMGVideoPlayer
-	end
 end
 
 ###################
