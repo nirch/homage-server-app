@@ -1321,6 +1321,39 @@ put '/remake/share' do
 	shares.update({_id: share_id},{"$set" => {share_status: success}})
 end
 
+#social routes
+post '/remake/like' do
+	remake_id = BSON::ObjectId.from_string(params[:remake_id])
+	user_id   =  BSON::ObjectId.from_string(params[:user_id])
+	
+	#add like
+	likes = settings.db.collection("Likes")
+	like = {user_id: user_id, remake_id: remake_id, created_at: Time.now}
+	like_objectId = likes.save(like)
+
+	#inc remake like counter
+	remakes = settings.db.collection("Remakes")
+	remake = remakes.find_one(remake_id)
+	if (!remake["like_count"]) then
+		remakes.update({_id: remake_id},{"$set" => {like_count: 1}})
+	else 
+		like_count = remake["like_count"] + 1
+		remakes.update({_id: remake_id},{"$set" => {like_count: like_count}})
+	end
+
+	logger.info "New like saved in the DB with like id " + like_objectId.to_s
+end
+
+post 'remake/unlike' do
+	remake_id = BSON::ObjectId.from_string(params[:remake_id])
+	user_id   =  BSON::ObjectId.from_string(params[:user_id])
+end
+	
+
+
+
+
+
 
 def getViewSource(user_os)
 	if (user_os =~ /ios/i) then
@@ -1529,6 +1562,7 @@ get '/analytics' do
 	 		["pie", KPIGraphType::PieChartGraphType ,@heading6, @data6],
 	 		["line", KPIGraphType::NormalFractionGraphType ,@heading7, @data7, @value_format7]].to_json
 end
+
 
 get '/dashboard' do
 	erb :analytics_dashboard
