@@ -321,7 +321,6 @@ subdomain settings.play_subdomain do
 	end
 
 	get '/minisite' do
-		puts "rafi????"
 		erb :HMGMiniSite
 	end
 
@@ -1369,6 +1368,7 @@ post '/remake/view' do
 		client_generated_view_id = BSON::ObjectId.from_string(params[:view_id])
 		remake_id = BSON::ObjectId.from_string(params[:remake_id])
 		user_id =  BSON::ObjectId.from_string(params[:user_id]) if params[:user_id]
+		cookie_id = BSON::ObjectId.from_string(params[:cookie_id]) if params[:cookie_id]
 		orig_screen = params[:originating_screen].to_i
 		origin_id  = params[:origin_id].to_s if params[:origin_id]
 		view_source = getViewSource()
@@ -1378,6 +1378,8 @@ post '/remake/view' do
 
 		view = {_id:client_generated_view_id, remake_id:remake_id, story_id: story_id, start_time:Time.now, origin_id:origin_id, originating_screen:orig_screen, view_source: view_source}
 		view["user_id"] = user_id if user_id
+		view["cookie_id"] = cookie_id if cookie_id
+
 		logger.info "reporting view start: " + view.to_s
 		view_objectId = views.save(view)
 		logger.info "New view saved in the DB with view id " + view_objectId.to_s
@@ -1594,4 +1596,40 @@ get '/test/mail' do
 	end
 
 	"Mail sent successfully"
+end
+
+get '/test/minisite' do
+		erb :HMGMiniSite
+	end
+
+get '/test/:entity_id' do
+		remakes = settings.db.collection("Remakes")
+		users   = settings.db.collection("Users")
+		shares  = settings.db.collection("Shares")
+		stories = settings.db.collection("Stories")
+		@config = getConfigDictionary();
+		
+		entity_id = BSON::ObjectId.from_string(params[:entity_id])
+		@share  = shares.find_one(entity_id)
+		if @share == nil then
+			@remake = remakes.find_one(entity_id)
+			@originating_share_id = ""
+		else 
+			remake_id = @share["remake_id"]
+			@remake = remakes.find_one(remake_id)
+			@originating_share_id = @share["_id"]
+			shares.update({_id: @originating_share_id},{"$set" => {share_status: true}})
+		end
+
+		
+		if BSON::ObjectId.legal?(@remake["user_id"]) then
+			@user = users.find_one(@remake["user_id"])
+		else
+			@user = users.find_one({_id: @remake["user_id"]})
+		end
+
+		
+		@story = stories.find_one(@remake["story_id"])
+
+		erb :HMGVideoPlayer
 end
