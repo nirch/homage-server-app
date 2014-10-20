@@ -99,8 +99,10 @@ end
 
 before do
 	userAgentStr = request.env["HTTP_USER_AGENT"].to_s
+	puts userAgentStr
 	$user_agent = UserAgentParser.parse(userAgentStr)
-	puts "user_agent: " + $user_agent.to_s
+	puts "user_agent"
+	puts $user_agent
 	$user_os = $user_agent.os.to_s
 	puts "user_os: " + $user_os
 	puts $user_os
