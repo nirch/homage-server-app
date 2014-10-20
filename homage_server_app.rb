@@ -1348,12 +1348,12 @@ end
 
 def getViewSource()
 	if ($user_os =~ /ios/i && $userAgentStr =~ /homage/i) then
-		return ViewSource::IPhone
-	elsif ($user_os =~ /android/i && $userAgentStr =~ /homage/i)) then
-		return ViewSource::Android
+		return ViewSource::IPhoneApp
+	elsif ($user_os =~ /android/i && $userAgentStr =~ /homage/i) then
+		return ViewSource::AndroidApp
 	elsif ($user_os =~ /mac/i || $user_os =~ /windows/)
-		return ViewSource::Web
-	elsif (($user_os =~ /ios/i || $user_os =~ /android/i) && !($userAgentStr =~ /homage/i)
+		return ViewSource::Desktop
+	elsif (($user_os =~ /ios/i || $user_os =~ /android/i) && !($userAgentStr =~ /homage/i))
 		return ViewSource::Mobile
 	else
 		return ViewSource::Unknown
