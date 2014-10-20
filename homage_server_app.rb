@@ -98,16 +98,13 @@ configure :test do
 end
 
 before do
-	userAgentStr = request.env["HTTP_USER_AGENT"].to_s
-	puts userAgentStr
-	$user_agent = UserAgentParser.parse(userAgentStr)
-	puts "user_agent"
-	puts $user_agent
+	$userAgentStr = request.env["HTTP_USER_AGENT"].to_s
+	$user_agent = UserAgentParser.parse($userAgentStr)
 	$user_os = $user_agent.os.to_s
-	puts "user_os: " + $user_os
-	puts $user_os
 	logger.debug "request.env: " + request.env.to_s
 	logger.info "params=" + params.to_s
+	view_source = getViewSource()
+	logger.info "view source is: " + view_source.to_s
 end
 
 module RemakeStatus
@@ -171,9 +168,11 @@ module KPIGraphType
 end
 
 module ViewSource
-	IPhone  = 0
-	Android = 1
-	Web = 2
+	IPhoneApp  = 0
+	AndroidApp = 1
+	Desktop    = 2
+	Mobile     = 3
+	Unknown    = 4
 end
 
 module AppInstallFrom
@@ -1347,13 +1346,17 @@ post 'remake/unlike' do
 end
 	
 
-def getViewSource(user_os)
-	if (user_os =~ /ios/i) then
+def getViewSource()
+	if ($user_os =~ /ios/i && $userAgentStr =~ /homage/i) then
 		return ViewSource::IPhone
-	elsif (user_os =~ /android/i) then
+	elsif ($user_os =~ /android/i && $userAgentStr =~ /homage/i)) then
 		return ViewSource::Android
-	else 
+	elsif ($user_os =~ /mac/i || $user_os =~ /windows/)
 		return ViewSource::Web
+	elsif (($user_os =~ /ios/i || $user_os =~ /android/i) && !($userAgentStr =~ /homage/i)
+		return ViewSource::Mobile
+	else
+		return ViewSource::Unknown
 	end
 end
 
@@ -1368,7 +1371,7 @@ post '/remake/view' do
 		user_id =  BSON::ObjectId.from_string(params[:user_id]) if params[:user_id]
 		orig_screen = params[:originating_screen].to_i
 		origin_id  = params[:origin_id].to_s if params[:origin_id]
-		view_source = getViewSource($user_os)
+		view_source = getViewSource()
 
 		remake = settings.db.collection("Remakes").find_one(remake_id)
 		story_id = remake["story_id"];
@@ -1412,7 +1415,7 @@ post '/story/view' do
 		story_id = BSON::ObjectId.from_string(params[:story_id])
 		user_id =  BSON::ObjectId.from_string(params[:user_id])
 		orig_screen = params[:originating_screen].to_i
-		view_source = getViewSource($user_os)
+		view_source = getViewSource()
 		
 		view = {_id:client_generated_view_id, user_id:user_id , story_id:story_id, start_time:Time.now, originating_screen:orig_screen, view_source: view_source}
 		view_objectId = views.save(view)
