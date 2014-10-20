@@ -132,11 +132,9 @@
 	if (!cookies["homageCookieID"]) {
 		console.log("no homage cookie");
 		var cookie_id = new ObjectId().toString();
-		$.cookie('homageCookieID', cookie_id, { expires: 7 });
-		$.cookie('like_state' , false , {expires: 7});
+		$.cookie('homageCookieID', cookie_id, { expires: 365 });
+		$.cookie('like_state' , false , {expires: 365});
 	}
-	console.log("cookies!");
-	console.log($.cookie());
 
 	var share_link = '<%= @remake["share_link"] %>'
 	var origin_id  = '<%= @originating_share_id %>'
@@ -259,7 +257,7 @@
 			var trackVideoSrart = function(){
 				// Tracking in our Server
 				currentViewId = new ObjectId().toString();
-				$.post('/remake/view', {"view_id":currentViewId, "remake_id":remakeId, "playback_event":0, "originating_screen":11, "origin_id":origin_id }, function(data,status){
+				$.post('/remake/view', {"view_id":currentViewId, "remake_id":remakeId, "playback_event":0, "originating_screen":11, "origin_id":origin_id, "cookie_id":$.cookie('homageCookieID')}, function(data,status){
     				playReported = true;
     				stopReported = false;
     				thresholdReported = false;
