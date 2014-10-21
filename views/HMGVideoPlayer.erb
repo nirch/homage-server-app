@@ -144,8 +144,14 @@
 	var remakeId = '<%= @remake["_id"].to_s %>'
 	var thumbnail = '<%= @remake["thumbnail"] %>'
 	var share_link_prefix = '<%= @config["share_link_prefix"] %>'
+	var view_pct_threshold = '<%= @config["significant_view_pct_threshold"] %>'
 	var currentShareId;
 	var currentShareLink;
+
+	impressionId = new ObjectId().toString();
+	$.post('/remake/impression', {"impression_id":impressionId, "remake_id":remakeId, "playback_event":0, "originating_screen":11, "origin_id":origin_id, "cookie_id":$.cookie('homageCookieID')}, function(data,status){
+    			 
+  	});
 
 	CopyUrlShareMethod = 0
 	FacebookShareMethod = 1
@@ -246,7 +252,6 @@
 
     var stopReported = false;
 	var playReported = false;
-	var view_pct_threshold = 0.5;
 
 		videojs('video_player').ready(function(){
 			var myPlayer = this;
@@ -269,7 +274,7 @@
 
 			var trackVideoEnd = function(){
 				// Tracking in our Server
-				$.post('/remake/view', {"view_id":currentViewId, "remake_id":remakeId, "playback_event":1, "originating_screen":11, "total_duration":myPlayer.duration(), "playback_duration":myPlayer.currentTime()}, function(data,status){
+				$.post('/remake/view', {"view_id":currentViewId, "remake_id":remakeId, "playback_event":1, "originating_screen":11, "total_duration":myPlayer.duration(), "playback_duration":myPlayer.currentTime(), "cookie_id":$.cookie('homageCookieID')}, function(data,status){
     				stopReported = true;
     				playReported = false;
   				});
@@ -279,7 +284,7 @@
 			};
 
 			var trackVideoReachedViewThreshold = function() {
-				$.post('/remake/view', {"view_id":currentViewId, "remake_id":remakeId, "playback_event":1, "originating_screen":11, "total_duration":myPlayer.duration(), "playback_duration":myPlayer.currentTime()}, function(data,status){
+				$.post('/remake/view', {"view_id":currentViewId, "remake_id":remakeId, "playback_event":1, "originating_screen":11, "total_duration":myPlayer.duration(), "playback_duration":myPlayer.currentTime(), "cookie_id":$.cookie('homageCookieID')}, function(data,status){
   				});
 			}
 

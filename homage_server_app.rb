@@ -1271,6 +1271,7 @@ end
 def getConfigDictionary()
 	config = Hash.new 
 	config["share_link_prefix"] = settings.share_link_prefix;
+	config["significant_view_pct_threshold"] = 0.5
 	return config
 end
 
@@ -1359,26 +1360,167 @@ def getViewSource()
 	end
 end
 
-post '/remake/view' do 
-	playback_event = params[:playback_event].to_i
+def isImpressionUniqueFromUser(entity_type,entity_id,user_id,cookie_id)
+   	impressions = settings.db.collection("Impressions")
 
+   	condition = Hash.new
+   	if user_id != nil then 
+   		condition["user_id"] = user_id
+   	elsif cookie_id != nil then
+   		condition["cookie_id"] = cookie_id
+   	end
+
+   	if entity_type == "remake" then
+   		condition["remake_id"] = entity_id
+   	elsif entity_type == "story" then
+   		condition["story_id"] = entity_id
+   		condition["remake_id"] = {"$exists" => false}
+   	end
+
+   	puts "condition: " + condition.to_s
+   	
+	res = impressions.find(condition).count
+	if (res != 0) then
+	   	logger.debug "not unique impression"
+	   	return false
+	end
+
+	logger.info "unique impression"
+	return true
+end
+
+def isViewUniqueFromUser(entity_type,entity_id,user_id,cookie_id)
+  	views = settings.db.collection("Views")
+
+  	condition = Hash.new
+   	if user_id != nil then 
+   		condition["user_id"] = user_id
+   	elsif cookie_id != nil then
+   		condition["cookie_id"] = cookie_id
+   	end
+
+   	if entity_type == "remake" then
+   		condition["remake_id"] = entity_id
+   	elsif entity_type == "story" then
+   		condition["story_id"] = entity_id
+   		condition["remake_id"] = {"$exists" => false}
+   	end
+
+   	puts "condition: " + condition.to_s
+   	
+	res = views.find(condition).count
+	if (res != 0) then
+	   	logger.debug "not unique view"
+	   	return false
+	end
+
+   	logger.info "unique view"
+   	return true
+end
+
+def isSignificantViewUnique(entity_type,entity_id,user_id,cookie_id,min_time) 
 	views = settings.db.collection("Views")
 
+	condition = Hash.new
+	condition["playback_duration"] = {"$gte" => min_time}
+   	if user_id != nil then 
+   		condition["user_id"] = user_id
+   	elsif cookie_id != nil then
+   		condition["cookie_id"] = cookie_id
+   	end
+
+   	if entity_type == "remake" then
+   		condition["remake_id"] = entity_id
+   	elsif entity_type == "story" then
+   		condition["story_id"] = entity_id
+   		condition["remake_id"] = {"$exists" => false}
+   	end
+
+	puts "condition: " + condition.to_s
+   	
+	res = views.find(condition).count
+	if (res != 0) then
+	   	logger.debug "not unique significant view"
+	   	return false
+	end
+
+   	logger.info "unique significant view"
+   	return true
+end
+
+post '/remake/impression' do
+	impressions = settings.db.collection("Impressions")
+	remakes = settings.db.collection("Remakes")
+
+	client_generated_impression_id = BSON::ObjectId.from_string(params[:impression_id])
+	remake_id = BSON::ObjectId.from_string(params[:remake_id])
+	user_id =  BSON::ObjectId.from_string(params[:user_id]) if params[:user_id]
+	cookie_id = BSON::ObjectId.from_string(params[:cookie_id]) if params[:cookie_id]
+	orig_screen = params[:originating_screen].to_i
+	origin_id  = params[:origin_id].to_s if params[:origin_id]
+	view_source = getViewSource()
+
+	remake = remakes.find_one(remake_id)
+	story_id = remake["story_id"];
+
+	remakes.update({_id:remake_id},{"$inc" => {web_impressions: 1}})
+	if (isImpressionUniqueFromUser("remake",remake_id,user_id,cookie_id)) then
+		remakes.update({_id:remake_id},{"$inc" => {unique_web_impressions: 1}})
+	end
+
+	impression = {_id:client_generated_impression_id, remake_id:remake_id, story_id: story_id, start_time:Time.now, origin_id:origin_id, originating_screen:orig_screen, view_source: view_source}
+
+	impression["user_id"] = user_id if user_id
+	impression["cookie_id"] = cookie_id if cookie_id
+
+	logger.info "reporting impression: " + impression.to_s
+	impressions.save(impression)
+
+	return impression.to_json
+end
+
+def trackView(entity_type,params)
+	config = getConfigDictionary();
+	playback_event = params[:playback_event].to_i
+	views = settings.db.collection("Views")
+
+	view = Hash.new
+	view["_id"]       = BSON::ObjectId.from_string(params[:view_id])
+	view["remake_id"] = BSON::ObjectId.from_string(params[:remake_id]) if params[:remake_id]
+	view["story_id"]  = BSON::ObjectId.from_string(params[:story_id]) if params[:story_id]
+	view["user_id"]   = BSON::ObjectId.from_string(params[:user_id]) if params[:user_id]
+	view["cookie_id"] = BSON::ObjectId.from_string(params[:cookie_id]) if params[:cookie_id]
+	
+	#start related props
+	view["originating_screen"] = params[:originating_screen].to_i
+	view["origin_id"]          = params[:origin_id].to_s if params[:origin_id]
+	view["view_source"]        = getViewSource()
+
+	# end/update related props
+	view["playback_duration"] = params[:playback_duration].to_f if params[:playback_duration]
+	view["total_duration"] = params[:total_duration].to_f if params[:total_duration]
+
+	collection = ""
+	entity_id = ""
+	if entity_type == "remake" then
+		collection = settings.db.collection("Remakes")
+		remake_id = view["remake_id"]
+		remake = collection.find_one(remake_id)
+		view["story_id"] = remake["story_id"]
+		entity_id = view["remake_id"]
+	elsif entity_type == "story" then
+		collection = settings.db.collection("Stories")
+		entity_id  = view["story_id"]
+	end 
+		
 	if playback_event == PlaybackEventType::PlaybackEventStart then
-		client_generated_view_id = BSON::ObjectId.from_string(params[:view_id])
-		remake_id = BSON::ObjectId.from_string(params[:remake_id])
-		user_id =  BSON::ObjectId.from_string(params[:user_id]) if params[:user_id]
-		cookie_id = BSON::ObjectId.from_string(params[:cookie_id]) if params[:cookie_id]
-		orig_screen = params[:originating_screen].to_i
-		origin_id  = params[:origin_id].to_s if params[:origin_id]
-		view_source = getViewSource()
-
-		remake = settings.db.collection("Remakes").find_one(remake_id)
-		story_id = remake["story_id"];
-
-		view = {_id:client_generated_view_id, remake_id:remake_id, story_id: story_id, start_time:Time.now, origin_id:origin_id, originating_screen:orig_screen, view_source: view_source}
-		view["user_id"] = user_id if user_id
-		view["cookie_id"] = cookie_id if cookie_id
+		view["start_time"] = Time.now
+		collection.update({_id:entity_id},{"$inc" => {views: 1}})
+		user_id = view["user_id"]
+		cookie_id = view["cookie_id"]
+		if (isViewUniqueFromUser(entity_type,entity_id,user_id,cookie_id)) then
+			collection.update({_id:entity_id},{"$inc" => {unique_views: 1}})
+		end
 
 		logger.info "reporting view start: " + view.to_s
 		view_objectId = views.save(view)
@@ -1387,63 +1529,55 @@ post '/remake/view' do
 		return view.to_json
 
 	elsif playback_event = PlaybackEventType::PlaybackEventStop then
-		view_id =  BSON::ObjectId.from_string(params[:view_id])
-		remake_id = BSON::ObjectId.from_string(params[:remake_id])
-		user_id =  BSON::ObjectId.from_string(params[:user_id]) if params[:user_id]
-		playback_duration = params[:playback_duration].to_i
-		total_duration = params[:total_duration].to_i
-
-		view = views.find_one(view_id)
-		if !view then
+		view_id           = view["_id"]
+		playback_duration = view["playback_duration"]
+		total_duration    = view["total_duration"]
+		user_id           = view["user_id"] 
+		cookie_id         = view["cookie_id"]
+		
+		existing_view = views.find_one(view_id)
+		if !existing_view then
 			logger.error "No matching start event for stop event: " + view_id.to_s
 		end
+		puts "existing_view"
+		puts existing_view.to_s
+		
+		th = config["significant_view_pct_threshold"]
+		min_time = total_duration * th
+
+		puts "playback_duration:" + playback_duration.to_s
+		puts "min_time: " + min_time.to_s
+
+		if (playback_duration > min_time) then 
+			if !existing_view["playback_duration"] 
+				puts "incrementing significant_views"
+				collection.update({_id:entity_id},{"$inc" => {significant_views: 1}})
+			end
+
+			if (isSignificantViewUnique(entity_type,entity_id,user_id,cookie_id,min_time)) then
+				puts "incrementing unique significant_views"
+				collection.update({_id:entity_id},{"$inc" => {unique_significant_views: 1}})
+			end
+		end
+
 		view_params = {playback_duration: playback_duration, total_duration: total_duration}
 		views.update({_id: view_id},{"$set" => view_params})
 		logger.info "view updated in the DB with view id " + view_id.to_s + "and view duration: " + playback_duration.to_s
 		logger.info "view params: " + view_params.to_s
 		view = views.find_one(view_id)
+		puts "view after update"
+		puts view.to_s
 		return view.to_json
 	end
 end
 
+
+post '/remake/view' do 
+	trackView("remake",params)
+end
+
 post '/story/view' do 
-	playback_event = params[:playback_event].to_i
-	entity_type = params[:playback_event].to_i
-
-	views = settings.db.collection("Views")
-
-	if playback_event == PlaybackEventType::PlaybackEventStart then
-		client_generated_view_id =  BSON::ObjectId.from_string(params[:view_id])
-		story_id = BSON::ObjectId.from_string(params[:story_id])
-		user_id =  BSON::ObjectId.from_string(params[:user_id])
-		orig_screen = params[:originating_screen].to_i
-		view_source = getViewSource()
-		
-		view = {_id:client_generated_view_id, user_id:user_id , story_id:story_id, start_time:Time.now, originating_screen:orig_screen, view_source: view_source}
-		view_objectId = views.save(view)
-		
-		logger.info "New view saved in the DB with view id " + view_objectId.to_s
-		return view.to_json
-
-	elsif playback_event = PlaybackEventType::PlaybackEventStop then
-		view_id =  BSON::ObjectId.from_string(params[:view_id])
-		story_id = BSON::ObjectId.from_string(params[:story_id])
-		user_id =  BSON::ObjectId.from_string(params[:user_id])
-		playback_duration = params[:playback_duration].to_i
-		total_duration = params[:total_duration].to_i
-
-		#remakes.update({_id: remake_id}, {"$set" => {grade: grade}})
-		#users.update({_id: update_user_id}, {"$set" => {facebook: params[:facebook], email: params[:email], is_public: params[:is_public]}})
-		#remakes.update({_id: remake_id}, {"$set" => {status: RemakeStatus::Rendering, render_start:Time.now}})
-		view = views.find_one(view_id)
-		if !view then
-			logger.error "No matching start event for stop event: " + view_id.to_s
-		end
-		views.update({_id: view_id, },{"$set" => {playback_duration: playback_duration, total_duration: total_duration}})
-		logger.info "view updated in the DB after stop with view id " + view_id.to_s
-		view = views.find_one(view_id)
-		return view.to_json
-	end
+	trackView("story",params)
 end
 
 post '/user/session_begin' do
