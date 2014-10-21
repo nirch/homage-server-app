@@ -19,7 +19,7 @@ function drawC3StackedColumnChart(data_for_chart,chart_name) {
           type: 'bar',
           groups: [
               ['remake views', 'story views'],
-              ['iOS views','Android views','web views']
+              ['iOS views','Android views','Desktop views','Mobile views']
           ]
       },
       axis: {

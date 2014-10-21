@@ -7,7 +7,8 @@ UndefinedGraphType      = 5
 
 ViewSourceIos     = 0
 ViewSourceAndroid = 1
-ViewSourceWeb     = 2
+ViewSourceDesktop = 2
+viewSourceMobile  = 3
 
 function prepareDataForDaysDisplay(start_date,end_date,data_type,data_series,data_format) {
 	sd = new Date(start_date);
@@ -22,7 +23,8 @@ function prepareDataForDaysDisplay(start_date,end_date,data_type,data_series,dat
 	story_views_series   = ["story views"];
 	ios_views_series     = ["iOS views"];
 	android_views_series = ["Android views"];
-	web_views_series     = ["web views"];
+	desktop_views_series = ["Desktop views"];
+	mobile_views_series  = ["Mobile views"];
 
 	if (data_type == StoryViewsGraphType) {
 		data_series = aggregateStoryViews(start_date,end_date,data_series);
@@ -89,9 +91,13 @@ function prepareDataForDaysDisplay(start_date,end_date,data_type,data_series,dat
 				if (data_set.hasOwnProperty(ViewSourceAndroid)) android_views = data_set[ViewSourceAndroid];
 				android_views_series.push(android_views);
 
-				web_views = 0
-				if (data_set.hasOwnProperty(ViewSourceWeb)) web_views = data_set[ViewSourceWeb];
-				web_views_series.push(web_views);
+				desktop_views = 0
+				if (data_set.hasOwnProperty(ViewSourceDesktop)) desktop_views = data_set[ViewSourceDesktop];
+				desktop_views_series.push(desktop_views);
+
+				mobile_views = 0
+				if (data_set.hasOwnProperty(ViewSourceDesktop)) mobile_views = data_set[viewSourceMobile];
+				mobile_views_series.push(mobile_views);
 
 				break;
 				case UndefinedGraphType:
@@ -104,7 +110,8 @@ function prepareDataForDaysDisplay(start_date,end_date,data_type,data_series,dat
 	}	
 
 	if (data_type == StoryViewsGraphType) {
-		final_result = [x_date_series,remake_views_series,story_views_series,ios_views_series,android_views_series,web_views_series];
+		final_result = [x_date_series,remake_views_series,story_views_series,ios_views_series,
+						android_views_series,desktop_views_series,mobile_views_series];
 	}
 
 	return final_result;
@@ -134,7 +141,9 @@ function aggregateDataForDisplay(start_date,end_date,data_type,data_series,data_
 	story_views_series   = ["story views"];
 	ios_views_series     = ["iOS views"];
 	android_views_series = ["Android views"];
-	web_views_series     = ["web views"];
+	//web_views_series     = ["web views"];
+	desktop_views_series = ["Desktop views"];
+	mobile_views_series  = ["Mobile views"];
 	
 	nominator_sum = 0;
 	denominator_sum = 0;
@@ -142,7 +151,9 @@ function aggregateDataForDisplay(start_date,end_date,data_type,data_series,data_
 	story_views = 0;
 	ios_views = 0; 
 	android_views = 0;
-	web_views = 0
+	//web_views = 0;
+	desktop_views = 0;
+	mobile_views = 0;
 
 	id = sd;
 	new_interval_start_date = sd;
@@ -183,7 +194,9 @@ function aggregateDataForDisplay(start_date,end_date,data_type,data_series,data_
 				if (data_set.hasOwnProperty("story_views")) story_views += data_set["story_views"];
 				if (data_set.hasOwnProperty(ViewSourceIos)) ios_views += data_set[ViewSourceIos];
 				if (data_set.hasOwnProperty(ViewSourceAndroid)) android_views += data_set[ViewSourceAndroid];
-				if (data_set.hasOwnProperty(ViewSourceWeb)) web_views += data_set[ViewSourceWeb];	
+				//if (data_set.hasOwnProperty(ViewSourceWeb)) web_views += data_set[ViewSourceWeb];
+				if (data_set.hasOwnProperty(ViewSourceDesktop)) desktop_views += data_set[ViewSourceDesktop];
+				if (data_set.hasOwnProperty(viewSourceMobile)) mobile_views += data_set[viewSourceMobile];	
 				break;
 
 			case UndefinedGraphType:
@@ -199,13 +212,18 @@ function aggregateDataForDisplay(start_date,end_date,data_type,data_series,data_
 				story_views_series.push(story_views);
 				ios_views_series.push(ios_views);
 				android_views_series.push(android_views);
-				web_views_series.push(web_views);
+				//web_views_series.push(web_views);
+				desktop_views_series.push(desktop_views);
+				mobile_views_series.push(mobile_views);
 
 				remake_views = 0;
 				story_views = 0;
 				ios_views = 0; 
 				android_views = 0;
-				web_views = 0
+				//web_views = 0
+				desktop_views = 0;
+				mobile_views = 0;
+
 
 			} else if (data_type == NormalValueGraphType || data_type == NormalFractionGraphType) {			
 				week_info = "Time frame: " + new_interval_start_date + " to: " + id;
@@ -241,7 +259,8 @@ function aggregateDataForDisplay(start_date,end_date,data_type,data_series,data_
 	}
 
 	if (data_type == StoryViewsGraphType) {
-		final_result = [x_date_series,remake_views_series,story_views_series,ios_views_series,android_views_series,web_views_series];
+		final_result = [x_date_series,remake_views_series,story_views_series,ios_views_series,
+						android_views_series,desktop_views_series,mobile_views_series];
 	}
 
 	return final_result;
@@ -249,7 +268,7 @@ function aggregateDataForDisplay(start_date,end_date,data_type,data_series,data_
 }
 
 
-function genDataForWeeksDisplay(start_date,end_date,data_type,data_series,data_format) {
+/*function genDataForWeeksDisplay(start_date,end_date,data_type,data_series,data_format) {
 	sd = new Date(start_date);
 	ed = new Date(end_date);
 
@@ -375,7 +394,7 @@ function genDataForWeeksDisplay(start_date,end_date,data_type,data_series,data_f
 	}
 	
 	return final_result
-}
+}*/
 
 function addDays(today,num_of_days) {
 	var needed_date = new Date();
@@ -413,7 +432,9 @@ function aggregateStoryViews(start_date,end_date,data_series) {
 	story_views = 0;
 	ios_views = 0; 
 	android_views = 0;
-	web_views = 0;
+	//web_views = 0;
+	desktop_views = 0;
+	mobile_views = 0;
 
 	aggregated_data_series = {};
 
@@ -428,7 +449,10 @@ function aggregateStoryViews(start_date,end_date,data_series) {
 		aggregated_data_series[date_key]["story_views"] = 0;
 		aggregated_data_series[date_key][ViewSourceIos] = 0;
 		aggregated_data_series[date_key][ViewSourceAndroid] = 0;
-		aggregated_data_series[date_key][ViewSourceWeb] = 0;
+		//aggregated_data_series[date_key][ViewSourceWeb] = 0;
+		aggregated_data_series[date_key][ViewSourceDesktop] = 0;
+		aggregated_data_series[date_key][viewSourceMobile] = 0;
+
 		index_d = addDays(index_d,1);
 	}
 
@@ -447,8 +471,12 @@ function aggregateStoryViews(start_date,end_date,data_series) {
 			 aggregated_data_series[date_key][ViewSourceIos] += single_story_data_for_date[ViewSourceIos];
 			if (single_story_data_for_date.hasOwnProperty(ViewSourceAndroid))
 			 aggregated_data_series[date_key][ViewSourceAndroid] += single_story_data_for_date[ViewSourceAndroid];
-			if (single_story_data_for_date.hasOwnProperty(ViewSourceWeb))
-			 aggregated_data_series[date_key][ViewSourceWeb] += single_story_data_for_date[ViewSourceWeb];
+			/*if (single_story_data_for_date.hasOwnProperty(ViewSourceWeb))
+			 aggregated_data_series[date_key][ViewSourceWeb] += single_story_data_for_date[ViewSourceWeb];*/
+			if (single_story_data_for_date.hasOwnProperty(ViewSourceDesktop))
+			 aggregated_data_series[date_key][ViewSourceDesktop] += single_story_data_for_date[ViewSourceDesktop];
+			if (single_story_data_for_date.hasOwnProperty(viewSourceMobile))
+			 aggregated_data_series[date_key][viewSourceMobile] += single_story_data_for_date[viewSourceMobile];
 		}
 	}
 
