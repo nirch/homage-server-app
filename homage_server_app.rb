@@ -1368,6 +1368,9 @@ def isImpressionUniqueFromUser(entity_type,entity_id,user_id,cookie_id)
    		condition["user_id"] = user_id
    	elsif cookie_id != nil then
    		condition["cookie_id"] = cookie_id
+   	else
+   		logger.info "no cookie nor user id. assuming unique impression"
+   		return true
    	end
 
    	if entity_type == "remake" then
@@ -1377,7 +1380,7 @@ def isImpressionUniqueFromUser(entity_type,entity_id,user_id,cookie_id)
    		condition["remake_id"] = {"$exists" => false}
    	end
 
-   	puts "condition: " + condition.to_s
+   	logger.debug "condition: " + condition.to_s
    	
 	res = impressions.find(condition).count
 	if (res != 0) then
@@ -1397,6 +1400,9 @@ def isViewUniqueFromUser(entity_type,entity_id,user_id,cookie_id)
    		condition["user_id"] = user_id
    	elsif cookie_id != nil then
    		condition["cookie_id"] = cookie_id
+   	else
+   		logger.info "no cookie nor user id. assuming unique view"
+   		return true
    	end
 
    	if entity_type == "remake" then
@@ -1406,7 +1412,7 @@ def isViewUniqueFromUser(entity_type,entity_id,user_id,cookie_id)
    		condition["remake_id"] = {"$exists" => false}
    	end
 
-   	puts "condition: " + condition.to_s
+   	logger.debug "condition: " + condition.to_s
    	
 	res = views.find(condition).count
 	if (res != 0) then
@@ -1414,7 +1420,7 @@ def isViewUniqueFromUser(entity_type,entity_id,user_id,cookie_id)
 	   	return false
 	end
 
-   	logger.info "unique view"
+   	logger.debug "unique view"
    	return true
 end
 
@@ -1427,6 +1433,9 @@ def isSignificantViewUnique(entity_type,entity_id,user_id,cookie_id,min_time)
    		condition["user_id"] = user_id
    	elsif cookie_id != nil then
    		condition["cookie_id"] = cookie_id
+   	else 
+   		logger.info "no cookie nor user id. assuming unique significant view"
+   		return true
    	end
 
    	if entity_type == "remake" then
@@ -1436,7 +1445,7 @@ def isSignificantViewUnique(entity_type,entity_id,user_id,cookie_id,min_time)
    		condition["remake_id"] = {"$exists" => false}
    	end
 
-	puts "condition: " + condition.to_s
+	logger.debug "condition: " + condition.to_s
    	
 	res = views.find(condition).count
 	if (res != 0) then
@@ -1444,7 +1453,7 @@ def isSignificantViewUnique(entity_type,entity_id,user_id,cookie_id,min_time)
 	   	return false
 	end
 
-   	logger.info "unique significant view"
+   	logger.debug "unique significant view"
    	return true
 end
 
@@ -1539,23 +1548,21 @@ def trackView(entity_type,params)
 		if !existing_view then
 			logger.error "No matching start event for stop event: " + view_id.to_s
 		end
-		puts "existing_view"
-		puts existing_view.to_s
 		
 		th = config["significant_view_pct_threshold"]
 		min_time = total_duration * th
 
-		puts "playback_duration:" + playback_duration.to_s
-		puts "min_time: " + min_time.to_s
+		logger.debug "playback_duration:" + playback_duration.to_s
+		logger.debug "min_time: " + min_time.to_s
 
 		if (playback_duration > min_time) then 
 			if !existing_view["playback_duration"] 
-				puts "incrementing significant_views"
+				logger.debug "incrementing significant_views"
 				collection.update({_id:entity_id},{"$inc" => {significant_views: 1}})
 			end
 
 			if (isSignificantViewUnique(entity_type,entity_id,user_id,cookie_id,min_time)) then
-				puts "incrementing unique significant_views"
+				logger.debug "incrementing unique significant_views"
 				collection.update({_id:entity_id},{"$inc" => {unique_significant_views: 1}})
 			end
 		end
@@ -1563,10 +1570,7 @@ def trackView(entity_type,params)
 		view_params = {playback_duration: playback_duration, total_duration: total_duration}
 		views.update({_id: view_id},{"$set" => view_params})
 		logger.info "view updated in the DB with view id " + view_id.to_s + "and view duration: " + playback_duration.to_s
-		logger.info "view params: " + view_params.to_s
 		view = views.find_one(view_id)
-		puts "view after update"
-		puts view.to_s
 		return view.to_json
 	end
 end
