@@ -149,7 +149,12 @@
 	var currentShareLink;
 
 	impressionId = new ObjectId().toString();
-	$.post('/remake/impression', {"impression_id":impressionId, "remake_id":remakeId, "playback_event":0, "originating_screen":11, "origin_id":origin_id, "cookie_id":$.cookie('homageCookieID')}, function(data,status){
+	impression_params = {"impression_id":impressionId, "remake_id":remakeId, "playback_event":0, "originating_screen":11, "cookie_id":$.cookie('homageCookieID')}
+	if (origin_id != "") {
+		impression_params["origin_id"] = origin_id
+	}
+	
+	$.post('/remake/impression', impression_params , function(data,status){
     			 
   	});
 
@@ -171,8 +176,11 @@
 
 	var reportShare = function(share_method){
 		// Tracking in our Server
-		$.post('/remake/share', {"share_id": currentShareId, "remake_id":remakeId, "share_method":share_method,
-								 "share_link": currentShareLink, "origin_id":origin_id}, 
+		share_params = {"share_id": currentShareId, "remake_id":remakeId, "share_method":share_method,"share_link": currentShareLink}
+		if (origin_id != "") {
+			share_params["origin_id"] = origin_id
+		}
+		$.post('/remake/share', share_params, 
 								 function(data,status){
 								 }
 		);
@@ -262,7 +270,11 @@
 			var trackVideoSrart = function(){
 				// Tracking in our Server
 				currentViewId = new ObjectId().toString();
-				$.post('/remake/view', {"view_id":currentViewId, "remake_id":remakeId, "playback_event":0, "originating_screen":11, "origin_id":origin_id, "cookie_id":$.cookie('homageCookieID')}, function(data,status){
+				view_params = {"view_id":currentViewId, "remake_id":remakeId, "playback_event":0, "originating_screen":11, "cookie_id":$.cookie('homageCookieID')}
+				if (origin_id != "") {
+					view_params["origin_id"] = origin_id
+				}
+				$.post('/remake/view', view_params, function(data,status){
     				playReported = true;
     				stopReported = false;
     				thresholdReported = false;
@@ -319,7 +331,7 @@
 				        type: 'POST',
 				        async: false,
 				        url: '/remake/view',
-				        data: {"view_id":currentViewId, "remake_id":remakeId, "playback_event":1, "origin_id":origin_id, "originating_screen":11, "total_duration":myPlayer.duration(), "playback_duration":myPlayer.currentTime()},
+				        data: {"view_id":currentViewId, "remake_id":remakeId, "playback_event":1, "originating_screen":11, "total_duration":myPlayer.duration(), "playback_duration":myPlayer.currentTime()},
 				        complete: function(xhr, status) {
 				        	playReported = false;
 				        	stopReported = true; 
@@ -338,11 +350,20 @@
   			});
 
   			$(".homageAppStoreLink").click(function() {
-			    $.get('/ios', {"src": "minisite", "origin_id":origin_id});
+  				params = {"src": "minisite"}
+  				if (origin_id != "") {
+					params["origin_id"] = origin_id
+				}
+
+			    $.get('/ios', params);
 			});
 
 			$(".homagePlayStoreLink").click(function() {
-			   $.get('/android', {"src": "minisite", "origin_id":origin_id});
+				params = {"src": "minisite"}
+  				if (origin_id != "") {
+					params["origin_id"] = origin_id
+				}
+			   $.get('/android', params);
 			});
 
 			$(".like_button").click(function(){

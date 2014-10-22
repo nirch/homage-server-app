@@ -209,20 +209,28 @@ get '/remakes' do
 end
 
 get '/ios' do
- 	shared_from = "Undeifined"
+ 	shared_from = "Undefined"
 	shared_from = params[:src] if params[:src]
 	origin_id = params[:origin_id] if params[:origin_id]
 
-	settings.mixpanel.track("12345", "InstalliOS", {"shared_from"=>shared_from, "origin_id"=>origin_id}) if settings.respond_to?(:mixpanel)	
+	info = Hash.new
+	info["shared_from"] = shared_from
+	info["origin_id"] = origin_id if origin_id
+
+	settings.mixpanel.track("12345", "InstalliOS", info) if settings.respond_to?(:mixpanel)	
 	redirect "https://itunes.apple.com/us/app/id851746600", 302
 end
 
 get '/android' do
-	shared_from = "Undeifined"
+	shared_from = "Undefined"
 	shared_from = params[:src] if params[:src]
 	origin_id = params[:origin_id] if params[:origin_id]
 
-	settings.mixpanel.track("12345", "InstallAndroid", {"shared_from"=>shared_from, "origin_id"=>origin_id}) if settings.respond_to?(:mixpanel)	
+	info = Hash.new
+	info["shared_from"] = shared_from
+	info["origin_id"] = origin_id if origin_id
+
+	settings.mixpanel.track("12345", "InstallAndroid", info) if settings.respond_to?(:mixpanel)	
 	redirect "https://play.google.com/store/apps/details?id=com.homage.app", 302
 end
 
@@ -1295,8 +1303,10 @@ post '/remake/share' do
 	logger.info "creating share entity for Remake " + remake_id.to_s + " for user " + user_id.to_s
 
 	shares = settings.db.collection("Shares")
-	share = {_id: client_generated_share_id, user_id:user_id , remake_id:remake_id, share_method:share_method,
-			  share_link:share_link, created_at:Time.now, origin_id:origin_id, share_status:share_status}
+	share = {_id: client_generated_share_id, remake_id:remake_id, share_method:share_method,
+			  share_link:share_link, created_at:Time.now, share_status:share_status}
+	share["user_id"] = user_id if user_id
+	share["origin_id"] = origin_id if origin_id
 	share_objectId = shares.save(share)
 
 	logger.info "New share saved in the DB with share id " + share_objectId.to_s
@@ -1477,10 +1487,11 @@ post '/remake/impression' do
 		remakes.update({_id:remake_id},{"$inc" => {unique_web_impressions: 1}})
 	end
 
-	impression = {_id:client_generated_impression_id, remake_id:remake_id, story_id: story_id, start_time:Time.now, origin_id:origin_id, originating_screen:orig_screen, view_source: view_source}
+	impression = {_id:client_generated_impression_id, remake_id:remake_id, story_id: story_id, start_time:Time.now, originating_screen:orig_screen, view_source: view_source}
 
 	impression["user_id"] = user_id if user_id
 	impression["cookie_id"] = cookie_id if cookie_id
+	impression["origin_id"] = origin_id if origin_id
 
 	logger.info "reporting impression: " + impression.to_s
 	impressions.save(impression)
