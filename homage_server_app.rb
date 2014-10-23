@@ -1293,7 +1293,7 @@ end
 #analytics routes
 post '/remake/share' do
 	client_generated_share_id = BSON::ObjectId.from_string(params[:share_id])
-	remake_id = BSON::ObjectId.from_string(params[:remake_id])
+	remake_id = BSON::ObjectId.from_string(params[:remake_id]) 
 	user_id   =  BSON::ObjectId.from_string(params[:user_id]) if params[:user_id]
 	share_method = params[:share_method].to_i
 	origin_id  = params[:origin_id].to_s if params[:origin_id]
@@ -1303,10 +1303,12 @@ post '/remake/share' do
 	logger.info "creating share entity for Remake " + remake_id.to_s + " for user " + user_id.to_s
 
 	shares = settings.db.collection("Shares")
-	share = {_id: client_generated_share_id, remake_id:remake_id, share_method:share_method,
-			  share_link:share_link, created_at:Time.now, share_status:share_status}
+	share = {_id: client_generated_share_id, remake_id:remake_id, share_method:share_method,created_at:Time.now}
 	share["user_id"] = user_id if user_id
 	share["origin_id"] = origin_id if origin_id
+	share["share_link"] = share_link if share_link
+	share["share_status"] = share_status if share_status
+
 	share_objectId = shares.save(share)
 
 	logger.info "New share saved in the DB with share id " + share_objectId.to_s
@@ -1567,7 +1569,7 @@ def trackView(entity_type,params)
 		logger.debug "min_time: " + min_time.to_s
 
 		if (playback_duration > min_time) then 
-			if !existing_view["playback_duration"] 
+			if !existing_view["playback_duration"]
 				logger.debug "incrementing significant_views"
 				collection.update({_id:entity_id},{"$inc" => {significant_views: 1}})
 			end
@@ -1632,11 +1634,12 @@ post '/user/session_end' do
 	user_session = sessions.find_one(user_session_id)
 	if !user_session then
 		logger.info "No matching start event for stop event: " + user_session_id.to_s
-		return
+		return nil
 	end
 	start_time = user_session["start_time"]
 	if user_session["duration_in_minutes"] then
 		logger.warn "user session with session id: " + user_session_id.to_s + " had already finished once. this is bad. ignoring the second finish event"
+		return nil
 	else
 		end_time = Time.now
 		duration_in_seconds = end_time - start_time
@@ -1645,6 +1648,7 @@ post '/user/session_end' do
 		if duration_in_seconds < 30 then 
 			logger.info "user session shorter then 30 seconds. deleting"
 			sessions.remove({_id: user_session_id});
+			return nil
 		end
 
 		duration_in_minutes = duration_in_seconds.to_f/60
