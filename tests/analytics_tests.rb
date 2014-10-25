@@ -9,6 +9,7 @@ class AnalyticsTest < MiniTest::Unit::TestCase
 	VIEWS =  DB.collection("Views")
 	SESSIONS = DB.collection("Sessions")
 	IMPRESSIONS = DB.collection("Impressions")
+	LIKES = DB.collection("Likes")
 	
 	def app
 		Sinatra::Application
@@ -273,6 +274,41 @@ class AnalyticsTest < MiniTest::Unit::TestCase
 
 	end
 
+	def test_remake_like_routes 
+		cookie_id = BSON::ObjectId.new
+		
+		remake_id = BSON::ObjectId.from_string("5449057c771ac16073000001")
+		remake = REMAKES.find_one(remake_id)
+		assert remake
+		previous_likes = remake["like_count"] ? remake["like_count"] : 0
+
+		post '/remake/like' , {cookie_id: cookie_id, remake_id: remake_id}
+
+		#test like
+		@like = LIKES.find_one({cookie_id: cookie_id, remake_id: remake_id})
+		assert @like
+		assert_equal @like["like_state"] , true 
+
+		expected_res = remake["like_count"] + 1
+		assert expected_res , remake["like_count"]
+
+		#test unlike
+		remake = REMAKES.find_one(remake_id)
+		previous_likes = remake["like_count"]
+
+		post '/remake/unlike' , {cookie_id: cookie_id, remake_id: remake_id}
+
+		@like = LIKES.find_one({cookie_id: cookie_id, remake_id: remake_id})
+		assert @like
+		assert_equal @like["like_state"] , false
+
+		remake = REMAKES.find_one(remake_id)
+		expected_res = previous_likes - 1 
+		assert_equal expected_res , remake["like_count"] 
+	end
+
+
+
 	def teardown
 		if @share then
 			SHARES.remove({_id: @share["_id"]})
@@ -298,6 +334,12 @@ class AnalyticsTest < MiniTest::Unit::TestCase
 				impression = IMPRESSIONS.find_one(impression["_id"])
 				assert_nil impression
 			end
+		end
+
+		if @like then
+			LIKES.remove({_id: @like["_id"]})
+			like = LIKES.find_one(@like["_id"])
+	    	assert_nil like
 		end
 	end
 end

@@ -1292,20 +1292,33 @@ end
 
 #analytics routes
 post '/remake/share' do
-	client_generated_share_id = BSON::ObjectId.from_string(params[:share_id])
+	share_id = BSON::ObjectId.from_string(params[:share_id]) if params[:share_id]
+
+	# backword competability fix. 
+	if !share_id then
+		share_id = BSON::ObjectId.new
+	end
+
 	remake_id = BSON::ObjectId.from_string(params[:remake_id]) 
 	user_id   =  BSON::ObjectId.from_string(params[:user_id]) if params[:user_id]
-	share_method = params[:share_method].to_i
+	share_method = params[:share_method].to_i if params[:share_method]
 	origin_id  = params[:origin_id].to_s if params[:origin_id]
 	share_link = params[:share_link].to_s if params[:share_link]
 	share_status = params[:share_status] if params[:share_status] 
 
+	#if share link is not shared from client (old clients)
+	if !share_link then
+		remake = settings.db.collection().find_one(remake_id)
+		share_link = remake["share_link"]
+	end
+
 	logger.info "creating share entity for Remake " + remake_id.to_s + " for user " + user_id.to_s
 
 	shares = settings.db.collection("Shares")
-	share = {_id: client_generated_share_id, remake_id:remake_id, share_method:share_method,created_at:Time.now}
+	share = {_id: share_id, remake_id:remake_id, created_at:Time.now}
 	share["user_id"] = user_id if user_id
 	share["origin_id"] = origin_id if origin_id
+	share["share_method"] = share_method if share_method
 	share["share_link"] = share_link if share_link
 	share["share_status"] = share_status if share_status
 
@@ -1325,13 +1338,22 @@ end
 
 #social routes
 post '/remake/like' do
+	#like_id   = BSON::ObjectId.from_string(params[:like_id])
 	remake_id = BSON::ObjectId.from_string(params[:remake_id])
-	user_id   =  BSON::ObjectId.from_string(params[:user_id])
+	user_id   = BSON::ObjectId.from_string(params[:user_id]) if params[:user_id]
+	cookie_id = BSON::ObjectId.from_string(params[:cookie_id]) if params[:cookie_id]
+	if !user_id && !cookie_id then
+		logger.warn "no cookie id nor user id were provided from client. will not record like"
+		return nil
+	end
 	
 	#add like
 	likes = settings.db.collection("Likes")
-	like = {user_id: user_id, remake_id: remake_id, created_at: Time.now}
+	like = {remake_id: remake_id, created_at: Time.now, like_state: true}
+	like["user_id"]   = user_id if user_id
+	like["cookie_id"] = cookie_id if cookie_id 
 	like_objectId = likes.save(like)
+
 
 	#inc remake like counter
 	remakes = settings.db.collection("Remakes")
@@ -1341,20 +1363,32 @@ post '/remake/like' do
 	logger.info "New like saved in the DB with like id " + like_objectId.to_s
 end
 
-post 'remake/unlike' do
+post '/remake/unlike' do
 	remake_id = BSON::ObjectId.from_string(params[:remake_id])
-	user_id   = BSON::ObjectId.from_string(params[:user_id])
-
-	likes = settings.db.collection("Likes")
-	like  = likes.find_one({remake_id: remake_id, user_id: user_id})
-	
-	if !like then 
-		return
+	user_id   = BSON::ObjectId.from_string(params[:user_id]) if params[:user_id]
+	cookie_id = BSON::ObjectId.from_string(params[:cookie_id]) if params[:cookie_id]
+	if !user_id && !cookie_id then
+		logger.warn "no cookie id nor user id were provided from client. will not record like"
+		return nil
 	end
 
-	likes.remove(like)
-	remake = settings.db.collection("Remakes").find_one(remake_id)
-	remakes.update({_id: remake_id},{"$inc" => {like_count: 1}})
+	likes = settings.db.collection("Likes")
+	like_info = {remake_id: remake_id}
+	like_info["user_id"] = user_id if user_id
+	like_info["cookie_id"] = cookie_id if cookie_id
+	like  = likes.find_one(like_info)
+	
+	if !like then 
+		logger.warn "no matching previous like. why was unlike called?"
+		return nil
+	end
+
+	like_id = like["_id"]
+	likes.update({_id: like_id},{"$set" => {like_state: false}})
+	
+	remakes = settings.db.collection("Remakes")
+	remake = remakes.find_one(remake_id)
+	remakes.update({_id: remake_id},{"$inc" => {like_count: -1}})	
 end
 	
 

@@ -176,7 +176,8 @@
 
 	var reportShare = function(share_method){
 		// Tracking in our Server
-		share_params = {"share_id": currentShareId, "remake_id":remakeId, "share_method":share_method,"share_link": currentShareLink}
+		share_params = {"share_id": currentShareId, "remake_id":remakeId, "share_method":share_method,
+						"share_link": currentShareLink, "cookie_id":$.cookie('homageCookieID')}
 		if (origin_id != "") {
 			share_params["origin_id"] = origin_id
 		}
@@ -367,10 +368,13 @@
 			});
 
 			$(".like_button").click(function(){
-				remake_id = "5440de0db8fef15429000005"
-				user_id = "533c3071f52d5c7850000030"
-				$.post('/remake/like' , {"remake_id": remake_id, "user_id": user_id})
+				$.post('/remake/like' , {"remake_id": remakeId, "cookie_id": $.cookie('homageCookieID')})
 			})
+
+			$(".unlike_button").click(function(){
+				$.post('/remake/unlike' , {"remake_id": remakeId, "cookie_id": $.cookie('homageCookieID')})
+			})
+
 		});
 </script>
 
