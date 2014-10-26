@@ -394,10 +394,12 @@ get '/stories' do
 
 		allow_story = true
 		if story["active_users"] then
+			user_id = params[:app_info][:user_id] if params[:app_info] && params[:app_info][:user_id]
+			user_id = request.env["HTTP_USER_ID"].to_s if request.env["HTTP_USER_ID"]
+
 			active_users = story["active_users"]
-			if params[:app_info] && params[:app_info][:user_id] then
-				user_id = params[:app_info][:user_id]
-				allow_story = false unless active_users.include?(user_id)
+			if user_id then
+				allow_story = true if active_users.include?(user_id)
 			else
 				allow_story = false
 			end
