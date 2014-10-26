@@ -2,17 +2,19 @@ require 'mongo'
 require 'date'
 require 'time'
 require 'aws-sdk'
+require 'open-uri'
 
 test_db = Mongo::MongoClient.from_uri("mongodb://Homage:homageIt12@paulo.mongohq.com:10008/Homage").db
-users = test_db.collection("Users")
-remakes = test_db.collection("Remakes")
-stories = test_db.collection("Stories")
+test_users = test_db.collection("Users")
+test_remakes = test_db.collection("Remakes")
+test_stories = test_db.collection("Stories")
 
 prod_db = Mongo::MongoClient.from_uri("mongodb://Homage:homageIt12@troup.mongohq.com:10057/Homage_Prod").db
 prod_users = prod_db.collection("Users")
 prod_remakes = prod_db.collection("Remakes")
 prod_shares = prod_db.collection("Shares")
 prod_sessions = prod_db.collection("Sessions")
+prod_stories = prod_db.collection("Stories")
 
 # AWS Connection
 aws_config = {access_key_id: "AKIAJTPGKC25LGKJUCTA", secret_access_key: "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"}
@@ -21,10 +23,53 @@ s3 = AWS::S3.new
 s3_bucket = s3.buckets['homageapp']
 
 
+stories = prod_stories.find({active:true})
+puts stories.count
 
-date = "fdd"
-x = Date.parse(date)
-puts x
+for story in stories do
+	puts story["name"]
+	for scene in story["scenes"] do
+		puts scene["contours"]["360"]["contour"] if scene["contours"]
+	end
+end
+
+# def download_from_url (url, local_path)
+# 	File.open(local_path, 'wb') do |file|
+# 		file << open(url).read
+#     end	
+# end
+
+# file_names = [
+# 	"5446fb860be0440579000004_1_1413938083569",
+# 	"5446fb860be0440579000004_2_1413938113953",
+# 	"544656b20be0443169000001_1_1413895919",
+# 	"5444f2ac0be044048500000d_3_1413804787",
+# 	"5445bee10be0447fa5000013_4_1413857044",
+# 	"544539f70be04440ad000001_2_1413823108"
+# ]
+
+# for file_name in file_names do
+# 	remake_id = BSON::ObjectId.from_string(file_name.split("_")[0])
+# 	scene_id = file_name.split("_")[1].to_i
+
+# 	remake = prod_remakes.find_one(remake_id)
+# 	story_id = remake["story_id"]
+# 	story = prod_stories.find_one(story_id)
+# 	contour_url = story["scenes"][scene_id - 1]["contours"]["360"]["contour_remote"]
+# 	face_contour_url = File.join( File.dirname(contour_url) + "/Face" , File.basename(contour_url,".*") + "-face.ctr" )
+# 	local_path = '/Users/tomer/Downloads/checkstuckalgo/' + file_name + '.ctr'
+
+# 	File.open(local_path, 'wb') do |file|
+# 		file << open(face_contour_url).read
+#     end	
+
+#     puts local_path + " successfully saved"
+# end
+
+
+# date = "fdd"
+# x = Date.parse(date)
+# puts x
 
 # remake_ids = [
 # "5430e39a0be0443f86000009", 
