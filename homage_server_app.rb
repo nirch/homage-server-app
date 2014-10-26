@@ -1308,7 +1308,7 @@ post '/remake/share' do
 
 	#if share link is not shared from client (old clients)
 	if !share_link then
-		remake = settings.db.collection().find_one(remake_id)
+		remake = settings.db.collection("Remakes").find_one(remake_id)
 		share_link = remake["share_link"]
 	end
 
