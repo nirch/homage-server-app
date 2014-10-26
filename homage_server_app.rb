@@ -1510,6 +1510,7 @@ post '/remake/impression' do
 	userAgentStr = request.env["HTTP_USER_AGENT"].to_s
 	user_agent = UserAgentParser.parse(userAgentStr)
 	user_os = user_agent.os.to_s
+	logger.debug "user_os=" + user_os.to_s
 
 	client_generated_impression_id = BSON::ObjectId.from_string(params[:impression_id])
 	remake_id = BSON::ObjectId.from_string(params[:remake_id])
