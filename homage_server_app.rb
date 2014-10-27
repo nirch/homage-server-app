@@ -1405,7 +1405,7 @@ post '/remake/unlike' do
 end
 	
 
-def getViewSource(user_os, userAgentStr)
+def getViewSource(user_os, userAgentStr,originating_screen)
 	if (user_os =~ /ios/i && userAgentStr =~ /homage/i) then
 		return ViewSource::IPhoneApp
 	elsif (user_os =~ /android/i && userAgentStr =~ /homage/i) then
@@ -1414,6 +1414,8 @@ def getViewSource(user_os, userAgentStr)
 		return ViewSource::Desktop
 	elsif ((user_os =~ /ios/i || user_os =~ /android/i) && !(userAgentStr =~ /homage/i))
 		return ViewSource::Mobile
+	elsif (originating_screen == 11) then
+		return ViewSource::Desktop
 	else
 		return ViewSource::Unknown
 	end
@@ -1532,7 +1534,7 @@ post '/remake/impression' do
 	cookie_id = BSON::ObjectId.from_string(params[:cookie_id]) if params[:cookie_id]
 	orig_screen = params[:originating_screen].to_i
 	origin_id  = params[:origin_id].to_s if params[:origin_id]
-	view_source = getViewSource(user_os, userAgentStr)
+	view_source = getViewSource(user_os, userAgentStr, orig_screen)
 
 	remake = remakes.find_one(remake_id)
 	story_id = remake["story_id"];
@@ -1569,7 +1571,7 @@ def trackView(entity_type,params, user_os, userAgentStr)
 	#start related props
 	view["originating_screen"] = params[:originating_screen].to_i
 	view["origin_id"]          = params[:origin_id].to_s if params[:origin_id]
-	view["view_source"]        = getViewSource(user_os, userAgentStr)
+	view["view_source"]        = getViewSource(user_os, userAgentStr,view["originating_screen"])
 
 	# end/update related props
 	view["playback_duration"] = params[:playback_duration].to_f if params[:playback_duration]
