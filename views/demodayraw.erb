@@ -82,7 +82,7 @@
 
 		<div id="links">
 			<% for remake in @remakes do %>	
-			    <a href="http://play.homge.it/<%= remake["footages"][0]["raw_video_s3_key"] %>" title="<%= remake["_id"].to_s %>" type="video/mp4" data-poster=<%= remake["thumbnail"] %> data-gallery>
+			    <a href=<%= remake["video"] %> title="<%= remake["_id"].to_s %>" type="video/mp4" data-poster=<%= remake["thumbnail"] %> data-gallery>
 			        <img src=<%= File.dirname(remake["thumbnail"]).to_s + "/" + remake["_id"].to_s + "_raw1.jpg" %> width=320 height=180 alt="<%= remake["title"] %>">
 			    	<% if @grade then %>
 				        <div class="caption">
