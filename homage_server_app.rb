@@ -151,6 +151,9 @@ module ShareMethod
 	MessageShareMethod = 4
 	WeiboShareMethod = 5
 	TwitterShareMethod = 6
+	GooglePlusShareMethod = 7
+	PinterestShareMethod = 8
+
 end
 
 module PlaybackEventType
@@ -1397,7 +1400,7 @@ def getViewSource()
 		return ViewSource::IPhoneApp
 	elsif ($user_os =~ /android/i && $userAgentStr =~ /homage/i) then
 		return ViewSource::AndroidApp
-	elsif ($user_os =~ /mac/i || $user_os =~ /windows/)
+	elsif ($user_os =~ /mac/i || $user_os =~ /windows/i)
 		return ViewSource::Desktop
 	elsif (($user_os =~ /ios/i || $user_os =~ /android/i) && !($userAgentStr =~ /homage/i))
 		return ViewSource::Mobile
