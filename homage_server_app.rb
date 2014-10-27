@@ -98,13 +98,8 @@ configure :test do
 end
 
 before do
-	$userAgentStr = request.env["HTTP_USER_AGENT"].to_s
-	$user_agent = UserAgentParser.parse($userAgentStr)
-	$user_os = $user_agent.os.to_s
 	logger.debug "request.env: " + request.env.to_s
 	logger.info "params=" + params.to_s
-	view_source = getViewSource()
-	logger.info "view source is: " + view_source.to_s
 end
 
 module RemakeStatus
@@ -236,6 +231,17 @@ get '/android' do
 	settings.mixpanel.track("12345", "InstallAndroid", info) if settings.respond_to?(:mixpanel)	
 	redirect "https://play.google.com/store/apps/details?id=com.homage.app", 302
 end
+
+get '/raw/date/:from_date' do
+	from_date = Time.parse(params[:from_date])
+
+	@remakes = settings.db.collection("Remakes").find(created_at:{"$gte"=>from_date}, status:3).sort(created_at:-1)
+	@heading = @remakes.count.to_s + " Remakes from " + from_date.strftime("%d/%m/%Y")
+	@grade = true
+
+	erb :demodayraw
+end
+
 
 #################
 # Play Subdomain
@@ -394,12 +400,16 @@ get '/stories' do
 
 	stories_json_array = Array.new
 	for story in stories do
-
+		# Allow story until proven otherwise
 		allow_story = true
+
+		# Checking if this story is filtered for specific users
 		if story["active_users"] then
+			user_id = params[:app_info][:user_id] if params[:app_info] && params[:app_info][:user_id]
+			user_id = request.env["HTTP_USER_ID"].to_s if request.env["HTTP_USER_ID"]
+
 			active_users = story["active_users"]
-			if params[:app_info] && params[:app_info][:user_id] then
-				user_id = params[:app_info][:user_id]
+			if user_id then
 				allow_story = false unless active_users.include?(user_id)
 			else
 				allow_story = false
@@ -1395,14 +1405,14 @@ post '/remake/unlike' do
 end
 	
 
-def getViewSource()
-	if ($user_os =~ /ios/i && $userAgentStr =~ /homage/i) then
+def getViewSource(user_os, userAgentStr)
+	if (user_os =~ /ios/i && userAgentStr =~ /homage/i) then
 		return ViewSource::IPhoneApp
-	elsif ($user_os =~ /android/i && $userAgentStr =~ /homage/i) then
+	elsif (user_os =~ /android/i && userAgentStr =~ /homage/i) then
 		return ViewSource::AndroidApp
-	elsif ($user_os =~ /mac/i || $user_os =~ /windows/i)
+	elsif (user_os =~ /mac/i || user_os =~ /windows/i)
 		return ViewSource::Desktop
-	elsif (($user_os =~ /ios/i || $user_os =~ /android/i) && !($userAgentStr =~ /homage/i))
+	elsif ((user_os =~ /ios/i || user_os =~ /android/i) && !(userAgentStr =~ /homage/i))
 		return ViewSource::Mobile
 	else
 		return ViewSource::Unknown
@@ -1510,13 +1520,19 @@ post '/remake/impression' do
 	impressions = settings.db.collection("Impressions")
 	remakes = settings.db.collection("Remakes")
 
+	# user agent
+	userAgentStr = request.env["HTTP_USER_AGENT"].to_s
+	user_agent = UserAgentParser.parse(userAgentStr)
+	user_os = user_agent.os.to_s
+	logger.debug "user_os=" + user_os.to_s
+
 	client_generated_impression_id = BSON::ObjectId.from_string(params[:impression_id])
 	remake_id = BSON::ObjectId.from_string(params[:remake_id])
 	user_id =  BSON::ObjectId.from_string(params[:user_id]) if params[:user_id]
 	cookie_id = BSON::ObjectId.from_string(params[:cookie_id]) if params[:cookie_id]
 	orig_screen = params[:originating_screen].to_i
 	origin_id  = params[:origin_id].to_s if params[:origin_id]
-	view_source = getViewSource()
+	view_source = getViewSource(user_os, userAgentStr)
 
 	remake = remakes.find_one(remake_id)
 	story_id = remake["story_id"];
@@ -1538,7 +1554,7 @@ post '/remake/impression' do
 	return impression.to_json
 end
 
-def trackView(entity_type,params)
+def trackView(entity_type,params, user_os, userAgentStr)
 	config = getConfigDictionary();
 	playback_event = params[:playback_event].to_i
 	views = settings.db.collection("Views")
@@ -1553,7 +1569,7 @@ def trackView(entity_type,params)
 	#start related props
 	view["originating_screen"] = params[:originating_screen].to_i
 	view["origin_id"]          = params[:origin_id].to_s if params[:origin_id]
-	view["view_source"]        = getViewSource()
+	view["view_source"]        = getViewSource(user_os, userAgentStr)
 
 	# end/update related props
 	view["playback_duration"] = params[:playback_duration].to_f if params[:playback_duration]
@@ -1627,11 +1643,21 @@ end
 
 
 post '/remake/view' do 
-	trackView("remake",params)
+	# user agent
+	userAgentStr = request.env["HTTP_USER_AGENT"].to_s
+	user_agent = UserAgentParser.parse(userAgentStr)
+	user_os = user_agent.os.to_s
+
+	trackView("remake",params, user_os, userAgentStr)
 end
 
 post '/story/view' do 
-	trackView("story",params)
+	# user agent
+	userAgentStr = request.env["HTTP_USER_AGENT"].to_s
+	user_agent = UserAgentParser.parse(userAgentStr)
+	user_os = user_agent.os.to_s
+
+	trackView("story",params, user_os, userAgentStr)
 end
 
 post '/user/session_begin' do
