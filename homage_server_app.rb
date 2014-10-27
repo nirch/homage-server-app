@@ -961,12 +961,37 @@ get '/remakes/user/:user_id' do
 	remakes = "[" + remakes_json_array.join(",") + "]"
 end
 
+def userLikedRemake(entity_id,remake_id)
+	current_user_likes = settings.db.collection("Likes").find({
+		"$or" => [{remake_id:remake_id, user_id: entity_id},
+				  {remake_id:remake_id, cookie_id: entity_id}]
+		}).count
+
+	if current_user_likes != 0 then
+		return true
+	else 
+		return false
+	end
+end
+
+
 # Returns all the public remakes of a given story
 get '/remakes/story/:story_id' do
+	
 	# input
 	story_id = BSON::ObjectId.from_string(params[:story_id])
 	skip = params[:skip].to_i if params[:skip] # Optional
 	limit = params[:limit].to_i if params[:limit] # Optional
+	current_user = BSON::ObjectId.from_string(params[:user_id]) if params[:user_id]
+	current_cookie = BSON::ObjectId.from_string(params[:cookie_id]) if params[:cookie_id]
+
+	entity_id = ""
+	if !current_cookie && !current_user then
+		logger.error "no user identity received from client"
+	else 
+		entity_id = current_user ? current_user : current_cookie
+	end
+
 
 	logger.info "Getting remakes for story " + story_id.to_s
 
@@ -993,11 +1018,12 @@ get '/remakes/story/:story_id' do
 
 	remakes_json_array = Array.new
 	for remake_doc in remakes_docs do
+		remake_id = remake_doc["_id"]
+		remake_doc["is_liked"] = userLikedRemake(entity_id,remake_id)		
 		remakes_json_array.push(remake_doc.to_json)
 	end
 
 	logger.info "Returning " + remakes_json_array.count.to_s + " remakes for story " + story_id.to_s
-
 	remakes = "[" + remakes_json_array.join(",") + "]"
 end
 
@@ -1374,6 +1400,8 @@ post '/remake/like' do
 	remakes.update({_id: remake_id},{"$inc" => {like_count: 1}})
 	
 	logger.info "New like saved in the DB with like id " + like_objectId.to_s
+	remake = remakes.find_one(remake_id)
+	return remake.to_json
 end
 
 post '/remake/unlike' do
@@ -1402,6 +1430,9 @@ post '/remake/unlike' do
 	remakes = settings.db.collection("Remakes")
 	remake = remakes.find_one(remake_id)
 	remakes.update({_id: remake_id},{"$inc" => {like_count: -1}})	
+
+	remake = remakes.find_one(remake_id)
+	return remake.to_json
 end
 	
 
