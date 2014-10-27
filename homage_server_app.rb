@@ -229,6 +229,17 @@ get '/android' do
 	redirect "https://play.google.com/store/apps/details?id=com.homage.app", 302
 end
 
+get '/raw/date/:from_date' do
+	from_date = Time.parse(params[:from_date])
+
+	@remakes = settings.db.collection("Remakes").find(created_at:{"$gte"=>from_date}, status:3).sort(created_at:-1)
+	@heading = @remakes.count.to_s + " Remakes from " + from_date.strftime("%d/%m/%Y")
+	@grade = true
+
+	erb :demodayraw
+end
+
+
 #################
 # Play Subdomain
 #################
