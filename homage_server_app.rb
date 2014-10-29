@@ -1319,6 +1319,7 @@ def getConfigDictionary()
 	config = Hash.new 
 	config["share_link_prefix"] = settings.share_link_prefix;
 	config["significant_view_pct_threshold"] = 0.5
+	config["mirror_selfie_silhouette"] = true
 	return config
 end
 
