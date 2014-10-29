@@ -499,6 +499,8 @@ def handle_facebook_login(user)
 				update_user_id = email_exists["_id"]
 				logger.info "updating Email to Facebook for user " + update_user_id.to_s
 				users.update({_id: update_user_id}, {"$set" => {facebook: user["facebook"]}})
+				updated_user = users.find_one(update_user_id)
+				update_user_name_in_remakes(updated_user)
 				return update_user_id, nil, false
 			end
 		end
@@ -648,7 +650,7 @@ def update_user_name_in_remakes(user)
 
 	return if !username
 
-	remakes = settings.db.collection("Remakes").find({user_id:user["_id"], status:RemakeStatus::Done})
+	remakes = settings.db.collection("Remakes").find({user_id:user["_id"]})
 	logger.info "Going to update " + remakes.count.to_s + " with the fullname: " + username
 	for remake in remakes do
 		logger.info "Updating remake " + remake["_id"].to_s + " with fullname: " + username
@@ -711,6 +713,8 @@ put '/user' do
 		else
 			logger.info "updating Guest to Facebook for user " + update_user_id.to_s
 			users.update({_id: update_user_id}, {"$set" => {facebook: params[:facebook], email: params[:email], is_public: params[:is_public]}})
+			updated_user = users.find_one(update_user_id)
+			update_user_name_in_remakes(updated_user)
 		end
 	elsif existing_user_type == UserType::GuestUser and update_user_type == UserType::EmailUser
 		# Guest to Email user
@@ -740,6 +744,8 @@ put '/user' do
 			logger.info "updating Guest to Email for user " + update_user_id.to_s
 			password_hash = Sinatra::Security::Password::Hashing.encrypt(params["password"])
 			users.update({_id: update_user_id}, {"$set" => {email: params[:email], password_hash: password_hash, is_public: params[:is_public]}})
+			updated_user = users.find_one(update_user_id)
+			update_user_name_in_remakes(updated_user)
 		end
 	elsif existing_user_type == UserType::FacebookUser and update_user_type == UserType::EmailUser
 		# Error - Facebook to Email user

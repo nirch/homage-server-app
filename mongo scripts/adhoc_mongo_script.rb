@@ -23,11 +23,18 @@ s3 = AWS::S3.new
 s3_bucket = s3.buckets['homageapp']
 
 
-date = Time.parse("20140923Z")
-users = prod_users.find({created_at:{"$gte"=>date}})
-for user in users do
-	puts user["email"] if user["email"]
-end
+######################################
+# Updating all remakes with user name
+
+
+######################################
+
+
+# date = Time.parse("20140923Z")
+# users = prod_users.find({created_at:{"$gte"=>date}})
+# for user in users do
+# 	puts user["email"] if user["email"]
+# end
 
 
 # stories = prod_stories.find({active:true})
