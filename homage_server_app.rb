@@ -643,6 +643,19 @@ def user_name(user)
 	end
 end
 
+def update_user_name_in_remakes(user)
+	username = user_name(user)
+
+	return if !username
+
+	remakes = settings.db.collection("Remakes").find({user_id:user["_id"], status:RemakeStatus::Done})
+	logger.info "Going to update " + remakes.count.to_s + " with the fullname: " + username
+	for remake in remakes do
+		logger.info "Updating remake " + remake["_id"].to_s + " with fullname: " + username
+		settings.db.collection("Remakes").update({_id: remake["_id"]}, {"$set" => {user_fullname: username}})
+	end
+end
+
 # Merging user a into user b and deleting user a
 def merge_users(user_a, user_b)
 	users = settings.db.collection("Users")
