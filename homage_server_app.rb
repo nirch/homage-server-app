@@ -623,6 +623,26 @@ def user_type(user)
 	end
 end
 
+def user_name(user)
+	if user["facebook"] then
+		return user["facebook"]["name"]
+	elsif user["email"] then
+		# Getting the prefix of the email ("nir.channes" of "nir.channes@gmail.com")
+		prefix = user["email"].split("@")[0]
+
+		# Replacing dots '.' and underscores '_' with space
+		prefix.gsub!('.', ' ')
+		prefix.gsub!('_', ' ')
+
+		# Capitalizing each word
+		name = prefix.split.map(&:capitalize).join(' ')
+
+		return name
+	else
+		return nil
+	end
+end
+
 # Merging user a into user b and deleting user a
 def merge_users(user_a, user_b)
 	users = settings.db.collection("Users")

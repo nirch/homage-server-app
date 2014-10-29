@@ -23,15 +23,22 @@ s3 = AWS::S3.new
 s3_bucket = s3.buckets['homageapp']
 
 
-stories = prod_stories.find({active:true})
-puts stories.count
-
-for story in stories do
-	puts story["name"]
-	for scene in story["scenes"] do
-		puts scene["contours"]["360"]["contour"] if scene["contours"]
-	end
+date = Time.parse("20140923Z")
+users = prod_users.find({created_at:{"$gte"=>date}})
+for user in users do
+	puts user["email"] if user["email"]
 end
+
+
+# stories = prod_stories.find({active:true})
+# puts stories.count
+
+# for story in stories do
+# 	puts story["name"]
+# 	for scene in story["scenes"] do
+# 		puts scene["contours"]["360"]["contour"] if scene["contours"]
+# 	end
+# end
 
 # def download_from_url (url, local_path)
 # 	File.open(local_path, 'wb') do |file|

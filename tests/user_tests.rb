@@ -1047,6 +1047,46 @@ class UserTest < MiniTest::Unit::TestCase
     assert_nil user    
   end
 
+  def test_user_name_facebook
+    user = Hash.new
+    user["facebook"] = Hash.new
+    user["facebook"]["name"] = "Bla Bla"
+    name = user_name(user)
+    assert_equal("Bla Bla", name)
+  end
+
+  def test_user_email_with_dot
+    user = Hash.new
+    user["email"] = "nir.channes@gmail.com"
+    name = user_name(user)
+    assert_equal("Nir Channes", name)
+  end
+
+  def test_user_email_with_underscore
+    user = Hash.new
+    user["email"] = "nir_channes@gmail.com"
+    name = user_name(user)
+    assert_equal("Nir Channes", name)
+  end
+
+  def test_user_email_with_middle_name
+    user = Hash.new
+    user["email"] = "nir.james.channes@gmail.com"
+    name = user_name(user)
+    assert_equal("Nir James Channes", name)
+  end
+
+  def test_user_email_with_first_only
+    user = Hash.new
+    user["email"] = "nir@gmail.com"
+    name = user_name(user)
+    assert_equal("Nir", name)
+  end
+
+
+
+
+
   def test_env
     get '/test/env'
     assert_equal 'test', last_response.body
