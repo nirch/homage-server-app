@@ -651,7 +651,7 @@ def update_user_name_in_remakes(user)
 	return if !username
 
 	remakes = settings.db.collection("Remakes").find({user_id:user["_id"]})
-	logger.info "Going to update " + remakes.count.to_s + " with the fullname: " + username
+	logger.info "Going to update " + remakes.count.to_s + " remakes with the fullname: " + username
 	for remake in remakes do
 		logger.info "Updating remake " + remake["_id"].to_s + " with fullname: " + username
 		settings.db.collection("Remakes").update({_id: remake["_id"]}, {"$set" => {user_fullname: username}})
