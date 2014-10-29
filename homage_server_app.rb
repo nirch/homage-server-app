@@ -846,6 +846,7 @@ post '/remake' do
 
 	remakes = settings.db.collection("Remakes")
 	story = settings.db.collection("Stories").find_one(story_id)
+	user = settings.db.collection("Users").find_one(user_id)
 	remake_id = BSON::ObjectId.new
 	
 	logger.info "Creating a new remake for story <" + story["name"] + "> for user <" + user_id.to_s + "> with remake_id <" + remake_id.to_s + ">"
@@ -856,6 +857,9 @@ post '/remake' do
 
 	remake = {_id: remake_id, story_id: story_id, user_id: user_id, created_at: Time.now ,status: RemakeStatus::New, 
 		thumbnail: story["thumbnail"], video_s3_key: s3_video, thumbnail_s3_key: s3_thumbnail}
+	# adding the user name if exists
+	username = user_name(user)
+	remake["user_fullname"] = username if username
 
 	# Creating the footages place holder based on the scenes of the story
 	scenes = story["scenes"]
