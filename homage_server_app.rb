@@ -508,6 +508,8 @@ def handle_facebook_login(user)
 				update_user_id = email_exists["_id"]
 				logger.info "updating Email to Facebook for user " + update_user_id.to_s
 				users.update({_id: update_user_id}, {"$set" => {facebook: user["facebook"]}})
+				updated_user = users.find_one(update_user_id)
+				update_user_name_in_remakes(updated_user)
 				return update_user_id, nil, false
 			end
 		end
@@ -632,6 +634,39 @@ def user_type(user)
 	end
 end
 
+def user_name(user)
+	if user["facebook"] then
+		return user["facebook"]["name"]
+	elsif user["email"] then
+		# Getting the prefix of the email ("nir.channes" of "nir.channes@gmail.com")
+		prefix = user["email"].split("@")[0]
+
+		# Replacing dots '.' and underscores '_' with space
+		prefix.gsub!('.', ' ')
+		prefix.gsub!('_', ' ')
+
+		# Capitalizing each word
+		name = prefix.split.map(&:capitalize).join(' ')
+
+		return name
+	else
+		return nil
+	end
+end
+
+def update_user_name_in_remakes(user)
+	username = user_name(user)
+
+	return if !username
+
+	remakes = settings.db.collection("Remakes").find({user_id:user["_id"]})
+	logger.info "Going to update " + remakes.count.to_s + " remakes with the fullname: " + username
+	for remake in remakes do
+		logger.info "Updating remake " + remake["_id"].to_s + " with fullname: " + username
+		settings.db.collection("Remakes").update({_id: remake["_id"]}, {"$set" => {user_fullname: username}})
+	end
+end
+
 # Merging user a into user b and deleting user a
 def merge_users(user_a, user_b)
 	users = settings.db.collection("Users")
@@ -687,6 +722,8 @@ put '/user' do
 		else
 			logger.info "updating Guest to Facebook for user " + update_user_id.to_s
 			users.update({_id: update_user_id}, {"$set" => {facebook: params[:facebook], email: params[:email], is_public: params[:is_public]}})
+			updated_user = users.find_one(update_user_id)
+			update_user_name_in_remakes(updated_user)
 		end
 	elsif existing_user_type == UserType::GuestUser and update_user_type == UserType::EmailUser
 		# Guest to Email user
@@ -716,6 +753,8 @@ put '/user' do
 			logger.info "updating Guest to Email for user " + update_user_id.to_s
 			password_hash = Sinatra::Security::Password::Hashing.encrypt(params["password"])
 			users.update({_id: update_user_id}, {"$set" => {email: params[:email], password_hash: password_hash, is_public: params[:is_public]}})
+			updated_user = users.find_one(update_user_id)
+			update_user_name_in_remakes(updated_user)
 		end
 	elsif existing_user_type == UserType::FacebookUser and update_user_type == UserType::EmailUser
 		# Error - Facebook to Email user
@@ -835,6 +874,7 @@ post '/remake' do
 
 	remakes = settings.db.collection("Remakes")
 	story = settings.db.collection("Stories").find_one(story_id)
+	user = settings.db.collection("Users").find_one(user_id)
 	remake_id = BSON::ObjectId.new
 	
 	logger.info "Creating a new remake for story <" + story["name"] + "> for user <" + user_id.to_s + "> with remake_id <" + remake_id.to_s + ">"
@@ -845,6 +885,9 @@ post '/remake' do
 
 	remake = {_id: remake_id, story_id: story_id, user_id: user_id, created_at: Time.now ,status: RemakeStatus::New, 
 		thumbnail: story["thumbnail"], video_s3_key: s3_video, thumbnail_s3_key: s3_thumbnail}
+	# adding the user name if exists
+	username = user_name(user)
+	remake["user_fullname"] = username if username
 
 	# Creating the footages place holder based on the scenes of the story
 	scenes = story["scenes"]
@@ -1328,6 +1371,7 @@ def getConfigDictionary()
 	config = Hash.new 
 	config["share_link_prefix"] = settings.share_link_prefix;
 	config["significant_view_pct_threshold"] = 0.5
+	config["mirror_selfie_silhouette"] = true
 	return config
 end
 
