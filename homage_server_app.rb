@@ -341,6 +341,15 @@ subdomain settings.play_subdomain do
 		erb :HMGMiniSite
 	end
 
+	get '/newminisite' do
+		puts "rRRAAAAAFIFIFIFIFFI"
+
+		# In the future the query sould filter based on campagin id
+		@stories = settings.db.collection("Stories").find({active:true})
+
+		erb :new_minisite
+	end
+
 	get '/:entity_id' do
 		remakes = settings.db.collection("Remakes")
 		users   = settings.db.collection("Users")
@@ -1848,8 +1857,8 @@ get '/test/mail' do
 end
 
 get '/test/minisite' do
-		erb :HMGMiniSite
-	end
+	erb :HMGMiniSite
+end
 
 get '/test/:entity_id' do
 		remakes = settings.db.collection("Remakes")

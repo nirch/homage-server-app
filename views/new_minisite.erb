@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Rafi</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimum-scale=1.0, maximum-scale=1.0">
+    
+    <link rel="stylesheet" type="text/css" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">  
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script type="text/javascript" src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+    
+    <link rel="stylesheet" type="text/css" href="/css/new_minisite.css">    
+    <link rel="icon" type="image/x-icon" href="/resources/favicon.ico"/>
+
+    <script src="/js/Objectid.js"></script>
+
+    <link href="/css/jquery.galereya.css" rel="stylesheet"/>
+    <!--[if lt IE 9]>
+    <link rel="stylesheet" href="css/jquery.galereya.ie.css">
+    <![endif]-->
+
+    <script src="/js/jquery.galereya.js"></script>
+  
+</head>
+<body>
+  <div class="container-fluid">
+    <div class="row header">
+      <div class="col-xs-6">
+        <div class="menu app_links_menu">
+          <a class="app_icon" href="https://play.google.com/store/apps/details?id=com.homage.app">
+            <img src="/resources/minisite/AppStoreIcon.png"/>
+          </a>
+          <a class="app_icon" href="https://itunes.apple.com/us/app/homage/id851746600?l=iw&amp;ls=1&amp;mt=8">
+            <img src="/resources/minisite/PlayStoreIcon.png"/>
+          </a>
+        </div>
+      </div>
+      <div class="col-xs-6">
+        <div class="menu right_header_menu">
+          <a class="header_button header_share">share</a>
+          <a class="header_button header_login">login</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="row filters">
+      <div class="col-xs-12">
+        <nav class="navbar navbar-custom" role="navigation">
+            <div class="container-fluid">
+            
+              <!-- Collect the nav links, forms, and other content for toggling -->
+              <div class="collapse navbar-collapse">
+                <ul class="nav navbar-nav navbar-left">
+                  <li><a href="#">All</a></li>
+                  <li><a href="#">My takes</a></li>
+                  <li><a href="#">Trending</a></li>
+                </ul>
+                
+                <ul class="nav navbar-nav navbar-right">
+                  <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Campaign Stories<span class="caret"></span></a>
+                    <ul class="dropdown-menu" role="menu">
+                      <% for story in @stories do %>
+                        <li><a href="#"><%= story["name"] %></a></li>
+                      <% end %>
+                    </ul>
+                  </li>
+                </ul>
+              </div><!-- /.navbar-collapse -->
+            </div><!-- /.container-fluid -->
+          </nav>
+      </div>
+    </div>
+
+    <div class="row">
+      <div id="gallery_container">
+
+      </div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+  var skip = 0;
+  var limit = 30;
+  var gallery = null;
+  var all_remakes = [];
+  var currentlyLoadingImgs = false;
+
+  $('body').on("finished_loading_images", function() {
+    currentlyLoadingImgs = false;
+    if  ($(window).scrollTop() == $(document).height() - $(window).height()) {
+            fetch_remakes();
+    }
+  });
+
+  function fetch_remakes()
+  {
+    var single_batch_remakes = [];
+    currentlyLoadingImgs = true;
+
+    $.get('/remakes', {skip: skip, limit: limit} , function(data, status, xhr){
+      json_data = $.parseJSON(data)
+
+      for (var i=0;i<json_data.length;i++) {
+        remake = json_data[i];
+
+        lowsrc      = remake["thumbnail"];
+        fullsrc     = remake["thumbnail"];
+        description = i+skip + ": " + remake["_id"]["$oid"];
+        category    = remake["story_name"];
+        remake_id   = remake["_id"]["$oid"];
+
+        info = {lowsrc: lowsrc, fullsrc: fullsrc, description: description, category: category, _id: remake_id}
+        single_batch_remakes.push(info)
+        all_remakes.push(info);
+      }
+
+      if (!gallery) {
+        gallery = $('#gallery_container').galereya({
+          spacing: 10,
+          wave: false,
+          noCategoryName: 'all stories',
+          disableSliderOnClick: true,
+          onCellClick: function(e) {
+            var selectedCellIndex = gallery.getSelectedCell();
+            remake = all_remakes[selectedCellIndex];
+            remake_id = remake["_id"].toString();
+            path = '/' + remake_id;
+            location.href = path;
+          },
+          load: function(next) {
+            var data = single_batch_remakes;
+            next(data);
+          },
+        });
+      } else {
+        var data = single_batch_remakes;
+        gallery.loadMore(data);
+      }
+
+      skip += limit;
+      
+    });
+  }
+
+  $(window).scroll(function() {
+      if  ($(window).scrollTop() == $(document).height() - $(window).height()) {
+        if (!currentlyLoadingImgs) { 
+          fetch_remakes();
+        }
+      }
+  }); 
+
+  // $(".homageAppStoreLink").click(function() {
+  //   $.get('/ios', {"src": "minisite"});
+  // });
+
+  // $(".homagePlayStoreLink").click(function() {
+  //   $.get('/android', {"src": "minisite"});
+  // });
+
+
+  fetch_remakes();
+  
+</script>
+</body>
