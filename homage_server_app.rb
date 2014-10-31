@@ -183,9 +183,21 @@ get '/remakes' do
 		# input
 		skip = params[:skip].to_i if params[:skip] # Optional
 		limit = params[:limit].to_i if params[:limit] # Optional
+		campaign_id = BSON::ObjectId.from_string(params[:campaign_id]) if params[:campaign_id] #optional
 
 		story_names = Hash.new;
-		stories = settings.db.collection("Stories").find({}, {fields: {after_effects: 0}})
+
+		find_condition = {active: true}
+		if campaign_id then
+			find_condition["campaign_id"] = campaign_id
+		end
+
+		puts "find_condition"
+		puts find_condition
+
+
+		stories = settings.db.collection("Stories").find(find_condition, {fields: {after_effects: 0}}) 
+
 		for story in stories do
 			story_id = story["_id"]
 			story_names[story_id] = story["name"]
@@ -341,12 +353,11 @@ subdomain settings.play_subdomain do
 		erb :HMGMiniSite
 	end
 
-	get '/newminisite' do
-		puts "rRRAAAAAFIFIFIFIFFI"
+	get '/gallery/:campaign_name' do
 
-		# In the future the query sould filter based on campagin id
-		@stories = settings.db.collection("Stories").find({active:true})
-
+		@campaign = settings.db.collection("Campaigns").find_one({name: params[:campaign_name]})
+		campaign_id = @campaign["_id"]
+		@stories = settings.db.collection("Stories").find({active:true, campaign_id: campaign_id})
 		erb :new_minisite
 	end
 

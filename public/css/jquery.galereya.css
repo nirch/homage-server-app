@@ -26,13 +26,14 @@
     top: 0;
     left: 0;
     z-index: 10000;
-
-
     width: 100%;
     height: 50px;
-
     background: transparent;
+    
+    /*hides the inner category list*/
+    display: none;
 }
+
 /* Gallery category select(begin) */
 .galereya-cats {
     display: block;

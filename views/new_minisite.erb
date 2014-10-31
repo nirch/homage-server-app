@@ -73,6 +73,9 @@
     </div>
 
     <div class="row">
+      <div class="rafi">
+
+      </div>
       <div id="gallery_container">
 
       </div>
@@ -80,11 +83,13 @@
   </div>
 
   <script type="text/javascript">
+
   var skip = 0;
   var limit = 30;
   var gallery = null;
   var all_remakes = [];
   var currentlyLoadingImgs = false;
+  var campaign_id = '<%= @campaign["_id"].to_s %>'
 
   $('body').on("finished_loading_images", function() {
     currentlyLoadingImgs = false;
@@ -93,12 +98,16 @@
     }
   });
 
+  function showVideoPlayer(remake_id) {
+    
+  }
+
   function fetch_remakes()
   {
     var single_batch_remakes = [];
     currentlyLoadingImgs = true;
 
-    $.get('/remakes', {skip: skip, limit: limit} , function(data, status, xhr){
+    $.get('/remakes', {campaign_id: campaign_id, skip: skip, limit: limit} , function(data, status, xhr){
       json_data = $.parseJSON(data)
 
       for (var i=0;i<json_data.length;i++) {
@@ -150,6 +159,13 @@
         }
       }
   }); 
+
+  $(".dropdown-menu li a").on('click', function(){
+      story_name = $(this).text().toString();
+      console.log("story:" + story_name);
+      gallery.changeCategory(story_name.toLowerCase());
+      // $(".btn:first-child").val($(this).text());
+   });
 
   // $(".homageAppStoreLink").click(function() {
   //   $.get('/ios', {"src": "minisite"});
