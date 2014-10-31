@@ -91,7 +91,9 @@
                 $categoriesList.toggleClass('open');
             },
             cellClick: function (e) {
-                var index = parseInt(this.getAttribute('data-visibleIndex'), 10);
+                // var index = parseInt(this.getAttribute('data-visibleIndex'), 10);
+                var index = parseInt(this.getAttribute('data-index'), 10)
+
                 lastSelectedIndex = index;
                 
                 if (!self.options.disableSliderOnClick) {    
