@@ -1044,7 +1044,7 @@ get '/remake/:remake_id' do
 	# Fetching the remake
 	remakes = settings.db.collection("Remakes")
 	remake = remakes.find_one(remake_id)
-	remake["share_count"] = settings.db.collection("Shares").find({remake_id: remake_id}).count
+	#remake["share_count"] = settings.db.collection("Shares").find({remake_id: remake_id}).count
 
 	if remake then
 		remake.to_json
@@ -1093,13 +1093,14 @@ end
 
 # Returns all the public remakes of a given story
 get '/remakes/story/:story_id' do
-	
 	# input
 	story_id = BSON::ObjectId.from_string(params[:story_id])
 	skip = params[:skip].to_i if params[:skip] # Optional
-	limit = params[:limit].to_i if params[:limit] # Optional
+	params[:limit] ? limit = params[:limit].to_i : limit = 80 # Limit is optional, if not passed 80 remakes is the detault limit
 	current_user = BSON::ObjectId.from_string(params[:user_id]) if params[:user_id]
 	current_cookie = BSON::ObjectId.from_string(params[:cookie_id]) if params[:cookie_id]
+
+	logger.debug "limit is: " + limit.to_s
 
 	entity_id = ""
 	if !current_cookie && !current_user then
