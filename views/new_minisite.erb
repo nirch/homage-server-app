@@ -9,6 +9,9 @@
     <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
     <script type="text/javascript" src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
     
+    <link href="http://vjs.zencdn.net/4.8/video-js.css" rel="stylesheet">
+    <script src="http://vjs.zencdn.net/4.8/video.js"></script>
+    
     <link rel="stylesheet" type="text/css" href="/css/new_minisite.css">    
     <link rel="icon" type="image/x-icon" href="/resources/favicon.ico"/>
 
@@ -73,13 +76,73 @@
     </div>
 
     <div class="row">
-      <div class="rafi">
+      <div class="gallery_header">
+        <div class="header_content_container">
+          <div class="campaign_video_container">
+            <div class="videocontent">
+              <video id="campaign_video_player" class="video-js vjs-default-skin vjs-big-play-centered" width="420" height="240" poster="" controls="controls"  
+                  data-setup="{}">
+                  <source src="" type="video/mp4"/>
+              </video>
+            </div> 
+          </div>
 
+          <div class="campaign_info">
+            <div class="campaign_logo">
+
+            </div>
+
+            <div class="campaign_button">Go to Homage web site</div>
+          </div>   
+        </div>
       </div>
+      
       <div id="gallery_container">
 
       </div>
     </div>
+  </div>
+
+  <!-- overlay video player  -->
+  <div class="video_overlay">
+    <div class="close_button"></div>
+
+    <div class="remake_video_container">
+      
+      <div class="remake_header">
+        <a class="secondary_font_label user_name_label"></a>
+        <a class="secondary_font_label like_count_label"></a>
+        <a class="secondary_font_label view_count_label"></a>
+        <a class="secondary_font_label share_count_label"></a>
+      </div>
+
+      <div class="videocontent remake_video_content">
+        <video id="remake_video_player" class="video-js vjs-default-skin vjs-big-play-centered" width="100%" height="100%" poster="" controls="controls"  
+            data-setup="{}">
+            <source src="" type="video/mp4"/>
+        </video>
+      </div>
+
+      <div class="remake_footer">
+        <a class="secondary_font_label like_button">Like</a>
+        <a class="secondary_font_label make_your_own_button">Make your own</a>
+        <a class="secondary_font_label more_from_button"></a>
+        <a class="secondary_font_label flag_button">Flag</a>
+      </div>
+
+      <div class="remake_social_bar">
+        <a class="secondary_font_label">Share</a>
+        <a class="secondary_font_label twitter_share"></a>
+        <a class="secondary_font_label facebook_share"></a>
+        <a class="secondary_font_label gplus_share"></a>
+        <a class="secondary_font_label pinterest_share"></a>
+        <a class="secondary_font_label email_share"></a>
+      </div> 
+    </div>
+  </div>
+
+  <div class="background_image">
+
   </div>
 
   <script type="text/javascript">
@@ -98,8 +161,45 @@
     }
   });
 
+  videojs('campaign_video_player').ready(function(){
+    var myPlayer = this;
+    myPlayer.poster("http://d293iqusjtyr94.cloudfront.net/Remakes/5452635a771ac17c12000005/Hello%20Nyan%20Kitty_5452635a771ac17c12000005.jpg");
+    myPlayer.src("http://d293iqusjtyr94.cloudfront.net/Remakes/5452635a771ac17c12000005/Hello%20Nyan%20Kitty_5452635a771ac17c12000005.mp4");
+    myPlayer.posterImage.show();
+    //myPlayer.load();
+  });
+
   function showVideoPlayer(remake_id) {
-    
+    document.body.style.overflow = 'hidden';
+    path = '/remake/' + remake_id.toString();
+    $.get(path, {} , function(data, status, xhr){
+        json_data = $.parseJSON(data);
+        console.log("json data");
+        console.log(json_data);
+
+        
+        thumbnail = json_data["thumbnail"].toString();
+        video = json_data["video"].toString();
+        user_fullname = json_data["user_fullname"] ? json_data["user_fullname"] : "this user";
+
+        like_count = json_data["like_count"] ? json_data["like_count"] : 0;
+        view_count = json_data["views"] ? json_data["views"] : 0;
+        share_count = json_data["share_count"] ? json_data["share_count"] : 0;
+ 
+        $('.more_from_button').text("More from " + user_fullname);
+        $('.user_name_label').text(user_fullname);
+        $('.like_count_label').text(like_count);
+        $('.view_count_label').text(view_count);
+        $('.share_count_label').text(share_count);
+
+        var myPlayer = videojs('remake_video_player');
+
+        myPlayer.poster(thumbnail);
+        myPlayer.src(video);
+        myPlayer.posterImage.show();
+        myPlayer.play();
+        $('.video_overlay').show();
+    });
   }
 
   function fetch_remakes()
@@ -134,8 +234,7 @@
             var selectedCellIndex = gallery.getSelectedCell();
             remake = all_remakes[selectedCellIndex];
             remake_id = remake["_id"].toString();
-            path = '/' + remake_id;
-            location.href = path;
+            showVideoPlayer(remake_id);
           },
           load: function(next) {
             var data = single_batch_remakes;
@@ -164,8 +263,15 @@
       story_name = $(this).text().toString();
       console.log("story:" + story_name);
       gallery.changeCategory(story_name.toLowerCase());
-      // $(".btn:first-child").val($(this).text());
    });
+
+  $(document).on('click','.video_overlay',function(e){
+    if($(e.target).is('.video_overlay') || $(e.target).is('.close_button')) {
+      var myPlayer = videojs('remake_video_player');
+      myPlayer.pause();
+      $(".video_overlay").hide();
+    }
+  });
 
   // $(".homageAppStoreLink").click(function() {
   //   $.get('/ios', {"src": "minisite"});

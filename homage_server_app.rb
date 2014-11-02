@@ -195,7 +195,6 @@ get '/remakes' do
 		puts "find_condition"
 		puts find_condition
 
-
 		stories = settings.db.collection("Stories").find(find_condition, {fields: {after_effects: 0}}) 
 
 		for story in stories do
@@ -392,6 +391,59 @@ subdomain settings.play_subdomain do
 
 		erb :HMGVideoPlayer
 	end
+
+	# duplicate with get remake/:remake_id
+	# get '/data/:entity_id' do
+	# 	remakes = settings.db.collection("Remakes")
+	# 	users   = settings.db.collection("Users")
+	# 	shares  = settings.db.collection("Shares")
+	# 	stories = settings.db.collection("Stories")
+	# 	@config = getConfigDictionary();
+
+	# 	entity_id = BSON::ObjectId.from_string(params[:entity_id])
+	# 	share  = shares.find_one(entity_id)
+	# 	remake = ""
+	# 	user = ""
+	# 	originating_share_id = ""
+	# 	res = Hash.new
+		
+	# 	if share == nil then
+	# 		remake = remakes.find_one(entity_id)
+	# 	else 
+	# 		remake_id = share["remake_id"]
+	# 		remake = remakes.find_one(remake_id)
+	# 		originating_share_id = share["_id"]
+	# 		shares.update({_id: originating_share_id},{"$set" => {share_status: true}})
+	# 	end
+
+	# 	if BSON::ObjectId.legal?(remake["user_id"]) then
+	# 		user = users.find_one(remake["user_id"])
+	# 	else
+	# 		user = users.find_one({_id: remake["user_id"]})
+	# 	end
+
+	# 	#retrive user name - TODO: write a script that updates property user_name upon subscription
+	# 	if user["user_name"] then
+	# 		res["user_name"] = user["user_name"]
+	# 	elsif user["facebook"] then
+	# 		res["user_name"] = user["facebook"]["first_name"]
+	# 	elsif user["email"] then
+	# 		res["user_name"] = user["email"].split("@")[0].slice(0,1).capitalize + user["email"].split("@")[0].slice(1..-1)
+	# 	end
+
+	# 	#retrieve remake_info - TODO: add share_counter to remake upon share event
+	# 	res["like_count"] = remake["like_count"] ? remake["like_count"] : 0
+	# 	res["view_count"] = remake["views"] ? remake["views"] : 0
+	# 	res["share_count"] = shares.find({remake_id: remake["_id"]}).count
+
+	# 	res["thumbnail"] = remake["thumbnail"]
+	# 	res["video"] = remake["video"]
+
+	# 	puts "returning res:"
+	# 	puts res
+	# 	return res.to_json
+	# end
+
 end
 
 ###################
@@ -992,6 +1044,7 @@ get '/remake/:remake_id' do
 	# Fetching the remake
 	remakes = settings.db.collection("Remakes")
 	remake = remakes.find_one(remake_id)
+	remake["share_count"] = settings.db.collection("Shares").find({remake_id: remake_id}).count
 
 	if remake then
 		remake.to_json
