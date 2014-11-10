@@ -201,8 +201,18 @@ get '/remakes' do
 			story_id = story["_id"]
 			story_names[story_id] = story["name"]
 		end
+
+		# Getting all the public users
+		public_users_cursor = settings.db.collection("Users").find({is_public:true})
+		public_users = Array.new
+
+		for user in public_users_cursor do
+			public_users.push(user["_id"])
+		end
 		
-		remakes = settings.db.collection("Remakes").find({ share_link:{"$exists"=>true}, status: 3},{fields: {footages: 0}}).sort({created_at: -1})
+		#remakes = settings.db.collection("Remakes").find({ share_link:{"$exists"=>true}, status: 3},{fields: {footages: 0}}).sort({created_at: -1})
+		remakes = settings.db.collection("Remakes").find({status: RemakeStatus::Done, user_id:{"$in" => public_users}, grade:{"$ne" => -1}},{fields: {footages: 0}}).sort(grade:-1);
+
 		remakes = remakes.skip(skip) if skip
 		remakes = remakes.limit(limit) if limit
 
