@@ -1055,6 +1055,9 @@ get '/remake/:remake_id' do
 	# Fetching the remake
 	remakes = settings.db.collection("Remakes")
 	remake = remakes.find_one(remake_id)
+	story_id = remake["story_id"]
+	story = settings.db.collection("Stories").find_one(story_id)
+	remake["share_message"] = story["share_message"] if story["share_message"]
 	remake["share_count"] = settings.db.collection("Shares").find({remake_id: remake_id}).count
 
 	if remake then

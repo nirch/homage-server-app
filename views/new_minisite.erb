@@ -168,7 +168,7 @@
   var skip = 0;
   var limit = 30;
   var gallery = null;
-  var currentPlayingRemakeID = "";
+  var currentRemake = {};
   var all_remakes = [];
   var currentlyLoadingImgs = false;
   var campaign_id = '<%= @campaign["_id"].to_s %>'
@@ -201,7 +201,10 @@
     $.get(path, {} , function(data, status, xhr){
         json_data = $.parseJSON(data);
       
+        currentRemake = {}
+
         thumbnail = json_data["thumbnail"].toString();
+        share_message = json_data["share_message"] ? json_data["share_message"] : "";
         video = json_data["video"].toString();
         user_fullname = json_data["user_fullname"] ? json_data["user_fullname"] : "this user";
 
@@ -214,6 +217,9 @@
         $('.like_count_label').text(like_count);
         $('.view_count_label').text(view_count);
         $('.share_count_label').text(share_count);
+
+        currentRemake["thumbnail"] = thumbnail;
+        currentRemake["share_message"] = share_message;
 
         var myPlayer = videojs('remake_video_player');
 
@@ -273,7 +279,6 @@
             var selectedCellIndex = gallery.getSelectedCell();
             remake = all_remakes[selectedCellIndex];
             remake_id = remake["_id"]
-            currentPlayingRemakeID = remake_id.toString();
             showVideoPlayer(remake_id);
           },
           load: function(next) {
@@ -310,19 +315,33 @@
       var myPlayer = videojs('remake_video_player');
       myPlayer.pause();
       $('.video_overlay').hide();
-      currentPlayingRemakeID = "";
+      currentRemake = {};
       document.body.style.overflow = 'auto';
     }
   });
 
   $(".facebook_share").on('click',function(e){
     share_link = genShareLink();
+    thumbnail = currentRemake["thumbnail"];
+    share_message = currentRemake["share_message"];
+     // method: 'feed',
+     //    name: this.config.networks.facebook.title,
+     //    link: this.config.networks.facebook.url,
+     //    picture: this.config.networks.facebook.image,
+     //    caption: this.config.networks.facebook.caption,
+     //    description: this.config.networks.facebook.description
+
     FB.ui(
- {
-  method: 'share',
-  title: share_link,
-  href: 'play.homage.it/gallery/HomageApp'
-}, function(response){});
+     {
+      method: 'share',
+      picture: thumbnail,
+      description: share_message,
+      link: share_link,
+      href: share_link
+    }, function(response){
+
+        }
+    );
 
   });
 
