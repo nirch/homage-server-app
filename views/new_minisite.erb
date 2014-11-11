@@ -168,9 +168,12 @@
   var skip = 0;
   var limit = 30;
   var gallery = null;
+  var currentPlayingRemakeID = "";
   var all_remakes = [];
   var currentlyLoadingImgs = false;
   var campaign_id = '<%= @campaign["_id"].to_s %>'
+  var share_link_prefix = '<%= @config["share_link_prefix"] %>'
+  var view_pct_threshold = '<%= @config["significant_view_pct_threshold"] %>'
 
   $('body').on("finished_loading_images", function() {
     currentlyLoadingImgs = false;
@@ -197,8 +200,7 @@
     path = '/remake/' + remake_id.toString();
     $.get(path, {} , function(data, status, xhr){
         json_data = $.parseJSON(data);
-
-        
+      
         thumbnail = json_data["thumbnail"].toString();
         video = json_data["video"].toString();
         user_fullname = json_data["user_fullname"] ? json_data["user_fullname"] : "this user";
@@ -223,6 +225,12 @@
         $('.video_overlay').show();
         document.body.style.overflow = 'hidden';
     });
+  }
+
+  function genShareLink() {
+    currentShareId = new ObjectId().toString();
+    currentShareLink = share_link_prefix + "/" + currentShareId;
+    return currentShareLink;
   }
 
   function fetch_remakes()
@@ -265,6 +273,7 @@
             var selectedCellIndex = gallery.getSelectedCell();
             remake = all_remakes[selectedCellIndex];
             remake_id = remake["_id"]
+            currentPlayingRemakeID = remake_id.toString();
             showVideoPlayer(remake_id);
           },
           load: function(next) {
@@ -301,14 +310,17 @@
       var myPlayer = videojs('remake_video_player');
       myPlayer.pause();
       $('.video_overlay').hide();
+      currentPlayingRemakeID = "";
       document.body.style.overflow = 'auto';
     }
   });
 
   $(".facebook_share").on('click',function(e){
+    share_link = genShareLink();
     FB.ui(
  {
   method: 'share',
+  title: share_link,
   href: 'play.homage.it/gallery/HomageApp'
 }, function(response){});
 
