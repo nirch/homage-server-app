@@ -16,6 +16,7 @@
     <link rel="icon" type="image/x-icon" href="/resources/favicon.ico"/>
 
     <script src="/js/Objectid.js"></script>
+    <script src="/js/jquery.cookie.js"></script>
 
     <link href="/css/jquery.galereya.css" rel="stylesheet"/>
     <!--[if lt IE 9]>
@@ -163,7 +164,15 @@
 
   </div>
 
-  <script type="text/javascript">
+  <script>
+
+  cookies = $.cookie();
+  if (!cookies["homageCookieID"]) {
+    console.log("no homage cookie");
+    var cookie_id = new ObjectId().toString();
+    $.cookie('homageCookieID', cookie_id, { expires: 365 });
+    // $.cookie('like_state' , false , {expires: 365});
+  }
 
   var skip = 0;
   var limit = 30;
@@ -174,6 +183,16 @@
   var campaign_id = '<%= @campaign["_id"].to_s %>'
   var share_link_prefix = '<%= @config["share_link_prefix"] %>'
   var view_pct_threshold = '<%= @config["significant_view_pct_threshold"] %>'
+
+  CopyUrlShareMethod = 0
+  FacebookShareMethod = 1
+  WhatsappShareMethod = 2
+  EmailShareMethod = 3 
+  MessageShareMethod = 4
+  WeiboShareMethod = 5
+  TwitterShareMethod = 6
+  GooglePlusShareMethod = 7
+  PinterestShareMethod = 8
 
   $('body').on("finished_loading_images", function() {
     currentlyLoadingImgs = false;
@@ -201,7 +220,7 @@
     $.get(path, {} , function(data, status, xhr){
         json_data = $.parseJSON(data);
       
-        currentRemake = {}
+        currentRemake["remake_id"] = remake_id.toString();
 
         thumbnail = json_data["thumbnail"].toString();
         share_message = json_data["share_message"] ? json_data["share_message"] : "";
@@ -238,6 +257,23 @@
     currentShareLink = share_link_prefix + "/" + currentShareId;
     return currentShareLink;
   }
+
+  var reportShare = function(share_method){
+    // Tracking in our Server
+    share_id = new ObjectId().toString();
+    share_link = share_link_prefix + "/" + share_id;
+    remake_id = currentRemake["remake_id"];
+
+    share_params = {"share_id": share_id, "remake_id":remake_id, "share_method":share_method,
+            "share_link": share_link, "cookie_id":$.cookie('homageCookieID')}
+    // if (origin_id != "") {
+    //   share_params["origin_id"] = origin_id
+    // }
+    $.post('/remake/share', share_params, 
+                 function(data,status){
+                 }
+    );
+  };
 
   function fetch_remakes()
   {
@@ -321,9 +357,9 @@
   });
 
   $(".facebook_share").on('click',function(e){
-    share_link = genShareLink();
     thumbnail = currentRemake["thumbnail"];
     share_message = currentRemake["share_message"];
+    reportShare(FacebookShareMethod);
      // method: 'feed',
      //    name: this.config.networks.facebook.title,
      //    link: this.config.networks.facebook.url,
