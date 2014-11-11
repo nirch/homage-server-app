@@ -232,8 +232,17 @@
                 .wrap('<div class="galereya-cell" data-index="' + $cells.length + '"></div>')
                 .parent()
                 .append('<div class="galereya-cell-desc">\
-                                <div class="galereya-cell-desc-title">' + info.title + "Rafi" + '</div>\
-                                <div class="galereya-cell-desc-text">' + info.description + '</div>\
+                                <div class="galereya-cell-desc-title">\
+                                    <a class="overlay_label user_name_label">' + info.user_name + '</a>\
+                                    <a class="overlay_label like_count_label">' + info.like_count + '</a>\
+                                    <a class="overlay_label view_count_label">' + info.view_count + '</a>\
+                                    <a class="overlay_label share_count_label">' + info.share_count + '</a>\
+                                </div>\
+                                <div class="galereya-cell-desc-text">\
+                                    <a class="overlay_label like_label">Like</a>\
+                                    <a class="overlay_label play_label"></a>\
+                                    <a class="overlay_label flag_label">Flag</a>\
+                                </div>\
                             </div>')
                 .append('<div class="galereya-cell-overlay" />');
             $cell.click(Handlers.cellClick);
@@ -254,7 +263,11 @@
                 "fullsrc": info.fullsrc || '',
                 "title": info.title || '',
                 "description": info.description || '',
-                "category": info.category || ''
+                "category": info.category || '',
+                "user_name" : info.user_name || '',
+                "like_count": info.like_count || 0,
+                "view_count": info.view_count || 0,
+                "share_count": info.share_count || 0,
             };
 
             if (item.category) {
@@ -314,18 +327,39 @@
             var $img, title, desc;
             $imgs.wrapAll('<div class="galereya-grid" />').each(function (i, img) {
                 $img = $(img);
+
+                var single_cell_data = data[i];
+
                 title = data[i].title;
                 desc = data[i].description;
-                console.log("1.title: " + title.toString());
-                console.log("1.desc: " + desc.toString());
+
+                var user_name = data[i].user_name
+                var like_count = data[i].like_count;
+                var view_count = data[i].view_count;
+                var share_count = data[i].share_count;
+
                 $img.addClass('galereya-cell-img')
                     .wrap('<div class="galereya-cell" data-index="' + i + '"></div>')
                     .parent()
                     .append('<div class="galereya-cell-desc">\
-                                <div class="galereya-cell-desc-title">' + title + '</div>\
-                                <div class="galereya-cell-desc-text">' + desc + '</div>\
+                                <div class="galereya-cell-desc-title">\
+                                    <a class="overlay_label user_name_label">' + user_name + '</a>\
+                                    <a class="overlay_label like_count_label">' + like_count + '</a>\
+                                    <a class="overlay_label view_count_label">' + view_count + '</a>\
+                                    <a class="overlay_label share_count_label">' + share_count + '</a>\
+                                </div>\
+                                <div class="galereya-cell-desc-text">\
+                                    <a class="overlay_label like_label">Like</a>\
+                                    <a class="overlay_label play_label"></a>\
+                                    <a class="overlay_label flag_label">Flag</a>\
+                                </div>\
                             </div>')
                     .append('<div class="galereya-cell-overlay" />');
+
+                    // <a class="secondary_font_label user_name_label"></a>
+                    // <a class="secondary_font_label like_count_label"></a>
+                    // <a class="secondary_font_label view_count_label"></a>
+                    // <a class="secondary_font_label share_count_label"></a>
             });
 
             $cells = self.find('.galereya-cell');
@@ -499,6 +533,7 @@
             }
             $currentImg.css('margin-top', ($(window).height() - $currentImg.height()) / 2);
             $grid.width(gridW);
+            $('body').trigger("gallery_resized");
             gridH = 0;
             for (var i = 0, len = visibleCells.length; i < len; i++) {
                 placeCell(visibleCells[i], i);

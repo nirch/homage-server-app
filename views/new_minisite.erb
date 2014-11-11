@@ -23,6 +23,24 @@
     <![endif]-->
 
     <script src="/js/jquery.galereya.js"></script>
+
+     <script>
+  window.fbAsyncInit = function() {
+    FB.init({
+      appId      : '447743458659084',
+      xfbml      : true,
+      version    : 'v2.2'
+    });
+  };
+
+  (function(d, s, id){
+     var js, fjs = d.getElementsByTagName(s)[0];
+     if (d.getElementById(id)) {return;}
+     js = d.createElement(s); js.id = id;
+     js.src = "//connect.facebook.net/en_US/sdk.js";
+     fjs.parentNode.insertBefore(js, fjs);
+   }(document, 'script', 'facebook-jssdk'));
+</script>
   
 </head>
 <body>
@@ -118,16 +136,16 @@
 
       <div class="videocontent remake_video_content">
         <video id="remake_video_player" class="video-js vjs-default-skin vjs-big-play-centered" width="100%" height="100%" poster="" controls="controls"  
-            >
+            data-setup="{}">
             <source src="" type="video/mp4"/>
         </video>
       </div>
 
       <div class="remake_footer">
-        <a class="secondary_font_label like_button">Like</a>
-        <a class="secondary_font_label make_your_own_button">Make your own</a>
-        <a class="secondary_font_label more_from_button"></a>
-        <a class="secondary_font_label flag_button">Flag</a>
+        <a class="secondary_font_label hoverable_element like_button">Like</a>
+        <a class="secondary_font_label hoverable_element make_your_own_button">Make your own</a>
+        <a class="secondary_font_label hoverable_element more_from_button"></a>
+        <a class="secondary_font_label hoverable_element flag_button">Flag</a>
       </div>
 
       <div class="remake_social_bar">
@@ -153,11 +171,6 @@
   var all_remakes = [];
   var currentlyLoadingImgs = false;
   var campaign_id = '<%= @campaign["_id"].to_s %>'
-  var remake_video_player = null
-
-  $(document).ready(function() {
-    remake_video_player = videojs('remake_video_player');
-  });
 
   $('body').on("finished_loading_images", function() {
     currentlyLoadingImgs = false;
@@ -166,11 +179,17 @@
     }
   });
 
+  $('body').on("gallery_resized" , function() {
+    gallery_new_width = $(".galereya-grid").width();
+    $(".header_content_container").width(gallery_new_width);
+    $(".header_content_container").show();
+  });
+
   videojs('campaign_video_player').ready(function(){
-    var campaignPlayer = this;
-    campaignPlayer.poster("http://d293iqusjtyr94.cloudfront.net/Remakes/5452635a771ac17c12000005/Hello%20Nyan%20Kitty_5452635a771ac17c12000005.jpg");
-    campaignPlayer.src("http://d293iqusjtyr94.cloudfront.net/Remakes/5452635a771ac17c12000005/Hello%20Nyan%20Kitty_5452635a771ac17c12000005.mp4");
-    campaignPlayer.posterImage.show();
+    var myPlayer = this;
+    myPlayer.poster("http://d293iqusjtyr94.cloudfront.net/Remakes/5452635a771ac17c12000005/Hello%20Nyan%20Kitty_5452635a771ac17c12000005.jpg");
+    myPlayer.src("http://d293iqusjtyr94.cloudfront.net/Remakes/5452635a771ac17c12000005/Hello%20Nyan%20Kitty_5452635a771ac17c12000005.mp4");
+    myPlayer.posterImage.show();
     //myPlayer.load();
   });
 
@@ -179,6 +198,7 @@
     $.get(path, {} , function(data, status, xhr){
         json_data = $.parseJSON(data);
 
+        
         thumbnail = json_data["thumbnail"].toString();
         video = json_data["video"].toString();
         user_fullname = json_data["user_fullname"] ? json_data["user_fullname"] : "this user";
@@ -193,7 +213,7 @@
         $('.view_count_label').text(view_count);
         $('.share_count_label').text(share_count);
 
-        var myPlayer = remake_video_player;
+        var myPlayer = videojs('remake_video_player');
 
         myPlayer.poster(thumbnail);
         myPlayer.src(video);
@@ -278,11 +298,20 @@
 
   $(document).on('click','.video_overlay',function(e){
     if($(e.target).is('.video_overlay') || $(e.target).is('.close_button')) {
-      var myPlayer = remake_video_player;
+      var myPlayer = videojs('remake_video_player');
       myPlayer.pause();
       $('.video_overlay').hide();
       document.body.style.overflow = 'auto';
     }
+  });
+
+  $(".facebook_share").on('click',function(e){
+    FB.ui(
+ {
+  method: 'share',
+  href: 'play.homage.it/gallery/HomageApp'
+}, function(response){});
+
   });
 
   // $(".homageAppStoreLink").click(function() {
