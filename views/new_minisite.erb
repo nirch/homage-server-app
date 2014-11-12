@@ -273,6 +273,8 @@
                  function(data,status){
                  }
     );
+
+    return share_link;
   };
 
   function fetch_remakes()
@@ -359,7 +361,7 @@
   $(".facebook_share").on('click',function(e){
     thumbnail = currentRemake["thumbnail"];
     share_message = currentRemake["share_message"];
-    reportShare(FacebookShareMethod);
+    share_link = reportShare(FacebookShareMethod);
      // method: 'feed',
      //    name: this.config.networks.facebook.title,
      //    link: this.config.networks.facebook.url,
