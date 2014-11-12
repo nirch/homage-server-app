@@ -358,6 +358,62 @@
     }
   });
 
+  var is_encoded = function(str) {
+    return decodeURIComponent(str) !== str;
+  };
+
+  var encode = function(str) {
+    if (is_encoded(str)) {
+      return str;
+    } else {
+      return encodeURIComponent(str);
+    }
+  };
+
+  var open_popup = function(url, params) {
+    var k, popup, qs, v;
+    if (params == null) {
+      params = {};
+    }
+    popup = {
+      width: 500,
+      height: 350
+    };
+    popup.top = (screen.height / 2) - (popup.height / 2);
+    popup.left = (screen.width / 2) - (popup.width / 2);
+    qs = ((function() {
+      var _results;
+      _results = [];
+      for (k in params) {
+        v = params[k];
+        _results.push("" + k + "=" + (encode(v)));
+      }
+      return _results;
+    }).call(this)).join('&');
+    if (qs) {
+      qs = "?" + qs;
+    }
+    return window.open(url + qs, 'targetWindow', "toolbar=no,location=no,status=no,menubar=no,scrollbars=yes,resizable=yes,left=" + popup.left + ",top=" + popup.top + ",width=" + popup.width + ",height=" + popup.height);
+  };
+
+  $(".email_share").on('click',function(e) {
+    thumbnail = currentRemake["thumbnail"];
+    share_message = currentRemake["share_message"];
+    share_link = reportShare(EmailShareMethod);
+
+    open_popup('mailto:', {
+      subject: share_message,
+      body: share_link
+    });
+  });
+
+ // Share.prototype.network_email = function() {
+ //    return this.popup('mailto:', {
+ //      subject: this.config.networks.email.title,
+ //      body: this.config.networks.email.description
+ //    });
+ //  };
+
   $(".facebook_share").on('click',function(e){
     thumbnail = currentRemake["thumbnail"];
     share_message = currentRemake["share_message"];
@@ -381,6 +437,40 @@
         }
     );
   });
+
+  $(".twitter_share").on('click', function(e) {
+    thumbnail = currentRemake["thumbnail"];
+    share_message = currentRemake["share_message"];
+    share_link = reportShare(TwitterShareMethod);
+
+    open_popup('https://twitter.com/intent/tweet', {
+      text: share_message,
+      url: share_link
+    });
+  });
+
+  $(".gplus_share").on('click', function(e) {
+    thumbnail = currentRemake["thumbnail"];
+    share_message = currentRemake["share_message"];
+    share_link = reportShare(GooglePlusShareMethod);
+    
+    open_popup('https://plus.google.com/share', {
+      url: share_link
+    });
+  });
+
+   $(".pinterest_share").on('click', function(e) {
+    thumbnail = currentRemake["thumbnail"];
+    share_message = currentRemake["share_message"];
+    share_link = reportShare(PinterestShareMethod);
+    
+    open_popup('https://www.pinterest.com/pin/create/button', {
+      url: share_link,
+      media: thumbnail,
+      description: share_message
+    });
+   });
+
 
   // $(".homageAppStoreLink").click(function() {
   //   $.get('/ios', {"src": "minisite"});
