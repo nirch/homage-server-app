@@ -183,15 +183,36 @@ get '/remakes' do
 		# input
 		skip = params[:skip].to_i if params[:skip] # Optional
 		limit = params[:limit].to_i if params[:limit] # Optional
+		campaign_id = BSON::ObjectId.from_string(params[:campaign_id]) if params[:campaign_id] #optional
 
 		story_names = Hash.new;
-		stories = settings.db.collection("Stories").find({}, {fields: {after_effects: 0}})
+
+		find_condition = {active: true}
+		if campaign_id then
+			find_condition["campaign_id"] = campaign_id
+		end
+
+		puts "find_condition"
+		puts find_condition
+
+		stories = settings.db.collection("Stories").find(find_condition, {fields: {after_effects: 0}}) 
+
 		for story in stories do
 			story_id = story["_id"]
 			story_names[story_id] = story["name"]
 		end
+
+		# Getting all the public users
+		public_users_cursor = settings.db.collection("Users").find({is_public:true})
+		public_users = Array.new
+
+		for user in public_users_cursor do
+			public_users.push(user["_id"])
+		end
 		
-		remakes = settings.db.collection("Remakes").find({ share_link:{"$exists"=>true}, status: 3},{fields: {footages: 0}}).sort({created_at: -1})
+		#remakes = settings.db.collection("Remakes").find({ share_link:{"$exists"=>true}, status: 3},{fields: {footages: 0}}).sort({created_at: -1})
+		remakes = settings.db.collection("Remakes").find({status: RemakeStatus::Done, user_id:{"$in" => public_users}, grade:{"$ne" => -1}},{fields: {footages: 0}}).sort(grade:-1);
+
 		remakes = remakes.skip(skip) if skip
 		remakes = remakes.limit(limit) if limit
 
@@ -341,6 +362,15 @@ subdomain settings.play_subdomain do
 		erb :HMGMiniSite
 	end
 
+	get '/gallery/:campaign_name' do
+
+		@config = getConfigDictionary();
+		@campaign = settings.db.collection("Campaigns").find_one({name: params[:campaign_name]})
+		campaign_id = @campaign["_id"]
+		@stories = settings.db.collection("Stories").find({active:true, campaign_id: campaign_id})
+		erb :new_minisite
+	end
+
 	get '/:entity_id' do
 		remakes = settings.db.collection("Remakes")
 		users   = settings.db.collection("Users")
@@ -372,6 +402,59 @@ subdomain settings.play_subdomain do
 
 		erb :HMGVideoPlayer
 	end
+
+	# duplicate with get remake/:remake_id
+	# get '/data/:entity_id' do
+	# 	remakes = settings.db.collection("Remakes")
+	# 	users   = settings.db.collection("Users")
+	# 	shares  = settings.db.collection("Shares")
+	# 	stories = settings.db.collection("Stories")
+	# 	@config = getConfigDictionary();
+
+	# 	entity_id = BSON::ObjectId.from_string(params[:entity_id])
+	# 	share  = shares.find_one(entity_id)
+	# 	remake = ""
+	# 	user = ""
+	# 	originating_share_id = ""
+	# 	res = Hash.new
+		
+	# 	if share == nil then
+	# 		remake = remakes.find_one(entity_id)
+	# 	else 
+	# 		remake_id = share["remake_id"]
+	# 		remake = remakes.find_one(remake_id)
+	# 		originating_share_id = share["_id"]
+	# 		shares.update({_id: originating_share_id},{"$set" => {share_status: true}})
+	# 	end
+
+	# 	if BSON::ObjectId.legal?(remake["user_id"]) then
+	# 		user = users.find_one(remake["user_id"])
+	# 	else
+	# 		user = users.find_one({_id: remake["user_id"]})
+	# 	end
+
+	# 	#retrive user name - TODO: write a script that updates property user_name upon subscription
+	# 	if user["user_name"] then
+	# 		res["user_name"] = user["user_name"]
+	# 	elsif user["facebook"] then
+	# 		res["user_name"] = user["facebook"]["first_name"]
+	# 	elsif user["email"] then
+	# 		res["user_name"] = user["email"].split("@")[0].slice(0,1).capitalize + user["email"].split("@")[0].slice(1..-1)
+	# 	end
+
+	# 	#retrieve remake_info - TODO: add share_counter to remake upon share event
+	# 	res["like_count"] = remake["like_count"] ? remake["like_count"] : 0
+	# 	res["view_count"] = remake["views"] ? remake["views"] : 0
+	# 	res["share_count"] = shares.find({remake_id: remake["_id"]}).count
+
+	# 	res["thumbnail"] = remake["thumbnail"]
+	# 	res["video"] = remake["video"]
+
+	# 	puts "returning res:"
+	# 	puts res
+	# 	return res.to_json
+	# end
+
 end
 
 ###################
@@ -499,6 +582,8 @@ def handle_facebook_login(user)
 				update_user_id = email_exists["_id"]
 				logger.info "updating Email to Facebook for user " + update_user_id.to_s
 				users.update({_id: update_user_id}, {"$set" => {facebook: user["facebook"]}})
+				updated_user = users.find_one(update_user_id)
+				update_user_name_in_remakes(updated_user)
 				return update_user_id, nil, false
 			end
 		end
@@ -623,6 +708,39 @@ def user_type(user)
 	end
 end
 
+def user_name(user)
+	if user["facebook"] then
+		return user["facebook"]["name"]
+	elsif user["email"] then
+		# Getting the prefix of the email ("nir.channes" of "nir.channes@gmail.com")
+		prefix = user["email"].split("@")[0]
+
+		# Replacing dots '.' and underscores '_' with space
+		prefix.gsub!('.', ' ')
+		prefix.gsub!('_', ' ')
+
+		# Capitalizing each word
+		name = prefix.split.map(&:capitalize).join(' ')
+
+		return name
+	else
+		return nil
+	end
+end
+
+def update_user_name_in_remakes(user)
+	username = user_name(user)
+
+	return if !username
+
+	remakes = settings.db.collection("Remakes").find({user_id:user["_id"]})
+	logger.info "Going to update " + remakes.count.to_s + " remakes with the fullname: " + username
+	for remake in remakes do
+		logger.info "Updating remake " + remake["_id"].to_s + " with fullname: " + username
+		settings.db.collection("Remakes").update({_id: remake["_id"]}, {"$set" => {user_fullname: username}})
+	end
+end
+
 # Merging user a into user b and deleting user a
 def merge_users(user_a, user_b)
 	users = settings.db.collection("Users")
@@ -678,6 +796,8 @@ put '/user' do
 		else
 			logger.info "updating Guest to Facebook for user " + update_user_id.to_s
 			users.update({_id: update_user_id}, {"$set" => {facebook: params[:facebook], email: params[:email], is_public: params[:is_public]}})
+			updated_user = users.find_one(update_user_id)
+			update_user_name_in_remakes(updated_user)
 		end
 	elsif existing_user_type == UserType::GuestUser and update_user_type == UserType::EmailUser
 		# Guest to Email user
@@ -707,6 +827,8 @@ put '/user' do
 			logger.info "updating Guest to Email for user " + update_user_id.to_s
 			password_hash = Sinatra::Security::Password::Hashing.encrypt(params["password"])
 			users.update({_id: update_user_id}, {"$set" => {email: params[:email], password_hash: password_hash, is_public: params[:is_public]}})
+			updated_user = users.find_one(update_user_id)
+			update_user_name_in_remakes(updated_user)
 		end
 	elsif existing_user_type == UserType::FacebookUser and update_user_type == UserType::EmailUser
 		# Error - Facebook to Email user
@@ -826,6 +948,7 @@ post '/remake' do
 
 	remakes = settings.db.collection("Remakes")
 	story = settings.db.collection("Stories").find_one(story_id)
+	user = settings.db.collection("Users").find_one(user_id)
 	remake_id = BSON::ObjectId.new
 	
 	logger.info "Creating a new remake for story <" + story["name"] + "> for user <" + user_id.to_s + "> with remake_id <" + remake_id.to_s + ">"
@@ -836,6 +959,9 @@ post '/remake' do
 
 	remake = {_id: remake_id, story_id: story_id, user_id: user_id, created_at: Time.now ,status: RemakeStatus::New, 
 		thumbnail: story["thumbnail"], video_s3_key: s3_video, thumbnail_s3_key: s3_thumbnail}
+	# adding the user name if exists
+	username = user_name(user)
+	remake["user_fullname"] = username if username
 
 	# Creating the footages place holder based on the scenes of the story
 	scenes = story["scenes"]
@@ -929,6 +1055,10 @@ get '/remake/:remake_id' do
 	# Fetching the remake
 	remakes = settings.db.collection("Remakes")
 	remake = remakes.find_one(remake_id)
+	story_id = remake["story_id"]
+	story = settings.db.collection("Stories").find_one(story_id)
+	remake["share_message"] = story["share_message"] if story["share_message"]
+	remake["share_count"] = settings.db.collection("Shares").find({remake_id: remake_id}).count
 
 	if remake then
 		remake.to_json
@@ -961,12 +1091,38 @@ get '/remakes/user/:user_id' do
 	remakes = "[" + remakes_json_array.join(",") + "]"
 end
 
+def userLikedRemake(entity_id,remake_id)
+	current_user_likes = settings.db.collection("Likes").find({
+		"$or" => [{remake_id:remake_id, user_id: entity_id},
+				  {remake_id:remake_id, cookie_id: entity_id}]
+		}).count
+
+	if current_user_likes != 0 then
+		return true
+	else 
+		return false
+	end
+end
+
+
 # Returns all the public remakes of a given story
 get '/remakes/story/:story_id' do
 	# input
 	story_id = BSON::ObjectId.from_string(params[:story_id])
 	skip = params[:skip].to_i if params[:skip] # Optional
-	limit = params[:limit].to_i if params[:limit] # Optional
+	params[:limit] ? limit = params[:limit].to_i : limit = 80 # Limit is optional, if not passed 80 remakes is the detault limit
+	current_user = BSON::ObjectId.from_string(params[:user_id]) if params[:user_id]
+	current_cookie = BSON::ObjectId.from_string(params[:cookie_id]) if params[:cookie_id]
+
+	logger.debug "limit is: " + limit.to_s
+
+	entity_id = ""
+	if !current_cookie && !current_user then
+		logger.error "no user identity received from client"
+	else 
+		entity_id = current_user ? current_user : current_cookie
+	end
+
 
 	logger.info "Getting remakes for story " + story_id.to_s
 
@@ -993,11 +1149,12 @@ get '/remakes/story/:story_id' do
 
 	remakes_json_array = Array.new
 	for remake_doc in remakes_docs do
+		remake_id = remake_doc["_id"]
+		remake_doc["is_liked"] = userLikedRemake(entity_id,remake_id)		
 		remakes_json_array.push(remake_doc.to_json)
 	end
 
 	logger.info "Returning " + remakes_json_array.count.to_s + " remakes for story " + story_id.to_s
-
 	remakes = "[" + remakes_json_array.join(",") + "]"
 end
 
@@ -1293,6 +1450,7 @@ def getConfigDictionary()
 	config = Hash.new 
 	config["share_link_prefix"] = settings.share_link_prefix;
 	config["significant_view_pct_threshold"] = 0.5
+	config["mirror_selfie_silhouette"] = true
 	return config
 end
 
@@ -1374,6 +1532,8 @@ post '/remake/like' do
 	remakes.update({_id: remake_id},{"$inc" => {like_count: 1}})
 	
 	logger.info "New like saved in the DB with like id " + like_objectId.to_s
+	remake = remakes.find_one(remake_id)
+	return remake.to_json
 end
 
 post '/remake/unlike' do
@@ -1402,6 +1562,9 @@ post '/remake/unlike' do
 	remakes = settings.db.collection("Remakes")
 	remake = remakes.find_one(remake_id)
 	remakes.update({_id: remake_id},{"$inc" => {like_count: -1}})	
+
+	remake = remakes.find_one(remake_id)
+	return remake.to_json
 end
 	
 
@@ -1817,8 +1980,8 @@ get '/test/mail' do
 end
 
 get '/test/minisite' do
-		erb :HMGMiniSite
-	end
+	erb :HMGMiniSite
+end
 
 get '/test/:entity_id' do
 		remakes = settings.db.collection("Remakes")

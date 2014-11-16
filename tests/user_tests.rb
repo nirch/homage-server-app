@@ -4,6 +4,8 @@ class UserTest < MiniTest::Unit::TestCase
 	include Rack::Test::Methods
 
   USERS = DB.collection("Users")
+  REMAKES = DB.collection("Remakes")
+
 
   GUEST_USER =  {  :is_public => "YES", 
                    :device => {:identifier_for_vendor => "3DACF253-C0B7-4F4C-843E-435A43699715", :name => "Nir's iPhone", :system_name => "iPhone", :system_version => "7.1", :model => "5s" } 
@@ -269,6 +271,159 @@ class UserTest < MiniTest::Unit::TestCase
     assert_nil user
   end
 
+  def test_guest_user_with_remake_no_fullname
+    post '/user', GUEST_USER
+
+    json_response = JSON.parse(last_response.body)
+    assert json_response["_id"]["$oid"]
+    guest_user_id = BSON::ObjectId.from_string(json_response["_id"]["$oid"])
+    assert_equal UserType::GuestUser, user_type(json_response)
+
+    # Creating a remake for the testing (deleting him in the teardown)
+    post '/remake', {:story_id => "52de83db8bc427751c000305", :user_id => guest_user_id.to_s}
+    json_response = JSON.parse(last_response.body)
+    assert json_response["_id"]["$oid"]
+    remake_id = BSON::ObjectId.from_string(json_response["_id"]["$oid"])
+    remake = REMAKES.find_one(remake_id)
+    assert remake
+    assert_nil remake["user_fullname"]
+
+    # deleting the user
+    USERS.remove({_id: guest_user_id})
+    user = USERS.find_one(guest_user_id)
+    assert_nil user    
+  end
+
+  def test_facebook_user_with_remake_and_fullname
+    post '/user', FACEBOOK_USER
+
+    json_response = JSON.parse(last_response.body)
+    assert json_response["_id"]["$oid"]
+    facebook_user_id = BSON::ObjectId.from_string(json_response["_id"]["$oid"])
+    assert_equal UserType::FacebookUser, user_type(json_response)
+
+    # Creating a remake for the testing (deleting him in the teardown)
+    post '/remake', {:story_id => "52de83db8bc427751c000305", :user_id => facebook_user_id.to_s}
+    json_response = JSON.parse(last_response.body)
+    assert json_response["_id"]["$oid"]
+    remake_id = BSON::ObjectId.from_string(json_response["_id"]["$oid"])
+    remake = REMAKES.find_one(remake_id)
+    assert remake
+    assert_equal "Bla Bla", remake["user_fullname"]
+
+    # deleting the user
+    USERS.remove({_id: facebook_user_id})
+    user = USERS.find_one(facebook_user_id)
+    assert_nil user    
+  end
+
+  def test_email_user_with_remake_and_fullname
+    post '/user', EMAIL_USER
+
+    json_response = JSON.parse(last_response.body)
+    assert json_response["_id"]["$oid"]
+    email_user_id = BSON::ObjectId.from_string(json_response["_id"]["$oid"])
+    assert_equal UserType::EmailUser, user_type(json_response)
+
+    # Creating a remake for the testing (deleting him in the teardown)
+    post '/remake', {:story_id => "52de83db8bc427751c000305", :user_id => email_user_id.to_s}
+    json_response = JSON.parse(last_response.body)
+    assert json_response["_id"]["$oid"]
+    remake_id = BSON::ObjectId.from_string(json_response["_id"]["$oid"])
+    remake = REMAKES.find_one(remake_id)
+    assert remake
+    assert_equal "Unit Email", remake["user_fullname"]
+
+    # deleting the user
+    USERS.remove({_id: email_user_id})
+    user = USERS.find_one(email_user_id)
+    assert_nil user    
+  end
+
+
+  def test_guest_to_email_with_remake_check_fullname
+    post '/user', GUEST_USER
+
+    json_response = JSON.parse(last_response.body)
+    assert json_response["_id"]["$oid"]
+    guest_user_id = BSON::ObjectId.from_string(json_response["_id"]["$oid"])
+    assert_equal UserType::GuestUser, user_type(json_response)
+
+    # Creating a remake for the testing (deleting him in the teardown)
+    post '/remake', {:story_id => "52de83db8bc427751c000305", :user_id => guest_user_id.to_s}
+    json_response = JSON.parse(last_response.body)
+    assert json_response["_id"]["$oid"]
+    remake_id = BSON::ObjectId.from_string(json_response["_id"]["$oid"])
+    remake = REMAKES.find_one(remake_id)
+    assert remake
+    assert_nil remake["user_fullname"]
+
+    # Guest to email
+    guest_to_email_user = EMAIL_USER.clone
+    guest_to_email_user[:user_id] = guest_user_id.to_s
+    put '/user', guest_to_email_user
+
+    json_response = JSON.parse(last_response.body)
+    assert json_response["_id"]["$oid"]
+    email_user_id = BSON::ObjectId.from_string(json_response["_id"]["$oid"])
+    assert_equal UserType::EmailUser, user_type(json_response)
+
+    assert_equal guest_user_id, email_user_id
+
+    remake = REMAKES.find_one(remake_id)
+    assert remake
+    assert_equal "Unit Email", remake["user_fullname"]
+
+    # deleting the user, and checking that both ids (which is the same id) doesn;t exist in the DB
+    USERS.remove({_id: guest_user_id})
+    user = USERS.find_one(guest_user_id)
+    assert_nil user
+    user = USERS.find_one(email_user_id)
+    assert_nil user       
+  end
+
+
+  def test_guest_to_facebook_with_remake_check_fullname
+    post '/user', GUEST_USER
+
+    json_response = JSON.parse(last_response.body)
+    assert json_response["_id"]["$oid"]
+    guest_user_id = BSON::ObjectId.from_string(json_response["_id"]["$oid"])
+    assert_equal UserType::GuestUser, user_type(json_response)
+
+    # Creating a remake for the testing (deleting him in the teardown)
+    post '/remake', {:story_id => "52de83db8bc427751c000305", :user_id => guest_user_id.to_s}
+    json_response = JSON.parse(last_response.body)
+    assert json_response["_id"]["$oid"]
+    remake_id = BSON::ObjectId.from_string(json_response["_id"]["$oid"])
+    remake = REMAKES.find_one(remake_id)
+    assert remake
+    assert_nil remake["user_fullname"]
+
+    # Guest to facebook
+    guest_to_facebook_user = FACEBOOK_USER.clone
+    guest_to_facebook_user[:user_id] = guest_user_id.to_s
+    put '/user', guest_to_facebook_user
+
+    json_response = JSON.parse(last_response.body)
+    assert json_response["_id"]["$oid"]
+    facebook_user_id = BSON::ObjectId.from_string(json_response["_id"]["$oid"])
+    assert_equal UserType::FacebookUser, user_type(json_response)
+
+    assert_equal guest_user_id, facebook_user_id
+
+    remake = REMAKES.find_one(remake_id)
+    assert remake
+    assert_equal "Bla Bla", remake["user_fullname"]
+
+    # deleting the user, and checking that both ids (which is the same id) doesn;t exist in the DB
+    USERS.remove({_id: guest_user_id})
+    user = USERS.find_one(guest_user_id)
+    assert_nil user
+    user = USERS.find_one(facebook_user_id)
+    assert_nil user       
+  end
+
   # There is an existing facebook user in the DB. A new guest user upgrades to the same existing facebook user => the guest user should merge into the existing facebook user
   def test_guest_to_existing_facebook
     post '/user', FACEBOOK_USER
@@ -459,6 +614,55 @@ class UserTest < MiniTest::Unit::TestCase
     user = USERS.find_one(facebook_user_id)
     assert_nil user    
   end
+
+
+  def test_password_to_facebook_with_remake_and_fullname
+    post '/user', EMAIL_USER
+
+    json_response = JSON.parse(last_response.body)
+    assert json_response["_id"]["$oid"]
+    email_user_id = BSON::ObjectId.from_string(json_response["_id"]["$oid"])
+    assert_equal UserType::EmailUser, user_type(json_response)
+
+    # Creating a remake for the testing (deleting him in the teardown)
+    post '/remake', {:story_id => "52de83db8bc427751c000305", :user_id => email_user_id.to_s}
+    json_response = JSON.parse(last_response.body)
+    assert json_response["_id"]["$oid"]
+    remake_id = BSON::ObjectId.from_string(json_response["_id"]["$oid"])
+    remake = REMAKES.find_one(remake_id)
+    assert remake
+    assert_equal "Unit Email", remake["user_fullname"]
+
+    email_to_facebook_user = FACEBOOK_USER.clone
+    email_to_facebook_user[:email] = EMAIL_USER[:email]
+    post '/user', email_to_facebook_user
+
+    json_response = JSON.parse(last_response.body)
+    assert json_response["_id"]["$oid"]
+    facebook_user_id = BSON::ObjectId.from_string(json_response["_id"]["$oid"])
+    assert_equal UserType::FacebookUser, user_type(json_response)
+
+    assert_equal email_user_id, facebook_user_id
+
+    remake = REMAKES.find_one(remake_id)
+    assert remake
+    assert_equal "Bla Bla", remake["user_fullname"]
+
+    # checking that the user exists in the DB
+    user = USERS.find_one(facebook_user_id)
+    assert user
+    assert user["facebook"]
+    assert_nil user["password"]
+
+    # deleting the user, and checking that both ids (which is the same id) doesn;t exist in the DB
+    USERS.remove({_id: email_user_id})
+    user = USERS.find_one(email_user_id)
+    assert_nil user
+    user = USERS.find_one(facebook_user_id)
+    assert_nil user    
+  end
+
+
 
   def test_add_devices
     post '/user', GUEST_USER
@@ -1046,6 +1250,46 @@ class UserTest < MiniTest::Unit::TestCase
     user = USERS.find_one(guest_to_facebook_user_id)
     assert_nil user    
   end
+
+  def test_user_name_facebook
+    user = Hash.new
+    user["facebook"] = Hash.new
+    user["facebook"]["name"] = "Bla Bla"
+    name = user_name(user)
+    assert_equal("Bla Bla", name)
+  end
+
+  def test_user_email_with_dot
+    user = Hash.new
+    user["email"] = "nir.channes@gmail.com"
+    name = user_name(user)
+    assert_equal("Nir Channes", name)
+  end
+
+  def test_user_email_with_underscore
+    user = Hash.new
+    user["email"] = "nir_channes@gmail.com"
+    name = user_name(user)
+    assert_equal("Nir Channes", name)
+  end
+
+  def test_user_email_with_middle_name
+    user = Hash.new
+    user["email"] = "nir.james.channes@gmail.com"
+    name = user_name(user)
+    assert_equal("Nir James Channes", name)
+  end
+
+  def test_user_email_with_first_only
+    user = Hash.new
+    user["email"] = "nir@gmail.com"
+    name = user_name(user)
+    assert_equal("Nir", name)
+  end
+
+
+
+
 
   def test_env
     get '/test/env'

@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Rafi</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimum-scale=1.0, maximum-scale=1.0">
+    
+    <link rel="stylesheet" type="text/css" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">  
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script type="text/javascript" src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+    
+    <link href="http://vjs.zencdn.net/4.8/video-js.css" rel="stylesheet">
+    <script src="http://vjs.zencdn.net/4.8/video.js"></script>
+    
+    <link rel="stylesheet" type="text/css" href="/css/new_minisite.css">    
+    <link rel="icon" type="image/x-icon" href="/resources/favicon.ico"/>
+
+    <script src="/js/Objectid.js"></script>
+    <script src="/js/jquery.cookie.js"></script>
+
+    <link href="/css/jquery.galereya.css" rel="stylesheet"/>
+    <!--[if lt IE 9]>
+    <link rel="stylesheet" href="css/jquery.galereya.ie.css">
+    <![endif]-->
+
+    <script src="/js/jquery.galereya.js"></script>
+
+     <script>
+  window.fbAsyncInit = function() {
+    FB.init({
+      appId      : '447743458659084',
+      xfbml      : true,
+      version    : 'v2.2'
+    });
+  };
+
+  (function(d, s, id){
+     var js, fjs = d.getElementsByTagName(s)[0];
+     if (d.getElementById(id)) {return;}
+     js = d.createElement(s); js.id = id;
+     js.src = "//connect.facebook.net/en_US/sdk.js";
+     fjs.parentNode.insertBefore(js, fjs);
+   }(document, 'script', 'facebook-jssdk'));
+</script>
+  
+</head>
+<body>
+  <div class="container-fluid">
+    <div class="row header">
+      <div class="col-xs-6">
+        <div class="menu app_links_menu">
+          <a class="app_icon" href="https://play.google.com/store/apps/details?id=com.homage.app">
+            <img src="/resources/minisite/AppStoreIcon.png"/>
+          </a>
+          <a class="app_icon" href="https://itunes.apple.com/us/app/homage/id851746600?l=iw&amp;ls=1&amp;mt=8">
+            <img src="/resources/minisite/PlayStoreIcon.png"/>
+          </a>
+        </div>
+      </div>
+      <div class="col-xs-6">
+        <div class="menu right_header_menu">
+          <a class="header_button header_share">share</a>
+          <a class="header_button header_login">login</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="row filters">
+      <div class="col-xs-12">
+        <nav class="navbar navbar-custom" role="navigation">
+            <div class="container-fluid">
+            
+              <!-- Collect the nav links, forms, and other content for toggling -->
+              <div class="collapse navbar-collapse">
+                <ul class="nav navbar-nav navbar-left">
+                  <li><a href="#">All</a></li>
+                  <li><a href="#">My takes</a></li>
+                  <li><a href="#">Trending</a></li>
+                </ul>
+                
+                <ul class="nav navbar-nav navbar-right">
+                  <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Campaign Stories<span class="caret"></span></a>
+                    <ul class="dropdown-menu" role="menu">
+                      <% for story in @stories do %>
+                        <li><a href="#"><%= story["name"] %></a></li>
+                      <% end %>
+                    </ul>
+                  </li>
+                </ul>
+              </div><!-- /.navbar-collapse -->
+            </div><!-- /.container-fluid -->
+          </nav>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="gallery_header">
+        <div class="header_content_container">
+          <div class="campaign_video_container">
+            <div class="videocontent">
+              <video id="campaign_video_player" class="video-js vjs-default-skin vjs-big-play-centered" width="350" height="200" poster="" controls="controls"  
+                  data-setup="{}">
+                  <source src="" type="video/mp4"/>
+              </video>
+            </div> 
+          </div>
+
+          <div class="campaign_info">
+            <div class="campaign_logo">
+
+            </div>
+
+            <div class="campaign_button">Go to Homage web site</div>
+          </div>   
+        </div>
+      </div>
+      
+      <div id="gallery_container">
+
+      </div>
+    </div>
+  </div>
+
+  <!-- overlay video player  -->
+  <div class="video_overlay">
+    <div class="close_button"></div>
+
+    <div class="remake_video_container">
+      
+      <div class="remake_header">
+        <a class="secondary_font_label user_name_label"></a>
+        <a class="secondary_font_label like_count_label"></a>
+        <a class="secondary_font_label view_count_label"></a>
+        <a class="secondary_font_label share_count_label"></a>
+      </div>
+
+      <div class="videocontent remake_video_content">
+        <video id="remake_video_player" class="video-js vjs-default-skin vjs-big-play-centered" width="100%" height="100%" poster="" controls="controls"  
+            data-setup="{}">
+            <source src="" type="video/mp4"/>
+        </video>
+      </div>
+
+      <div class="remake_footer">
+        <a class="secondary_font_label hoverable_element like_button">Like</a>
+        <a class="secondary_font_label hoverable_element make_your_own_button">Make your own</a>
+        <a class="secondary_font_label hoverable_element more_from_button"></a>
+        <a class="secondary_font_label hoverable_element flag_button">Flag</a>
+      </div>
+
+      <div class="remake_social_bar">
+        <a class="secondary_font_label">Share</a>
+        <a class="secondary_font_label twitter_share"></a>
+        <a class="secondary_font_label facebook_share"></a>
+        <a class="secondary_font_label gplus_share"></a>
+        <a class="secondary_font_label pinterest_share"></a>
+        <a class="secondary_font_label email_share"></a>
+      </div> 
+    </div>
+  </div>
+
+  <div class="background_image">
+
+  </div>
+
+  <script>
+
+  cookies = $.cookie();
+  if (!cookies["homageCookieID"]) {
+    console.log("no homage cookie");
+    var cookie_id = new ObjectId().toString();
+    $.cookie('homageCookieID', cookie_id, { expires: 365 });
+    // $.cookie('like_state' , false , {expires: 365});
+  }
+
+  var skip = 0;
+  var limit = 30;
+  var gallery = null;
+  var currentRemake = {};
+  var all_remakes = [];
+  var currentlyLoadingImgs = false;
+  var campaign_id = '<%= @campaign["_id"].to_s %>'
+  var share_link_prefix = '<%= @config["share_link_prefix"] %>'
+  var view_pct_threshold = '<%= @config["significant_view_pct_threshold"] %>'
+
+  CopyUrlShareMethod = 0
+  FacebookShareMethod = 1
+  WhatsappShareMethod = 2
+  EmailShareMethod = 3 
+  MessageShareMethod = 4
+  WeiboShareMethod = 5
+  TwitterShareMethod = 6
+  GooglePlusShareMethod = 7
+  PinterestShareMethod = 8
+
+  $('body').on("finished_loading_images", function() {
+    currentlyLoadingImgs = false;
+    if  ($(window).scrollTop() == $(document).height() - $(window).height()) {
+            fetch_remakes();
+    }
+  });
+
+  $('body').on("gallery_resized" , function() {
+    gallery_new_width = $(".galereya-grid").width();
+    $(".header_content_container").width(gallery_new_width);
+    $(".header_content_container").show();
+  });
+
+  videojs('campaign_video_player').ready(function(){
+    var myPlayer = this;
+    myPlayer.poster("http://d293iqusjtyr94.cloudfront.net/Remakes/5452635a771ac17c12000005/Hello%20Nyan%20Kitty_5452635a771ac17c12000005.jpg");
+    myPlayer.src("http://d293iqusjtyr94.cloudfront.net/Remakes/5452635a771ac17c12000005/Hello%20Nyan%20Kitty_5452635a771ac17c12000005.mp4");
+    myPlayer.posterImage.show();
+    //myPlayer.load();
+  });
+
+  function showVideoPlayer(remake_id) {
+    path = '/remake/' + remake_id.toString();
+    $.get(path, {} , function(data, status, xhr){
+        json_data = $.parseJSON(data);
+      
+        currentRemake["remake_id"] = remake_id.toString();
+
+        thumbnail = json_data["thumbnail"].toString();
+        share_message = json_data["share_message"] ? json_data["share_message"] : "";
+        video = json_data["video"].toString();
+        user_fullname = json_data["user_fullname"] ? json_data["user_fullname"] : "this user";
+
+        like_count = json_data["like_count"] ? json_data["like_count"] : 0;
+        view_count = json_data["views"] ? json_data["views"] : 0;
+        share_count = json_data["share_count"] ? json_data["share_count"] : 0;
+ 
+        $('.more_from_button').text("More from " + user_fullname);
+        $('.user_name_label').text(user_fullname);
+        $('.like_count_label').text(like_count);
+        $('.view_count_label').text(view_count);
+        $('.share_count_label').text(share_count);
+
+        currentRemake["thumbnail"] = thumbnail;
+        currentRemake["share_message"] = share_message;
+
+        var myPlayer = videojs('remake_video_player');
+
+        myPlayer.poster(thumbnail);
+        myPlayer.src(video);
+        myPlayer.posterImage.show();
+        myPlayer.play();
+        var overlay = $('video_overlay');
+        $('.video_overlay').show();
+        document.body.style.overflow = 'hidden';
+    });
+  }
+
+  function genShareLink() {
+    currentShareId = new ObjectId().toString();
+    currentShareLink = share_link_prefix + "/" + currentShareId;
+    return currentShareLink;
+  }
+
+  var reportShare = function(share_method){
+    // Tracking in our Server
+    share_id = new ObjectId().toString();
+    share_link = share_link_prefix + "/" + share_id;
+    remake_id = currentRemake["remake_id"];
+
+    share_params = {"share_id": share_id, "remake_id":remake_id, "share_method":share_method,
+            "share_link": share_link, "cookie_id":$.cookie('homageCookieID')}
+    // if (origin_id != "") {
+    //   share_params["origin_id"] = origin_id
+    // }
+    $.post('/remake/share', share_params, 
+                 function(data,status){
+                 }
+    );
+
+    return share_link;
+  };
+
+  function fetch_remakes()
+  {
+    var single_batch_remakes = [];
+    currentlyLoadingImgs = true;
+
+    $.get('/remakes', {campaign_id: campaign_id, skip: skip, limit: limit} , function(data, status, xhr){
+      json_data = $.parseJSON(data)
+
+      for (var i=0;i<json_data.length;i++) {
+        remake = json_data[i];
+
+        lowsrc      = remake["thumbnail"];
+        fullsrc     = remake["thumbnail"];
+        description = i+skip + ": " + remake["_id"]["$oid"];
+        category    = remake["story_name"];
+        remake_id   = remake["_id"]["$oid"];
+
+        like_count = remake["like_count"] ? remake["like_count"] : 0;
+        view_count = remake["views"] ? remake["views"] : 0;
+        share_count = remake["share_count"] ? remake["share_count"] : 0;
+
+        info = {lowsrc: lowsrc, fullsrc: fullsrc, description: description, category: category, _id: remake_id, like_count: like_count, view_count: view_count, share_count: share_count}
+        if (remake["user_fullname"]) {
+          info["user_name"] = remake["user_fullname"];
+        }
+        
+        single_batch_remakes.push(info)
+        all_remakes.push(info);
+      }
+
+      if (!gallery) {
+        gallery = $('#gallery_container').galereya({
+          spacing: 30,
+          wave: false,
+          noCategoryName: 'all stories',
+          disableSliderOnClick: true,
+          onCellClick: function(e) {
+            var selectedCellIndex = gallery.getSelectedCell();
+            remake = all_remakes[selectedCellIndex];
+            remake_id = remake["_id"]
+            showVideoPlayer(remake_id);
+          },
+          load: function(next) {
+            var data = single_batch_remakes;
+            next(data);
+          },
+        });
+      } else {
+        var data = single_batch_remakes;
+        gallery.loadMore(data);
+      }
+
+      skip += limit;
+      
+    });
+  }
+
+  $(window).scroll(function() {
+      if  ($(window).scrollTop() == $(document).height() - $(window).height()) {
+        if (!currentlyLoadingImgs) { 
+          fetch_remakes();
+        }
+      }
+  }); 
+
+  $(".dropdown-menu li a").on('click', function(){
+      story_name = $(this).text().toString();
+      console.log("story:" + story_name);
+      gallery.changeCategory(story_name.toLowerCase());
+   });
+
+  $(document).on('click','.video_overlay',function(e){
+    if($(e.target).is('.video_overlay') || $(e.target).is('.close_button')) {
+      var myPlayer = videojs('remake_video_player');
+      myPlayer.pause();
+      $('.video_overlay').hide();
+      currentRemake = {};
+      document.body.style.overflow = 'auto';
+    }
+  });
+
+  var is_encoded = function(str) {
+    return decodeURIComponent(str) !== str;
+  };
+
+  var encode = function(str) {
+    if (is_encoded(str)) {
+      return str;
+    } else {
+      return encodeURIComponent(str);
+    }
+  };
+
+  var open_popup = function(url, params) {
+    var k, popup, qs, v;
+    if (params == null) {
+      params = {};
+    }
+    popup = {
+      width: 500,
+      height: 350
+    };
+    popup.top = (screen.height / 2) - (popup.height / 2);
+    popup.left = (screen.width / 2) - (popup.width / 2);
+    qs = ((function() {
+      var _results;
+      _results = [];
+      for (k in params) {
+        v = params[k];
+        _results.push("" + k + "=" + (encode(v)));
+      }
+      return _results;
+    }).call(this)).join('&');
+    if (qs) {
+      qs = "?" + qs;
+    }
+    return window.open(url + qs, 'targetWindow', "toolbar=no,location=no,status=no,menubar=no,scrollbars=yes,resizable=yes,left=" + popup.left + ",top=" + popup.top + ",width=" + popup.width + ",height=" + popup.height);
+  };
+
+  $(".email_share").on('click',function(e) {
+    thumbnail = currentRemake["thumbnail"];
+    share_message = currentRemake["share_message"];
+    share_link = reportShare(EmailShareMethod);
+
+    open_popup('mailto:', {
+      subject: share_message,
+      body: share_link
+    });
+  });
+
+ // Share.prototype.network_email = function() {
+ //    return this.popup('mailto:', {
+ //      subject: this.config.networks.email.title,
+ //      body: this.config.networks.email.description
+ //    });
+ //  };
+
+  $(".facebook_share").on('click',function(e){
+    thumbnail = currentRemake["thumbnail"];
+    share_message = currentRemake["share_message"];
+    share_link = reportShare(FacebookShareMethod);
+     // method: 'feed',
+     //    name: this.config.networks.facebook.title,
+     //    link: this.config.networks.facebook.url,
+     //    picture: this.config.networks.facebook.image,
+     //    caption: this.config.networks.facebook.caption,
+     //    description: this.config.networks.facebook.description
+
+    FB.ui(
+     {
+      method: 'feed',
+      picture: thumbnail,
+      description: share_message,
+      link: share_link,
+      href: share_link
+    }, function(response){
+
+        }
+    );
+  });
+
+  $(".twitter_share").on('click', function(e) {
+    thumbnail = currentRemake["thumbnail"];
+    share_message = currentRemake["share_message"];
+    share_link = reportShare(TwitterShareMethod);
+
+    open_popup('https://twitter.com/intent/tweet', {
+      text: share_message,
+      url: share_link
+    });
+  });
+
+  $(".gplus_share").on('click', function(e) {
+    thumbnail = currentRemake["thumbnail"];
+    share_message = currentRemake["share_message"];
+    share_link = reportShare(GooglePlusShareMethod);
+    
+    open_popup('https://plus.google.com/share', {
+      url: share_link
+    });
+  });
+
+   $(".pinterest_share").on('click', function(e) {
+    thumbnail = currentRemake["thumbnail"];
+    share_message = currentRemake["share_message"];
+    share_link = reportShare(PinterestShareMethod);
+    
+    open_popup('https://www.pinterest.com/pin/create/button', {
+      url: share_link,
+      media: thumbnail,
+      description: share_message
+    });
+   });
+
+
+  // $(".homageAppStoreLink").click(function() {
+  //   $.get('/ios', {"src": "minisite"});
+  // });
+
+  // $(".homagePlayStoreLink").click(function() {
+  //   $.get('/android', {"src": "minisite"});
+  // });
+
+
+  fetch_remakes();
+  
+</script>
+</body>

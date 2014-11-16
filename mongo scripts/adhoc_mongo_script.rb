@@ -8,6 +8,7 @@ test_db = Mongo::MongoClient.from_uri("mongodb://Homage:homageIt12@paulo.mongohq
 test_users = test_db.collection("Users")
 test_remakes = test_db.collection("Remakes")
 test_stories = test_db.collection("Stories")
+test_campaigns = test_db.collection("Campaigns")
 
 prod_db = Mongo::MongoClient.from_uri("mongodb://Homage:homageIt12@troup.mongohq.com:10057/Homage_Prod").db
 prod_users = prod_db.collection("Users")
@@ -22,16 +23,24 @@ AWS.config(aws_config)
 s3 = AWS::S3.new
 s3_bucket = s3.buckets['homageapp']
 
-
-stories = prod_stories.find({active:true})
-puts stories.count
-
-for story in stories do
-	puts story["name"]
-	for scene in story["scenes"] do
-		puts scene["contours"]["360"]["contour"] if scene["contours"]
-	end
+homage_campaign = test_campaigns.find_one({name: "Homage App"})
+homage_campaign_id = homage_campaign["_id"]
+puts "homage_campaign_id: " + homage_campaign_id.to_s
+stories = test_stories.find({active:true})
+for story in stories do 
+	story_id = story["_id"]
+	test_stories.update({_id: story_id},{"$set" => {campaign_id: homage_campaign_id}})
 end
+
+#stories = prod_stories.find({active:true})
+#puts stories.count
+
+#for story in stories do
+#	puts story["name"]
+#	for scene in story["scenes"] do
+#		puts scene["contours"]["360"]["contour"] if scene["contours"]
+#	end
+#end
 
 # def download_from_url (url, local_path)
 # 	File.open(local_path, 'wb') do |file|
