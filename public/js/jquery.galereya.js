@@ -226,8 +226,6 @@
          * @returns {jQuery} - cell element
          */
         var createCell = function ($img, info) {
-            console.log("info is: ");
-            console.log(info);
             var $cell = $img.addClass('galereya-cell-img')
                 .wrap('<div class="galereya-cell" data-index="' + $cells.length + '"></div>')
                 .parent()
@@ -341,6 +339,9 @@
                 $img.addClass('galereya-cell-img')
                     .wrap('<div class="galereya-cell" data-index="' + i + '"></div>')
                     .parent()
+                    .append('<div class="galereya-cell-play-button-container">\
+                                <a class="overlay_label play_label"></a>\
+                            </div>')
                     .append('<div class="galereya-cell-desc">\
                                 <div class="galereya-cell-desc-title">\
                                     <a class="overlay_label user_name_label">' + user_name + '</a>\

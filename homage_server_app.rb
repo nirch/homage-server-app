@@ -184,22 +184,37 @@ get '/remakes' do
 		skip = params[:skip].to_i if params[:skip] # Optional
 		limit = params[:limit].to_i if params[:limit] # Optional
 		campaign_id = BSON::ObjectId.from_string(params[:campaign_id]) if params[:campaign_id] #optional
+		
+		story_names = params["stories"] if params["stories"];
+		story_id_array = Array.new
+		story_find_condition = {active: true}
 
-		story_names = Hash.new;
-
-		find_condition = {active: true}
-		if campaign_id then
-			find_condition["campaign_id"] = campaign_id
+		if story_names then
+			for name in story_names do
+				puts "name is " + name.to_s
+				story = settings.db.collection("Stories").find_one({name: name})
+				story_id_array.push(story["_id"])
+			end
+			story_find_condition["_id"] = {"$in"=> story_id_array}
 		end
 
-		puts "find_condition"
-		puts find_condition
+		if campaign_id then
+			story_find_condition["campaign_id"] = campaign_id
+		end
 
-		stories = settings.db.collection("Stories").find(find_condition, {fields: {after_effects: 0}}) 
+		puts "story find_condition"
+		puts story_find_condition
 
+		stories = settings.db.collection("Stories").find(story_find_condition, {fields: {after_effects: 0}}) 
+		puts "stories:"
+		puts stories
+
+		story_names = Hash.new
 		for story in stories do
+			puts "Story"
+			puts story
 			story_id = story["_id"]
-			story_names[story_id] = story["name"]
+			story_names["story_id"] = story["name"]
 		end
 
 		# Getting all the public users
@@ -209,21 +224,37 @@ get '/remakes' do
 		for user in public_users_cursor do
 			public_users.push(user["_id"])
 		end
+
+		remakes_find_condition = {status: RemakeStatus::Done, user_id:{"$in" => public_users}, grade:{"$ne" => -1}}
+		if story_id_array.length != 0 then
+			remakes_find_condition["story_id"] = {"$in"=> story_id_array}
+		end
+
+		puts "remakes_find_condition"
+		puts remakes_find_condition
 		
 		#remakes = settings.db.collection("Remakes").find({ share_link:{"$exists"=>true}, status: 3},{fields: {footages: 0}}).sort({created_at: -1})
-		remakes = settings.db.collection("Remakes").find({status: RemakeStatus::Done, user_id:{"$in" => public_users}, grade:{"$ne" => -1}},{fields: {footages: 0}}).sort(grade:-1);
+		# remakes = settings.db.collection("Remakes").find({status: RemakeStatus::Done, user_id:{"$in" => public_users}, story_id: {"$in"=> story_id_array}, grade:{"$ne" => -1}},{fields: {footages: 0}}).sort(grade:-1,created_at:-1);
+		remakes = settings.db.collection("Remakes").find(remakes_find_condition, {fields: {footages: 0}}).sort(grade:-1,created_at:-1);
+		puts "number of remakes returned:"
+		puts remakes.count
+
+		puts "skip: " + skip.to_s + "limit: " + limit.to_s
 
 		remakes = remakes.skip(skip) if skip
 		remakes = remakes.limit(limit) if limit
 
 		remakes_result = Array.new;
 		for remake in remakes do
+			puts "rafi"
 			story_id = remake["story_id"]
 			story_name = story_names[story_id];
 			remake["story_name"] = story_name;
 			remakes_result.push(remake);
 		end
 
+		puts "remakes_result"
+		puts remakes_result
 		remakes_result = remakes_result.to_json
 end
 
@@ -1049,6 +1080,16 @@ get '/remake/:remake_id' do
 
 	# input
 	remake_id = BSON::ObjectId.from_string(params[:remake_id])
+	current_user = BSON::ObjectId.from_string(params[:user_id]) if params[:user_id]
+	current_cookie = BSON::ObjectId.from_string(params[:cookie_id]) if params[:cookie_id]
+
+	entity_id = ""
+	if !current_cookie && !current_user then
+		logger.error "no user identity received from client"
+	else 
+		entity_id = current_user ? current_user : current_cookie
+	end
+
 
 	logger.info "Getting remake with id " + remake_id.to_s
 
@@ -1059,6 +1100,7 @@ get '/remake/:remake_id' do
 	story = settings.db.collection("Stories").find_one(story_id)
 	remake["share_message"] = story["share_message"] if story["share_message"]
 	remake["share_count"] = settings.db.collection("Shares").find({remake_id: remake_id}).count
+	remake["is_liked"] = userLikedRemake(entity_id,remake_id)
 
 	if remake then
 		remake.to_json
@@ -1520,11 +1562,19 @@ post '/remake/like' do
 	
 	#add like
 	likes = settings.db.collection("Likes")
-	like = {remake_id: remake_id, created_at: Time.now, like_state: true}
-	like["user_id"]   = user_id if user_id
-	like["cookie_id"] = cookie_id if cookie_id 
-	like_objectId = likes.save(like)
+	like_info = {remake_id: remake_id}
+	like_info["user_id"]   = user_id if user_id
+	like_info["cookie_id"] = cookie_id if cookie_id 
 
+	like  = likes.find_one(like_info)
+	if like then 
+		like_id = like["_id"]
+		likes.update({_id: like_id},{"$set" => {like_state: true}})
+	else 
+		like_info["created_at"] = Time.now
+		like_info["like_state"] = true
+		like_objectId = likes.save(like_info)
+	end
 
 	#inc remake like counter
 	remakes = settings.db.collection("Remakes")
@@ -1728,6 +1778,7 @@ def trackView(entity_type,params, user_os, userAgentStr)
 	view["_id"]       = BSON::ObjectId.from_string(params[:view_id])
 	view["remake_id"] = BSON::ObjectId.from_string(params[:remake_id]) if params[:remake_id]
 	view["story_id"]  = BSON::ObjectId.from_string(params[:story_id]) if params[:story_id]
+	view["campaign_id"] = BSON::ObjectId.from_string(params[:campaign_id]) if params[:campaign_id]
 	view["user_id"]   = BSON::ObjectId.from_string(params[:user_id]) if params[:user_id]
 	view["cookie_id"] = BSON::ObjectId.from_string(params[:cookie_id]) if params[:cookie_id]
 	
@@ -1751,7 +1802,10 @@ def trackView(entity_type,params, user_os, userAgentStr)
 	elsif entity_type == "story" then
 		collection = settings.db.collection("Stories")
 		entity_id  = view["story_id"]
-	end 
+	elsif entity_type == "campaign_video" then
+		collection = settings.db.collection("Campaigns")
+		entity_id = view["campaign_id"]
+	end
 		
 	if playback_event == PlaybackEventType::PlaybackEventStart then
 		view["start_time"] = Time.now
@@ -1824,6 +1878,16 @@ post '/story/view' do
 
 	trackView("story",params, user_os, userAgentStr)
 end
+
+post '/campaign_video/view' do 
+	# user agent
+	userAgentStr = request.env["HTTP_USER_AGENT"].to_s
+	user_agent = UserAgentParser.parse(userAgentStr)
+	user_os = user_agent.os.to_s
+
+	trackView("campaign_video",params, user_os, userAgentStr)
+end
+
 
 post '/user/session_begin' do
 	client_generated_session_id = BSON::ObjectId.from_string(params[:session_id])

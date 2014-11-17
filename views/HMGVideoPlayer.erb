@@ -268,7 +268,7 @@
 			var remakeId = '<%= @remake["_id"].to_s %>'
 			var currentViewId;
 
-			var trackVideoSrart = function(){
+			var trackVideoStart = function(){
 				// Tracking in our Server
 				currentViewId = new ObjectId().toString();
 				view_params = {"view_id":currentViewId, "remake_id":remakeId, "playback_event":0, "originating_screen":11, "cookie_id":$.cookie('homageCookieID')}

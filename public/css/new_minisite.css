@@ -86,7 +86,8 @@ src: url("/resources/ProximaNova-Light.otf") format("opentype");
 	background-color: transparent;
   border-bottom: #ff5f45 solid 3px;
 }
-.navbar-custom .navbar-left > li > a:focus {
+.navbar-custom .navbar-left > li > a:focus,
+.navbar-custom .navbar-left > li > a:active {
  	border-bottom: #ff5f45 solid 3px;
  	background-color: transparent;
  	outline: none;
@@ -297,8 +298,16 @@ src: url("/resources/ProximaNova-Light.otf") format("opentype");
 }
 
 .like_button {
-  background: url('/resources/minisite/Unliked.png') no-repeat left center;
   z-index: 3423423000000;
+}
+
+.unliked_state {
+  background: url('/resources/minisite/Unliked.png') no-repeat left center;
+}
+
+.liked_state {
+  background: url('/resources/minisite/Liked.png') no-repeat left center;
+  
 }
 
 .flag_button {

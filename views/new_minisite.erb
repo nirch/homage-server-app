@@ -73,15 +73,16 @@
               <!-- Collect the nav links, forms, and other content for toggling -->
               <div class="collapse navbar-collapse">
                 <ul class="nav navbar-nav navbar-left">
-                  <li><a href="#">All</a></li>
-                  <li><a href="#">My takes</a></li>
-                  <li><a href="#">Trending</a></li>
+                  <li><a class="all-remakes-button" href="#">All</a></li>
+                  <li><a class="my-remakes-button" href="#">My takes</a></li>
+                  <li><a class="trending-remakes-button" href="#">Trending</a></li>
                 </ul>
                 
                 <ul class="nav navbar-nav navbar-right">
                   <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown">Campaign Stories<span class="caret"></span></a>
                     <ul class="dropdown-menu" role="menu">
+                      <li><a href="#">All</a></li>
                       <% for story in @stories do %>
                         <li><a href="#"><%= story["name"] %></a></li>
                       <% end %>
@@ -143,7 +144,7 @@
       </div>
 
       <div class="remake_footer">
-        <a class="secondary_font_label hoverable_element like_button">Like</a>
+        <a class="secondary_font_label hoverable_element like_button"></a>
         <a class="secondary_font_label hoverable_element make_your_own_button">Make your own</a>
         <a class="secondary_font_label hoverable_element more_from_button"></a>
         <a class="secondary_font_label hoverable_element flag_button">Flag</a>
@@ -183,7 +184,13 @@
   var campaign_id = '<%= @campaign["_id"].to_s %>'
   var share_link_prefix = '<%= @config["share_link_prefix"] %>'
   var view_pct_threshold = '<%= @config["significant_view_pct_threshold"] %>'
+  var current_user = null;
+  var currently_selected_story = null;
+  var current_query_type = null;
+  var origin_id  = '<%= @originating_share_id %>'
+ 
 
+  // share method ENUM
   CopyUrlShareMethod = 0
   FacebookShareMethod = 1
   WhatsappShareMethod = 2
@@ -194,10 +201,16 @@
   GooglePlusShareMethod = 7
   PinterestShareMethod = 8
 
+  // remake query type
+  AllQuery      = 0
+  StoryQuery    = 1
+  MyTakesQuery  = 2
+  TrendingQuery = 3
+
   $('body').on("finished_loading_images", function() {
     currentlyLoadingImgs = false;
     if  ($(window).scrollTop() == $(document).height() - $(window).height()) {
-            fetch_remakes();
+            fetch_remakes(current_query_type);
     }
   });
 
@@ -207,17 +220,166 @@
     $(".header_content_container").show();
   });
 
+
+  var stopReported = false;
+  var playReported = false;
+  
   videojs('campaign_video_player').ready(function(){
     var myPlayer = this;
-    myPlayer.poster("http://d293iqusjtyr94.cloudfront.net/Remakes/5452635a771ac17c12000005/Hello%20Nyan%20Kitty_5452635a771ac17c12000005.jpg");
-    myPlayer.src("http://d293iqusjtyr94.cloudfront.net/Remakes/5452635a771ac17c12000005/Hello%20Nyan%20Kitty_5452635a771ac17c12000005.mp4");
+    var campaign_id = '<%= @campaign["_id"].to_s %>'
+    var campaign_video = '<%= @campaign["video"].to_s %>'
+    var campaign_thumbnail = '<%= @campaign["thumbnail"].to_s %>'
+    var currentViewId;
+    var first = true;
+    var thresholdReported = false;
+
+    var myPlayer = this;
+    myPlayer.poster(campaign_thumbnail);
+    myPlayer.src(campaign_video);
     myPlayer.posterImage.show();
     //myPlayer.load();
+
+    var trackVideoStart = function(){
+      currentViewId = new ObjectId().toString();
+
+      view_params = {"view_id":currentViewId, "campaign_id":campaign_id, "playback_event":0, "originating_screen":11, "cookie_id":$.cookie('homageCookieID')}
+      if (origin_id != "") {
+        view_params["origin_id"] = origin_id
+      }
+      $.post('/campaign_video/view', view_params, function(data,status){
+          playReported = true;
+          stopReported = false;
+          thresholdReported = false;
+      });
+    };
+
+    var trackVideoEnd = function() {
+      $.post('/campaign_video/view', {"view_id":currentViewId, "campaign_id":campaign_id, "playback_event":1, "originating_screen":11, "total_duration":myPlayer.duration(), "playback_duration":myPlayer.currentTime(), "cookie_id":$.cookie('homageCookieID')}, function(data,status){
+          stopReported = true;
+          playReported = false;
+        });
+    };
+
+    var trackVideoReachedViewThreshold = function() {
+      $.post('/campaign_video/view', {"view_id":currentViewId, "campaign_id":campaign_id, "playback_event":1, "originating_screen":11, "total_duration":myPlayer.duration(), "playback_duration":myPlayer.currentTime(), "cookie_id":$.cookie('homageCookieID')}, function(data,status){
+        });
+    }
+
+    myPlayer.on("play", function() {
+      if (first) {
+        first = false;
+        trackVideoStart();
+      }       
+    });
+
+    myPlayer.on("timeupdate" , function() {
+      duration = myPlayer.currentTime();
+      total_duration = myPlayer.duration();
+      if (duration > (total_duration * view_pct_threshold) && !thresholdReported) {
+        trackVideoReachedViewThreshold();
+        thresholdReported = true;
+      }
+    });
+
+    myPlayer.on("ended", function() {
+      first = true;
+      trackVideoEnd();
+      myPlayer.posterImage.show();
+    });
+  });
+
+  videojs('remake_video_player').ready(function() {
+    var myPlayer = this;
+    var currentViewId
+    var first = true;
+    var thresholdReported = false;
+    
+    var trackVideoStart = function(){
+        currentViewId = new ObjectId().toString();
+        
+        if (currentRemake["remake_id"] == null) return;
+
+        remake_id = currentRemake["remake_id"];
+
+        impressionId = new ObjectId().toString();
+        impression_params = {"impression_id":impressionId, "remake_id":remake_id, "playback_event":0, "originating_screen":11, "cookie_id":$.cookie('homageCookieID')}
+        if (origin_id != "") {
+          impression_params["origin_id"] = origin_id
+        }
+        
+        $.post('/remake/impression', impression_params , function(data,status){
+                 
+        });
+
+        view_params = {"view_id":currentViewId, "remake_id":remake_id, "playback_event":0, "originating_screen":11, "cookie_id":$.cookie('homageCookieID')}
+        if (origin_id != "") {
+          view_params["origin_id"] = origin_id
+        }
+        $.post('/remake/view', view_params, function(data,status){
+            // playReported = true;
+            // stopReported = false;
+            thresholdReported = false;
+          });
+    };
+
+    var trackVideoEnd = function() {
+      if (currentRemake["remake_id"] == null) return;
+
+      remake_id = currentRemake["remake_id"];
+      $.post('/remake/view', {"view_id":currentViewId, "remake_id":remake_id, "playback_event":1, "originating_screen":11, "total_duration":myPlayer.duration(), "playback_duration":myPlayer.currentTime(), "cookie_id":$.cookie('homageCookieID')}, function(data,status){
+          // stopReported = true;
+          // playReported = false;
+        });
+    };
+
+    var trackVideoReachedViewThreshold = function() {
+      if (currentRemake["remake_id"] == null) return;
+
+      remake_id = currentRemake["remake_id"];
+
+      $.post('/remake/view', {"view_id":currentViewId, "remake_id":remake_id, "playback_event":1, "originating_screen":11, "total_duration":myPlayer.duration(), "playback_duration":myPlayer.currentTime(), "cookie_id":$.cookie('homageCookieID')}, function(data,status){
+        });
+    }
+
+    myPlayer.on("play", function() {
+      if (first) {
+        first = false;
+        trackVideoStart();
+      }       
+    });
+
+    myPlayer.on("timeupdate" , function() {
+      duration = myPlayer.currentTime();
+      total_duration = myPlayer.duration();
+      if (duration > (total_duration * view_pct_threshold) && !thresholdReported) {
+        trackVideoReachedViewThreshold();
+        thresholdReported = true;
+      }
+    });
+
+    myPlayer.on("ended", function() {
+      first = true;
+      trackVideoEnd();
+      myPlayer.posterImage.show();
+    });
   });
 
   function showVideoPlayer(remake_id) {
+    campaign_video_player = videojs('campaign_video_player');
+    if (!campaign_video_player.paused()) {
+      campaign_video_player.pause();
+      campaign_video_player.currentTime(0);
+      campaign_video_player.posterImage.show();
+    }
+
     path = '/remake/' + remake_id.toString();
-    $.get(path, {} , function(data, status, xhr){
+
+    params = {}
+    if ($.cookie('homageCookieID')) {
+      params["cookie_id"] = $.cookie('homageCookieID') 
+    }
+
+    $.get(path, params , function(data, status, xhr){
         json_data = $.parseJSON(data);
       
         currentRemake["remake_id"] = remake_id.toString();
@@ -230,7 +392,10 @@
         like_count = json_data["like_count"] ? json_data["like_count"] : 0;
         view_count = json_data["views"] ? json_data["views"] : 0;
         share_count = json_data["share_count"] ? json_data["share_count"] : 0;
- 
+        is_liked = json_data["is_liked"] ? json_data["is_liked"] : false;
+
+        toogleLikeButton(is_liked);
+
         $('.more_from_button').text("More from " + user_fullname);
         $('.user_name_label').text(user_fullname);
         $('.like_count_label').text(like_count);
@@ -239,6 +404,9 @@
 
         currentRemake["thumbnail"] = thumbnail;
         currentRemake["share_message"] = share_message;
+
+        var stopReported = false;
+        var playReported = false;
 
         var myPlayer = videojs('remake_video_player');
 
@@ -251,6 +419,32 @@
         document.body.style.overflow = 'hidden';
     });
   }
+
+  // function trackVideoStart() {
+  //   currentViewId = new ObjectId().toString();
+  //   view_params = {"view_id":currentViewId, "remake_id":remakeId, "playback_event":0, "originating_screen":11, "cookie_id":$.cookie('homageCookieID')}
+  //   if (origin_id != "") {
+  //       view_params["origin_id"] = origin_id
+  //   }
+  //   $.post('/remake/view', view_params, function(data,status){
+  //       playReported = true;
+  //       stopReported = false;
+  //       thresholdReported = false;
+  //     });
+
+  // }
+
+  // function trackVideoEnd() {
+  //   $.post('/remake/view', {"view_id":currentViewId, "remake_id":remakeId, "playback_event":1, "originating_screen":11, "total_duration":myPlayer.duration(), "playback_duration":myPlayer.currentTime(), "cookie_id":$.cookie('homageCookieID')}, function(data,status){
+  //       stopReported = true;
+  //       playReported = false;
+  //     });    
+  // }
+
+  // function trackVideoReachedViewThreshold() {
+  //   $.post('/remake/view', {"view_id":currentViewId, "remake_id":remakeId, "playback_event":1, "originating_screen":11, "total_duration":myPlayer.duration(), "playback_duration":myPlayer.currentTime(), "cookie_id":$.cookie('homageCookieID')}, function(data,status){
+  //     });
+  // }
 
   function genShareLink() {
     currentShareId = new ObjectId().toString();
@@ -277,12 +471,33 @@
     return share_link;
   };
 
-  function fetch_remakes()
+  function fetch_remakes(query_type)
   {
     var single_batch_remakes = [];
     currentlyLoadingImgs = true;
+    current_query_type = query_type;
 
-    $.get('/remakes', {campaign_id: campaign_id, skip: skip, limit: limit} , function(data, status, xhr){
+    remakes_cond = {};
+    remakes_cond["campaign_id"] = campaign_id;
+    remakes_cond["skip"] = skip;
+    remakes_cond["limit"] = limit;
+    remakes_cond["query_type"] = query_type;
+    
+    if (query_type == AllQuery) {
+
+    } else if (query_type == StoryQuery) {
+      stories = [];
+      stories.push(currently_selected_story);
+      remakes_cond["stories"] = stories;
+    } else if (query_type == TrendingQuery) {
+
+    } else if (query_type == MyTakesQuery) {
+      if (current_user != null) {
+        remakes_cond["user_id"] = current_user;
+      }
+    }
+
+    $.get('/remakes', remakes_cond , function(data, status, xhr){
       json_data = $.parseJSON(data)
 
       for (var i=0;i<json_data.length;i++) {
@@ -337,15 +552,25 @@
   $(window).scroll(function() {
       if  ($(window).scrollTop() == $(document).height() - $(window).height()) {
         if (!currentlyLoadingImgs) { 
-          fetch_remakes();
+          fetch_remakes(current_query_type);
         }
       }
   }); 
 
+  function cleanGallery() {
+    $('#gallery_container').empty();
+      gallery = null;
+      skip = 0;
+      all_remakes = [];
+  }
+
   $(".dropdown-menu li a").on('click', function(){
       story_name = $(this).text().toString();
       console.log("story:" + story_name);
-      gallery.changeCategory(story_name.toLowerCase());
+      // gallery.changeCategory(story_name.toLowerCase());
+      currently_selected_story = story_name;
+      cleanGallery();
+      fetch_remakes(StoryQuery);
    });
 
   $(document).on('click','.video_overlay',function(e){
@@ -471,6 +696,34 @@
     });
    });
 
+  function toogleLikeButton(is_liked) {
+    if (is_liked) {
+      $('.like_button').addClass('liked_state')
+      $('.like_button').text("Unlike")
+      $('.like_button').removeClass('unliked_state')
+    } else {
+      $('.like_button').addClass('unliked_state')
+      $('.like_button').text("Like")
+      $('.like_button').removeClass('liked_state')
+    }
+  }
+
+  $('.like_button').on('click', function(e) {
+    console.log("like clicked");
+
+    like_params = {}
+    like_params["remake_id"] = currentRemake["remake_id"];
+    if ($.cookie('homageCookieID')) like_params["cookie_id"] = $.cookie('homageCookieID');
+
+    if ($('.like_button').hasClass('unliked_state')) {
+      toogleLikeButton(true);
+      $.post('/remake/like' , like_params)
+
+    } else if ($('.like_button').hasClass('liked_state')) {
+      toogleLikeButton(false);
+      $.post('/remake/unlike' , like_params)
+    }
+  });
 
   // $(".homageAppStoreLink").click(function() {
   //   $.get('/ios', {"src": "minisite"});
@@ -480,8 +733,42 @@
   //   $.get('/android', {"src": "minisite"});
   // });
 
+  $('.all-remakes-button').on('click', function(e) {
+    cleanGallery();
+    fetch_remakes(AllQuery);
+  });
+  $('.my-remakes-button').on('click', function(e) {
+    //fetch_remakes(MyTakesQuery);
+  });
 
-  fetch_remakes();
+  $('.trending-remakes-button').on('click', function(e) {
+    //fetch_remakes(TrendingQuery);
+  });
+
+  function checkViewReportStatus () {
+    // Tracking only if we already tracked play and didn'y track stop
+    if (playReported && !stopReported) {
+      var campaign_id = '<%= @campaign["_id"].to_s %>'
+      // Tracking in our Server (doing a sync call because the page is about to close)
+      $.ajax({
+          type: 'POST',
+          async: false,
+          url: '/campaign_video/view',
+          data: {"view_id":currentViewId, "campaign_id":campaign_id, "playback_event":1, "originating_screen":11, "total_duration":myPlayer.duration(), "playback_duration":myPlayer.currentTime()},
+          complete: function(xhr, status) {
+            playReported = false;
+            stopReported = true; 
+          }
+      });
+    }
+  }
+      
+  // Event for page unload to track the end of the view
+  $(window).bind('beforeunload', function(){
+    checkViewReportStatus();
+  });
+
+  fetch_remakes(AllQuery);
   
 </script>
 </body>
