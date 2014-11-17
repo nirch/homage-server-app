@@ -27,6 +27,25 @@
 		#links a img {
 			margin: 3px 1px;
 		}
+		.show {
+		    z-index:1000;
+		    position: absolute;
+		    background-color:#C0C0C0;
+		    border: 1px solid blue;
+		    padding: 2px;
+		    display: block;
+		    margin: 0;
+		    list-style-type: none;
+		    list-style: none;
+		}
+
+		.hide {
+		    display: none;
+		}
+
+		.show li{ list-style: none; }
+		.show a { border: 0 !important; text-decoration: none; }
+		.show a:hover { text-decoration: underline !important; }
 	</style>
 
 </head>
@@ -82,7 +101,8 @@
 
 		<div id="links">
 			<% for remake in @remakes do %>	
-			    <a href=<%= remake["video"] %> title="<%= remake["_id"].to_s %>" type="video/mp4" data-poster=<%= remake["thumbnail"] %> data-gallery>
+			<!-- <div id="video1"> -->
+			    <a class="video" href=<%= remake["video"] %> title="<%= remake["_id"].to_s %>" type="video/mp4" data-poster=<%= remake["thumbnail"] %> data-gallery>
 			        <img src=<%= remake["thumbnail"] %> width=320 height=180 alt="<%= remake["title"] %>">
 			    	<% if @grade then %>
 				        <div class="caption">
@@ -95,6 +115,19 @@
 					     </form>
 					<% end %>
 			    </a>
+			    <!-- </div> -->
+			    <!-- initially hidden right-click menu 
+		        <div class="hide" id="rmenu">
+		            <ul>
+		                <li>
+		                    <a href="http://www.google.com">Google</a>
+		                </li>
+
+		                <li>
+		                    <a href="http://localhost:8080/login">Localhost</a>
+		                </li>
+		            </ul>
+		        </div>-->
 			<% end %>
 
 <!-- 		    <a href="http://d293iqusjtyr94.cloudfront.net/Remakes/5300c3dec5c06a0c80000001/Dive%20School_5300c3dec5c06a0c80000001.mp4" title="Nir Channes" type="video/mp4" data-poster="http://d293iqusjtyr94.cloudfront.net/Remakes/5300c3dec5c06a0c80000001/Dive%20School_5300c3dec5c06a0c80000001.jpg" data-gallery>
@@ -135,9 +168,54 @@
 			$("body").on("click", ".grade_form input[type='submit']", function(e){
 				e.stopPropagation();
 				e.preventDefault();
-				$(this).closest("form").submit();
+				$(this).closest('form').submit();   
 			})
+
+			// form submit ajax
+			$('form').submit(function(event) {
+		        event.preventDefault();
+		        //console.log('submit closest done');
+		        $.ajax({
+		            type: "POST",
+		            url: $(this).attr('action'),
+		            data: $(this).serialize(),
+		            success: function(data){
+		                alert('Grade successfully applied!');                    
+		            }
+		        });
+		    });
+			// form submit ajax---------------------
+
+			//right click listener
+		   /* if ($("#video").addEventListener) {
+		        $("#video").addEventListener('contextmenu', function(e) {
+		            alert("You've tried to open context menu"); //here you draw your own menu
+		            e.preventDefault();
+		        }, false);
+		    } else {
+
+		        //document.getElementById("test").attachEvent('oncontextmenu', function() {
+		        //$(".test").bind('contextmenu', function() {
+		            $('body').on('contextmenu', 'a.video', function() {
+
+
+		            //alert("contextmenu"+event);
+		            document.getElementById("rmenu").className = "show";  
+		            document.getElementById("rmenu").style.top =  mouseY(event);
+		            document.getElementById("rmenu").style.left = mouseX(event);
+
+		            window.event.returnValue = false;
+
+
+		        });
+   			}*/
+   			//right click listener------------------
+
 		})
+
+		 $(document).bind("click", function(event) {
+		        document.getElementById("rmenu").className = "hide";
+		    });
 	</script>
 	<!-- <script src="/js/blueimp-gallery-video.js"></script> -->
 
