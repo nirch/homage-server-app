@@ -19,7 +19,7 @@
 		#links {
 			text-align: center;
 		}
-		#links a {
+		#links .video {
 			display:inline-block;
 			text-decoration:none;
 			color:black;
@@ -27,6 +27,7 @@
 		#links a img {
 			margin: 3px 1px;
 		}
+		/* right click menu 
 		.show {
 		    z-index:1000;
 		    position: absolute;
@@ -45,7 +46,7 @@
 
 		.show li{ list-style: none; }
 		.show a { border: 0 !important; text-decoration: none; }
-		.show a:hover { text-decoration: underline !important; }
+		.show a:hover { text-decoration: underline !important; }*/
 	</style>
 
 </head>
@@ -101,9 +102,9 @@
 
 		<div id="links">
 			<% for remake in @remakes do %>	
-			<!-- <div id="video1"> -->
-			    <a class="video" href=<%= remake["video"] %> title="<%= remake["_id"].to_s %>" type="video/mp4" data-poster=<%= remake["thumbnail"] %> data-gallery>
-			        <img src=<%= remake["thumbnail"] %> width=320 height=180 alt="<%= remake["title"] %>">
+			<div id="video" class="video">
+			    <a id="video1" href=<%= remake["video"] %> title="<%= remake["_id"].to_s %>" type="video/mp4" data-poster=<%= remake["thumbnail"] %> data-gallery>
+			        <img src=<%= remake["thumbnail"] %> width=320 height=180 alt="<%= remake["title"] %>"></a>
 			    	<% if @grade then %>
 				        <div class="caption">
 				        	<%= remake["_id"].to_s %>
@@ -112,22 +113,24 @@
 					    	Grade: <input type="text" value=<% if remake["grade"] then %> <%= remake["grade"] %> <% else %> "0" <% end %> name="grade">
 					       	<input type="submit" value="Update">
 					       	<input type="hidden" name="remake_id" value=<%= remake["_id"].to_s %>>
-					     </form>
+					    </form>
 					<% end %>
-			    </a>
-			    <!-- </div> -->
-			    <!-- initially hidden right-click menu 
-		        <div class="hide" id="rmenu">
+					<button type="button" onclick="DownloadRemake('<%= remake["_id"].to_s %>')">Download Remake</button>
+			</div>
+			<!-- ListObjectsFromS3() -->
+
+			    <!-- initially hidden right-click menu--> 
+		       <!--  <div class="hide" id="rmenu">
 		            <ul>
 		                <li>
-		                    <a href="http://www.google.com">Google</a>
-		                </li>
-
-		                <li>
-		                    <a href="http://localhost:8080/login">Localhost</a>
+		                    <div class="download" onclick="DownloadRemake(this)" value=<%= remake["_id"].to_s %>>
+		                    	Download <%= remake["_id"].to_s %>
+		                    <input type="hidden" name="remake_id" value=<%= remake["_id"].to_s %>>
+		                	</div>
 		                </li>
 		            </ul>
-		        </div>-->
+		        </div> -->
+		         <!-- initially hidden right-click menu--> 
 			<% end %>
 
 <!-- 		    <a href="http://d293iqusjtyr94.cloudfront.net/Remakes/5300c3dec5c06a0c80000001/Dive%20School_5300c3dec5c06a0c80000001.mp4" title="Nir Channes" type="video/mp4" data-poster="http://d293iqusjtyr94.cloudfront.net/Remakes/5300c3dec5c06a0c80000001/Dive%20School_5300c3dec5c06a0c80000001.jpg" data-gallery>
@@ -150,9 +153,12 @@
 	<script src="http://netdna.bootstrapcdn.com/bootstrap/3.0.2/js/bootstrap.min.js"></script>
 	<script src="http://blueimp.github.io/Gallery/js/jquery.blueimp-gallery.min.js"></script>
 	<script src="/js/bootstrap-image-gallery.min.js"></script>
+	<script src="https://sdk.amazonaws.com/js/aws-sdk-2.0.27.min.js"></script>
 
 	<script>
 		$(document).ready(function(){
+
+
 			$("body").on("click", ".grade_form", function(e){
 				e.stopPropagation();
 				e.preventDefault();
@@ -186,8 +192,8 @@
 		    });
 			// form submit ajax---------------------
 
-			//right click listener
-		   /* if ($("#video").addEventListener) {
+			/*//right click listener
+		   if ($("#video").addEventListener) {
 		        $("#video").addEventListener('contextmenu', function(e) {
 		            alert("You've tried to open context menu"); //here you draw your own menu
 		            e.preventDefault();
@@ -208,14 +214,95 @@
 
 
 		        });
-   			}*/
-   			//right click listener------------------
+   			}
+   			//right click listener------------------*/
 
 		})
+		
+		//Download the remake from S3
+		function DownloadRemake(remake_id) {
+				//alert(remake_id);
+				//var remake_id = document.getElementById("remake_id").value;  
+				//var AWS = require('aws-sdk');
+					AWS.config.update(
+					  {
+					    accessKeyId: "AKIAJTPGKC25LGKJUCTA",
+					    secretAccessKey: "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",
+					  }
+					);
+					var s3 = new AWS.S3();
+					var params = {
+					  Bucket: 'homageapp', /* required */
+					  Key: 'Remakes/52d68511db25450da4000001/raw_scene_1.mov' /* required */
+					};
+					s3.getObject(
+					  params,
+					  function (error, data) {
+					    if (error != null) {
+					      alert("Failed to retrieve an object: " + error);
+					    } else {
+					      alert("Loaded " + data.ContentLength + " bytes");
+					      // do something with data.body
+					    }
+					  }
+					);
+		}
 
-		 $(document).bind("click", function(event) {
-		        document.getElementById("rmenu").className = "hide";
-		    });
+		// function(xhr){xhr.setRequestHeader('Access-Control-Allow-Origin', '*.localhost.com*');}
+
+		function ListObjectsFromS3(){
+			AWS.config.update(
+					  {
+					    accessKeyId: "AKIAJTPGKC25LGKJUCTA",
+					    secretAccessKey: "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",
+					  }
+					);
+
+			var bucket = new AWS.S3({params: {Bucket: 'homageapp'}});
+			  bucket.listObjects(function (err, data) {
+			    if (err) {
+			      alert("Failed to retrieve an object: " + err);
+			    } else {
+			      alert(data.Contents.length);
+			      for (var i = 0; i < 10; i++) {
+			        alert(data.Contents[i].Key);
+			      }
+			    }
+			  });
+		}
+		//Download the remake from S3-------------------------
+		
+		/*//Mouse click location
+		function mouseX(evt) {
+		    if (evt.pageX) {
+		        return evt.pageX;
+		    } else if (evt.clientX) {
+		       return evt.clientX + (document.documentElement.scrollLeft ?
+		           document.documentElement.scrollLeft :
+		           document.body.scrollLeft);
+		    } else {
+		        return null;
+		    }
+		}
+
+		function mouseY(evt) {
+		    if (evt.pageY) {
+		        return evt.pageY;
+		    } else if (evt.clientY) {
+		       return evt.clientY + (document.documentElement.scrollTop ?
+		       document.documentElement.scrollTop :
+		       document.body.scrollTop);
+		    } else {
+		        return null;
+		    }
+		}
+		//Mouse click location------------*/
+
+		//Make custom menu dissapear on click
+		 // $(document).bind("click", function(event) {
+		 //        document.getElementById("rmenu").className = "hide";
+		 //    });
+		 ////Make custom menu dissapear on click----------------
 	</script>
 	<!-- <script src="/js/blueimp-gallery-video.js"></script> -->
 
