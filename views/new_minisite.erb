@@ -137,10 +137,10 @@
     <div class="remake_video_container">
       
       <div class="remake_header">
-        <a class="secondary_font_label user_name_label"></a>
-        <a class="secondary_font_label like_count_label"></a>
-        <a class="secondary_font_label view_count_label"></a>
-        <a class="secondary_font_label share_count_label"></a>
+        <a class="secondary_font_label user_name_label overlay_user_name_label"></a>
+        <a class="secondary_font_label like_count_label overlay_like_count_label"></a>
+        <a class="secondary_font_label view_count_label overlay_view_count_label"></a>
+        <a class="secondary_font_label share_count_label overlay_share_count_label"></a>
       </div>
 
       <div class="videocontent remake_video_content">
@@ -406,10 +406,10 @@
         toogleLikeButton(is_liked);
 
         $('.more_from_button').text("More from " + user_fullname);
-        $('.user_name_label').text(user_fullname);
-        $('.like_count_label').text(like_count);
-        $('.view_count_label').text(view_count);
-        $('.share_count_label').text(share_count);
+        $('.overlay_user_name_label').text(user_fullname);
+        $('.overlay_like_count_label').text(like_count);
+        $('.overlay_view_count_label').text(view_count);
+        $('.overlay_share_count_label').text(share_count);
 
         currentRemake["thumbnail"] = thumbnail;
         currentRemake["share_message"] = share_message;

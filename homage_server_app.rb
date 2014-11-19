@@ -184,6 +184,7 @@ get '/remakes' do
 		skip = params[:skip].to_i if params[:skip] # Optional
 		limit = params[:limit].to_i if params[:limit] # Optional
 		campaign_id = BSON::ObjectId.from_string(params[:campaign_id]) if params[:campaign_id] #optional
+		queryType = params[:query_type] if params[:query_type]
 		
 		story_names = params["stories"] if params["stories"];
 		story_id_array = Array.new
@@ -420,15 +421,13 @@ subdomain settings.play_subdomain do
 			@originating_share_id = @share["_id"]
 			shares.update({_id: @originating_share_id},{"$set" => {share_status: true}})
 		end
-
-		
+	
 		if BSON::ObjectId.legal?(@remake["user_id"]) then
 			@user = users.find_one(@remake["user_id"])
 		else
 			@user = users.find_one({_id: @remake["user_id"]})
 		end
 
-		
 		@story = stories.find_one(@remake["story_id"])
 
 		erb :HMGVideoPlayer
@@ -1099,7 +1098,6 @@ get '/remake/:remake_id' do
 	story_id = remake["story_id"]
 	story = settings.db.collection("Stories").find_one(story_id)
 	remake["share_message"] = story["share_message"] if story["share_message"]
-	remake["share_count"] = settings.db.collection("Shares").find({remake_id: remake_id}).count
 	remake["is_liked"] = userLikedRemake(entity_id,remake_id)
 
 	if remake then
@@ -1537,6 +1535,11 @@ post '/remake/share' do
 
 	share_objectId = shares.save(share)
 
+	#inc remake like counter
+	remakes = settings.db.collection("Remakes")
+	remake = remakes.find_one(remake_id)
+	remakes.update({_id: remake_id},{"$inc" => {share_count: 1}})
+
 	logger.info "New share saved in the DB with share id " + share_objectId.to_s
 	return share.to_json
 end
@@ -1806,7 +1809,7 @@ def trackView(entity_type,params, user_os, userAgentStr)
 		collection = settings.db.collection("Campaigns")
 		entity_id = view["campaign_id"]
 	end
-		
+
 	if playback_event == PlaybackEventType::PlaybackEventStart then
 		view["start_time"] = Time.now
 		collection.update({_id:entity_id},{"$inc" => {views: 1}})
