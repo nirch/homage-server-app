@@ -16,6 +16,8 @@ require 'user_agent_parser'
 require 'sinatra/subdomain'
 require 'mixpanel-ruby'
 require 'mail'
+require 'rubygems'
+require 'zip'
 require File.expand_path '../mongo scripts/Analytics.rb', __FILE__
 
 current_session_ID = nil
@@ -2013,4 +2015,138 @@ get '/test/:entity_id' do
 		@story = stories.find_one(@remake["story_id"])
 
 		erb :HMGVideoPlayer
+end
+
+def download_remake_from_s3(remake_id_str, download_folder)
+
+	remakes = settings.db.collection("Remakes")
+	stories = settings.db.collection("Stories")
+
+	remake_id = BSON::ObjectId.from_string(remake_id_str)
+
+	# Getting the remake
+	remake = remakes.find_one(remake_id)
+	if !remake then
+		logger.info "Remake not found!"
+		return
+	end
+	story = stories.find_one(remake["story_id"])
+
+	s3 = AWS::S3.new
+	bucket = s3.buckets['homageapp']
+	# Getting all the remake's file from S3
+	remake_s3_prefix = "Remakes/" + remake["_id"].to_s
+	remake_s3_objects = bucket.objects.with_prefix(remake_s3_prefix)
+	files = []
+	for remake_s3_object in remake_s3_objects do
+		# Saving each file to the download folder
+		basename = remake_id.to_s + "_" + File.basename(remake_s3_object.key, ".*")
+		extension = File.extname(remake_s3_object.key)
+		if(extension == '.zip')
+			return remake_s3_object
+		end
+		download_to_path = download_folder + basename + extension
+
+		logger.info "Downloading file " + File.basename(remake_s3_object.key) + "..."
+
+		download_from_s3(remake_s3_object, download_to_path)
+		files.push basename + extension
+
+		if remake_s3_object.key.include? "raw_scene" then
+			scene_id = basename[-1,1].to_i # The last char is the scene_id
+			contour_orig_url = story["scenes"][scene_id - 1]["contours"]["360"]["contour_remote"]
+			contour_face_url = File.dirname(contour_orig_url) + "/Face/" + File.basename(contour_orig_url,".*") + "-face.ctr"
+
+			extension = ".ctr"
+			download_to_path = download_folder + basename + extension
+
+			logger.info "Downloading file " + File.basename(contour_face_url) + "..."
+			open(download_to_path, 'wb') do |file|
+				file << open(contour_face_url).read
+			end
+			files.push basename + extension
+		end
+	end
+
+	return files
+end
+
+def zipfolder(download_folder, input_filenames, remake_id)
+	zipfile_name = download_folder + remake_id.to_s + '.zip'
+
+		Zip::File.open(zipfile_name, Zip::File::CREATE) do |zipfile|
+		  	input_filenames.each do |filename|
+			    # Two arguments:
+			    # - The name of the file as it will appear in the archive
+			    # - The original file, including the path to find it
+			    logger.info 'zipping file' + filename
+				zipfile.add(filename, download_folder + '/' + filename)
+			  end
+			  #zipfile.get_output_stream("myFile") { |os| os.write "myFile contains just this" }
+			  logger.info 'finished zip'
+		end
+		logger.info remake_id.to_s + '.zip'
+		return remake_id.to_s + '.zip'
+end
+
+def upload_to_s3 (file_path, s3_key, acl, content_type=nil)
+	s3 = AWS::S3.new
+	bucket = s3.buckets['homageapp']
+	s3_object = bucket.objects[s3_key]
+
+	logger.info 'Uploading the file <' + file_path + '> to S3 path <' + s3_object.key + '>'
+	#file = File.new(file_path)
+	s3_object.write(Pathname.new(file_path), {:acl => acl, :content_type => content_type})
+	#file.close
+	logger.info "Uploaded successfully to S3, url is: " + s3_object.public_url.to_s
+
+	return s3_object
+end
+
+def download_from_s3 (s3_object, local_path)
+
+	logger.info "Downloading file from S3 with key " + s3_object.to_s
+	
+	File.open(local_path, 'wb') do |file|
+  		s3_object.read do |chunk|
+    		file.write(chunk)
+    	end
+    end
+
+  	logger.info "File downloaded successfully to: " + local_path
+end
+
+
+get '/download/remake/:remake_id' do
+	remake_id = params[:remake_id]
+
+	download_folder = "/download_folder/" + remake_id.to_s + "/"
+	# Creating the download folder
+	FileUtils.mkdir_p download_folder
+
+	logger.info 'Start Download'
+	input_filenames = download_remake_from_s3(remake_id.to_s, download_folder)
+	s3_object = nil
+	#Was there a zip file or was it an array of strings?
+	if(input_filenames.instance_of? Array)
+	
+			#rubyzip
+			logger.info 'Start Zip'
+			zipfile_name = zipfolder(download_folder, input_filenames, remake_id)
+			logger.info 'Zipfile name: ' + zipfile_name
+
+			#upload zip to s3
+			logger.info 'Upload to S3' 
+			s3_key = 'Remakes/' + remake_id.to_s + '/' + zipfile_name
+			file_path = download_folder + zipfile_name
+			s3_object = upload_to_s3(file_path, s3_key, :public_read, 'application/zip')
+	else
+			s3_object = input_filenames
+	end
+
+	#delete all files from server
+	logger.info 'Remove Folder' 
+	FileUtils.rm_rf(download_folder)
+	#return  s3 link
+	return s3_object.public_url.to_s
 end

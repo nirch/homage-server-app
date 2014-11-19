@@ -27,26 +27,26 @@
 		#links a img {
 			margin: 3px 1px;
 		}
-		/* right click menu 
-		.show {
-		    z-index:1000;
-		    position: absolute;
-		    background-color:#C0C0C0;
-		    border: 1px solid blue;
-		    padding: 2px;
-		    display: block;
-		    margin: 0;
-		    list-style-type: none;
-		    list-style: none;
+		.loading { 
+		  font-size: 1.5em; 
+		  font-family: Georgia; 
+		  visibility: hidden;
+		  /*color: #f0f0f0;*/
+		}
+		.glyphicon-refresh-animate {
+		    -animation: spin .7s infinite linear;
+		    -webkit-animation: spin2 .7s infinite linear;
 		}
 
-		.hide {
-		    display: none;
+		@-webkit-keyframes spin2 {
+		    from { -webkit-transform: rotate(0deg);}
+		    to { -webkit-transform: rotate(360deg);}
 		}
 
-		.show li{ list-style: none; }
-		.show a { border: 0 !important; text-decoration: none; }
-		.show a:hover { text-decoration: underline !important; }*/
+		@keyframes spin {
+		    from { transform: scale(1) rotate(0deg);}
+		    to { transform: scale(1) rotate(360deg);}
+		}
 	</style>
 
 </head>
@@ -99,7 +99,6 @@
 		        </div>
 		    </div>
 		</div>
-
 		<div id="links">
 			<% for remake in @remakes do %>	
 			<div id="video" class="video">
@@ -115,7 +114,8 @@
 					       	<input type="hidden" name="remake_id" value=<%= remake["_id"].to_s %>>
 					    </form>
 					<% end %>
-					<button type="button" onclick="DownloadRemake('<%= remake["_id"].to_s %>')">Download Remake</button>
+					<button id="downloadbutton" class="btn btn-lg btn-warning" onclick="DownloadRemake(this,'<%= remake["_id"].to_s %>')">Download</button>
+					<!-- <button type="button" onclick="DownloadRemake('<%= remake["_id"].to_s %>')">Download Remake</button> -->
 			</div>
 			<!-- ListObjectsFromS3() -->
 
@@ -145,7 +145,10 @@
 		    <a href="http://d293iqusjtyr94.cloudfront.net/Remakes/530082a1c5c06a03ac000002/The%20Oscars_530082a1c5c06a03ac000002.mp4" title="Jonny Sacks" type="video/mp4" data-poster="http://d293iqusjtyr94.cloudfront.net/Remakes/530082a1c5c06a03ac000002/The%20Oscars_530082a1c5c06a03ac000002.jpg" data-gallery>
 		        <img src="http://d293iqusjtyr94.cloudfront.net/Remakes/530082a1c5c06a03ac000002/The%20Oscars_530082a1c5c06a03ac000002.jpg" width=320 height=180 alt="Jonny Sacks">
 		    </a>
+
+
  -->
+ <button id="download-all" type="hidden"></button>
 		</div>
 	</div>
 
@@ -190,119 +193,120 @@
 		            }
 		        });
 		    });
-			// form submit ajax---------------------
-
-			/*//right click listener
-		   if ($("#video").addEventListener) {
-		        $("#video").addEventListener('contextmenu', function(e) {
-		            alert("You've tried to open context menu"); //here you draw your own menu
-		            e.preventDefault();
-		        }, false);
-		    } else {
-
-		        //document.getElementById("test").attachEvent('oncontextmenu', function() {
-		        //$(".test").bind('contextmenu', function() {
-		            $('body').on('contextmenu', 'a.video', function() {
-
-
-		            //alert("contextmenu"+event);
-		            document.getElementById("rmenu").className = "show";  
-		            document.getElementById("rmenu").style.top =  mouseY(event);
-		            document.getElementById("rmenu").style.left = mouseX(event);
-
-		            window.event.returnValue = false;
-
-
-		        });
-   			}
-   			//right click listener------------------*/
 
 		})
+
+		// function SetupAWS(){
+		// 	AWS.config.update(
+		// 			  {
+		// 			    accessKeyId: "don't need",
+		// 			    secretAccessKey: "don't need",
+		// 			  }
+		// 			);
+		// 			AWS.config.region = 'us-east-1';
+		// 			return new AWS.S3();
+		// }
 		
 		//Download the remake from S3
-		function DownloadRemake(remake_id) {
-				//alert(remake_id);
-				//var remake_id = document.getElementById("remake_id").value;  
-				//var AWS = require('aws-sdk');
-					AWS.config.update(
-					  {
-					    accessKeyId: "AKIAJTPGKC25LGKJUCTA",
-					    secretAccessKey: "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",
-					  }
-					);
-					var s3 = new AWS.S3();
-					var params = {
-					  Bucket: 'homageapp', /* required */
-					  Key: 'Remakes/52d68511db25450da4000001/raw_scene_1.mov' /* required */
-					};
-					s3.getObject(
-					  params,
-					  function (error, data) {
-					    if (error != null) {
-					      alert("Failed to retrieve an object: " + error);
-					    } else {
-					      alert("Loaded " + data.ContentLength + " bytes");
-					      // do something with data.body
-					    }
-					  }
-					);
+		function DownloadRemake(button, remake_id) {
+
+					button.innerHTML = '<span class="glyphicon glyphicon-refresh glyphicon-refresh-animate" ></span> Loading...';
+					var theUrl = '/download/remake/' + remake_id;
+
+					var xmlHttp = null;
+
+					    xmlHttp = new XMLHttpRequest();
+
+					    xmlHttp.onreadystatechange=function()
+						  {
+						  if (xmlHttp.readyState==4 && xmlHttp.status==200)
+						    {
+						    	var pom = document.createElement('a');
+							  pom.setAttribute('href', xmlHttp.responseText);
+							  pom.setAttribute('download', remake_id + '.zip');
+							  pom.setAttribute('type', 'application/zip');
+							  pom.click();
+							  button.innerHTML = 'Download';
+						    }
+						  }
+
+					    xmlHttp.open( "GET", theUrl, true );
+					    xmlHttp.send( null );
 		}
 
-		// function(xhr){xhr.setRequestHeader('Access-Control-Allow-Origin', '*.localhost.com*');}
+		// var s3 = SetupAWS();
 
-		function ListObjectsFromS3(){
-			AWS.config.update(
-					  {
-					    accessKeyId: "AKIAJTPGKC25LGKJUCTA",
-					    secretAccessKey: "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",
-					  }
-					);
+					// var params = {
+					//   Bucket: 'homageapp', /* required */
+					//   Key: 'Remakes/' + remake_id + '/' + remake_id + '.zip' /* required */
+					// };
 
-			var bucket = new AWS.S3({params: {Bucket: 'homageapp'}});
-			  bucket.listObjects(function (err, data) {
-			    if (err) {
-			      alert("Failed to retrieve an object: " + err);
-			    } else {
-			      alert(data.Contents.length);
-			      for (var i = 0; i < 10; i++) {
-			        alert(data.Contents[i].Key);
-			      }
-			    }
-			  });
-		}
+					// s3.getSignedUrl('getObject', params, function (error, url) {
+					// 	if (error != null) {
+					//       alert("Failed to retrieve an object: " + error);
+					//     } else {
+					//     	alert(url);
+					    	
+					//     }
+					// });
+
+		
+
+		// function ListObjectsFromS3(remake_id){
+
+		// 	var s3 = SetupAWS();
+
+
+		// 	  var params = {
+		// 			  Bucket: 'homageapp', /* required */
+		// 			  //Delimiter: 'STRING_VALUE',
+		// 			  EncodingType: 'url',
+		// 			  //Marker: 'STRING_VALUE',
+		// 			  //MaxKeys: 0,
+		// 			  Prefix: 'Remakes/' + remake_id
+		// 			};
+		// 			s3.listObjects(params, function(err, data) {
+		// 			  if(err){
+
+		// 			   		alert(err + '\n' + err.stack); // an error occurred
+		// 			  }
+		// 			  else {   
+		// 			  	 //alert(data.Contents.length)
+		// 			  	 	var remake_urls = [];
+		// 			  		for (var i = 0; i < data.Contents.length; i++) {
+		// 				        //alert(data.Contents[i].Key)         // successful response
+		// 				        var remake_params = {
+		// 						  Bucket: 'homageapp', /* required */
+		// 						  Key: escape(data.Contents[i].Key) /* required */
+		// 						};
+		// 				        s3.getSignedUrl('getObject', remake_params, function (error, url) {
+		// 							if (error != null) {
+		// 						      alert("Failed to retrieve an object: " + error);
+		// 						    } else {
+		// 						    	var pom = document.createElement('a');
+		// 									  pom.setAttribute('href', url);
+		// 									  pom.setAttribute('download', url);
+		// 									  if(url.split('.')[1] == '.jpg'){
+		// 									  	pom.setAttribute('type', 'image/jpg');
+		// 									  }
+		// 									  else if(url.split('.')[1] == '.mov'){
+		// 									  	pom.setAttribute('type', 'video/mp4');
+		// 									  }
+		// 									  else
+		// 									  {
+		// 									  	pom.setAttribute('type', 'text/plain');
+		// 									  }
+		// 									  pom.setAttribute('class', 'remake')
+		// 									  pom.click();
+		// 						    }
+		// 						});
+		// 					}
+		// 					//document.getElementById("download-all").click();
+		// 				}
+		// 			});
+		// }
 		//Download the remake from S3-------------------------
 		
-		/*//Mouse click location
-		function mouseX(evt) {
-		    if (evt.pageX) {
-		        return evt.pageX;
-		    } else if (evt.clientX) {
-		       return evt.clientX + (document.documentElement.scrollLeft ?
-		           document.documentElement.scrollLeft :
-		           document.body.scrollLeft);
-		    } else {
-		        return null;
-		    }
-		}
-
-		function mouseY(evt) {
-		    if (evt.pageY) {
-		        return evt.pageY;
-		    } else if (evt.clientY) {
-		       return evt.clientY + (document.documentElement.scrollTop ?
-		       document.documentElement.scrollTop :
-		       document.body.scrollTop);
-		    } else {
-		        return null;
-		    }
-		}
-		//Mouse click location------------*/
-
-		//Make custom menu dissapear on click
-		 // $(document).bind("click", function(event) {
-		 //        document.getElementById("rmenu").className = "hide";
-		 //    });
-		 ////Make custom menu dissapear on click----------------
 	</script>
 	<!-- <script src="/js/blueimp-gallery-video.js"></script> -->
 
