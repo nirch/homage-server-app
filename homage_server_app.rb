@@ -94,6 +94,9 @@ configure :test do
 
 	set :share_link_prefix, "http://play-test.homage.it"
 
+	# enables mixpanel for testing
+	# set :mixpanel, Mixpanel::Tracker.new("7d575048f24cb2424cd5c9799bbb49b1")
+
 	set :play_subdomain, :'play-test'
 end
 
@@ -179,12 +182,20 @@ module AppInstallFrom
 	HomageSite = "HomageSite"
 end
 
+module RemakesQueryType
+	AllQuery      = 0
+	StoryQuery    = 1
+  	MyTakesQuery  = 2
+  	TrendingQuery = 3
+end
+
 get '/remakes' do
 		# input
 		skip = params[:skip].to_i if params[:skip] # Optional
 		limit = params[:limit].to_i if params[:limit] # Optional
 		campaign_id = BSON::ObjectId.from_string(params[:campaign_id]) if params[:campaign_id] #optional
-		queryType = params[:query_type] if params[:query_type]
+		query_type = params[:query_type].to_i if params[:query_type]
+
 		
 		story_names = params["stories"] if params["stories"];
 		story_id_array = Array.new
@@ -192,7 +203,6 @@ get '/remakes' do
 
 		if story_names then
 			for name in story_names do
-				puts "name is " + name.to_s
 				story = settings.db.collection("Stories").find_one({name: name})
 				story_id_array.push(story["_id"])
 			end
@@ -203,17 +213,10 @@ get '/remakes' do
 			story_find_condition["campaign_id"] = campaign_id
 		end
 
-		puts "story find_condition"
-		puts story_find_condition
-
 		stories = settings.db.collection("Stories").find(story_find_condition, {fields: {after_effects: 0}}) 
-		puts "stories:"
-		puts stories
-
+	
 		story_names = Hash.new
 		for story in stories do
-			puts "Story"
-			puts story
 			story_id = story["_id"]
 			story_names["story_id"] = story["name"]
 		end
@@ -226,36 +229,58 @@ get '/remakes' do
 			public_users.push(user["_id"])
 		end
 
-		remakes_find_condition = {status: RemakeStatus::Done, user_id:{"$in" => public_users}, grade:{"$ne" => -1}}
+		# build mongodb aggregation pipeline accroding to query type from client
+		######################################################################################
+		aggregation_pipeline = []
+		
+		find_condition = {status: RemakeStatus::Done, user_id:{"$in" => public_users}, grade:{"$ne" => -1}}
 		if story_id_array.length != 0 then
-			remakes_find_condition["story_id"] = {"$in"=> story_id_array}
+			find_condition["story_id"] = {"$in"=> story_id_array}
 		end
 
-		puts "remakes_find_condition"
-		puts remakes_find_condition
+		if query_type == RemakesQueryType::MyTakesQuery then
+			#once we have a user (user! not cookie) replace the find_condition "user_id:"
+		end
+
+		remakes_find_condition = {"$match" => find_condition}
+		aggregation_pipeline.push(remakes_find_condition)
+	    
+		if query_type == RemakesQueryType::TrendingQuery then
+			share_weight = 0.5
+			like_weight = 0.4
+			view_weight = 0.1
+
+		    trending_proj={"$project" => {"_id" => 1, "created_at" => 1, "grade" => 1, "share_count" => 1, "share_link" => 1, "significant_views" => 1, "status" => 1, "story_id" => 1, "thumbnail" => 1, "unique_significant_views" => 1, "unique_views" => 1, "unique_web_impressions" => 1, "user_id" => 1, "video" => 1, "views" => 1, "web_impressions" => 1, "like_count" => 1,
+		    	"trending_score" => {"$add" => [{"$multiply" => ["$like_count",like_weight]},{"$multiply" => ["$share_count",share_weight]},{"$multiply" => ["$views",view_weight]}]}}}
+
+		    sort = {"$sort" => {"trending_score" => -1}}
+
+		    aggregation_pipeline.push(trending_proj)
+		    aggregation_pipeline.push(sort)
+		else
+			sort = {"$sort" => {"created_at" => -1, "grade" => -1}}
+			aggregation_pipeline.push(sort)
+		end
+
+		skip  = {"$skip" => skip}
+		aggregation_pipeline.push(skip)
+		limit = {"$limit" => limit}
+		aggregation_pipeline.push(limit)
+               
+	    remakes = settings.db.collection("Remakes").aggregate(aggregation_pipeline)
 		
-		#remakes = settings.db.collection("Remakes").find({ share_link:{"$exists"=>true}, status: 3},{fields: {footages: 0}}).sort({created_at: -1})
-		# remakes = settings.db.collection("Remakes").find({status: RemakeStatus::Done, user_id:{"$in" => public_users}, story_id: {"$in"=> story_id_array}, grade:{"$ne" => -1}},{fields: {footages: 0}}).sort(grade:-1,created_at:-1);
-		remakes = settings.db.collection("Remakes").find(remakes_find_condition, {fields: {footages: 0}}).sort(grade:-1,created_at:-1);
-		puts "number of remakes returned:"
-		puts remakes.count
-
-		puts "skip: " + skip.to_s + "limit: " + limit.to_s
-
-		remakes = remakes.skip(skip) if skip
-		remakes = remakes.limit(limit) if limit
+		logger.debug "number of remakes returned:"
+		logger.debug remakes.count
 
 		remakes_result = Array.new;
 		for remake in remakes do
-			puts "rafi"
 			story_id = remake["story_id"]
+			logger.debug "remake: " + remake["_id"].to_s + " trend score: " + remake["trending_score"].to_s
 			story_name = story_names[story_id];
 			remake["story_name"] = story_name;
 			remakes_result.push(remake);
 		end
 
-		puts "remakes_result"
-		puts remakes_result
 		remakes_result = remakes_result.to_json
 end
 
@@ -395,7 +420,6 @@ subdomain settings.play_subdomain do
 	end
 
 	get '/gallery/:campaign_name' do
-
 		@config = getConfigDictionary();
 		@campaign = settings.db.collection("Campaigns").find_one({name: params[:campaign_name]})
 		campaign_id = @campaign["_id"]
@@ -409,7 +433,7 @@ subdomain settings.play_subdomain do
 		shares  = settings.db.collection("Shares")
 		stories = settings.db.collection("Stories")
 		@config = getConfigDictionary();
-		
+
 		entity_id = BSON::ObjectId.from_string(params[:entity_id])
 		@share  = shares.find_one(entity_id)
 		if @share == nil then
@@ -421,6 +445,14 @@ subdomain settings.play_subdomain do
 			@originating_share_id = @share["_id"]
 			shares.update({_id: @originating_share_id},{"$set" => {share_status: true}})
 		end
+
+		story_id = @remake["story_id"]
+		logger.debug "story_id" + story_id.to_s
+		campaign_id = settings.db.collection("Stories").find_one({_id: story_id})["campaign_id"]
+		logger.debug "campaign_id: " + campaign_id.to_s
+		@campaign = settings.db.collection("Campaigns").find_one({_id: campaign_id})
+		campaign_id = @campaign["_id"]
+		@stories = settings.db.collection("Stories").find({active:true, campaign_id: campaign_id})
 	
 		if BSON::ObjectId.legal?(@remake["user_id"]) then
 			@user = users.find_one(@remake["user_id"])
@@ -430,61 +462,8 @@ subdomain settings.play_subdomain do
 
 		@story = stories.find_one(@remake["story_id"])
 
-		erb :HMGVideoPlayer
+		erb :new_minisite
 	end
-
-	# duplicate with get remake/:remake_id
-	# get '/data/:entity_id' do
-	# 	remakes = settings.db.collection("Remakes")
-	# 	users   = settings.db.collection("Users")
-	# 	shares  = settings.db.collection("Shares")
-	# 	stories = settings.db.collection("Stories")
-	# 	@config = getConfigDictionary();
-
-	# 	entity_id = BSON::ObjectId.from_string(params[:entity_id])
-	# 	share  = shares.find_one(entity_id)
-	# 	remake = ""
-	# 	user = ""
-	# 	originating_share_id = ""
-	# 	res = Hash.new
-		
-	# 	if share == nil then
-	# 		remake = remakes.find_one(entity_id)
-	# 	else 
-	# 		remake_id = share["remake_id"]
-	# 		remake = remakes.find_one(remake_id)
-	# 		originating_share_id = share["_id"]
-	# 		shares.update({_id: originating_share_id},{"$set" => {share_status: true}})
-	# 	end
-
-	# 	if BSON::ObjectId.legal?(remake["user_id"]) then
-	# 		user = users.find_one(remake["user_id"])
-	# 	else
-	# 		user = users.find_one({_id: remake["user_id"]})
-	# 	end
-
-	# 	#retrive user name - TODO: write a script that updates property user_name upon subscription
-	# 	if user["user_name"] then
-	# 		res["user_name"] = user["user_name"]
-	# 	elsif user["facebook"] then
-	# 		res["user_name"] = user["facebook"]["first_name"]
-	# 	elsif user["email"] then
-	# 		res["user_name"] = user["email"].split("@")[0].slice(0,1).capitalize + user["email"].split("@")[0].slice(1..-1)
-	# 	end
-
-	# 	#retrieve remake_info - TODO: add share_counter to remake upon share event
-	# 	res["like_count"] = remake["like_count"] ? remake["like_count"] : 0
-	# 	res["view_count"] = remake["views"] ? remake["views"] : 0
-	# 	res["share_count"] = shares.find({remake_id: remake["_id"]}).count
-
-	# 	res["thumbnail"] = remake["thumbnail"]
-	# 	res["video"] = remake["video"]
-
-	# 	puts "returning res:"
-	# 	puts res
-	# 	return res.to_json
-	# end
-
 end
 
 ###################
@@ -1021,6 +1000,11 @@ post '/remake' do
 		remake[:resolution] = resolution
 	end
 
+	# initializing shares, likes, and views counters
+	remake[:share_count] = 0
+	remake[:like_count] = 0
+	remake[:views] = 0
+
 	# Creating a new remake document in the DB
 	remake_objectId = remakes.save(remake)
 
@@ -1547,9 +1531,20 @@ end
 put '/remake/share' do
 	share_id  = BSON::ObjectId.from_string(params[:share_id])
 	success   = params[:success]
+	share_method = params[:share_method].to_i if params[:share_method]
 
 	shares = settings.db.collection("Shares")
-	shares.update({_id: share_id},{"$set" => {share_status: success}})
+	set_dict = {share_status: success}
+	set_dict["share_method"] = share_method if share_method
+
+	shares.update({_id: share_id},{"$set" => set_dict})
+end
+
+post '/campaign_site/share' do
+	info = Hash.new
+	info["share_method"] = params[:share_method].to_i if params[:share_method]
+	info["campaign_id"] = params[:campaign_id] if params[:campaign_id]
+	settings.mixpanel.track("12345", "campaign_site_share", info) if settings.respond_to?(:mixpanel)
 end
 
 #social routes

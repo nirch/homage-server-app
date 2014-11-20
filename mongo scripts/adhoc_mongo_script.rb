@@ -17,6 +17,7 @@ prod_remakes = prod_db.collection("Remakes")
 prod_shares = prod_db.collection("Shares")
 prod_sessions = prod_db.collection("Sessions")
 prod_stories = prod_db.collection("Stories")
+prod_campaigns = prod_db.collection("Campaigns")
 
 # AWS Connection
 aws_config = {access_key_id: "AKIAJTPGKC25LGKJUCTA", secret_access_key: "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"}
@@ -25,22 +26,31 @@ s3 = AWS::S3.new
 s3_bucket = s3.buckets['homageapp']
 
 
-grouped_shares = test_shares.aggregate([{ "$group" => {"_id" => {"remake_id" => "$remake_id"}, "shares" => {"$sum" => 1}} }])
-puts grouped_shares
-
-for remake_shares in grouped_shares do
-	remake_id = remake_shares["_id"]["remake_id"]
-	shares = remake_shares["shares"]
-	
-	puts "Updating remake " + remake_id.to_s + " with shares: " + shares.to_s
-	remake = test_remakes.find_one(remake_id)
-
-	if remake && remake["share_count"] && remake["share_count"] > shares
-		puts "REMAKE HAS MORE SHARES"
-	else
-		test_remakes.update({_id: remake_id}, {"$set" => {share_count: shares}}) if remake
-	end
+homage_campaign = prod_campaigns.find_one({name: "HomageApp"})
+homage_campaign_id = homage_campaign["_id"]
+puts "homage_campaign_id: " + homage_campaign_id.to_s
+stories = prod_stories.find({active:true})
+for story in stories do 
+	story_id = story["_id"]
+	prod_stories.update({_id: story_id},{"$set" => {campaign_id: homage_campaign_id}})
 end
+
+# grouped_shares = test_shares.aggregate([{ "$group" => {"_id" => {"remake_id" => "$remake_id"}, "shares" => {"$sum" => 1}} }])
+# puts grouped_shares
+
+# for remake_shares in grouped_shares do
+# 	remake_id = remake_shares["_id"]["remake_id"]
+# 	shares = remake_shares["shares"]
+	
+# 	puts "Updating remake " + remake_id.to_s + " with shares: " + shares.to_s
+# 	remake = test_remakes.find_one(remake_id)
+
+# 	if remake && remake["share_count"] && remake["share_count"] > shares
+# 		puts "REMAKE HAS MORE SHARES"
+# 	else
+# 		test_remakes.update({_id: remake_id}, {"$set" => {share_count: shares}}) if remake
+# 	end
+# end
 
 # remakes = test_remakes.find({})
 # puts "found: " + remakes.count.to_s + "remakes"

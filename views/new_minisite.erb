@@ -12,7 +12,8 @@
     <link href="http://vjs.zencdn.net/4.8/video-js.css" rel="stylesheet">
     <script src="http://vjs.zencdn.net/4.8/video.js"></script>
     
-    <link rel="stylesheet" type="text/css" href="/css/new_minisite.css">    
+    <link rel="stylesheet" type="text/css" href="/css/new_minisite.css">
+    <link rel="stylesheet" type="text/css" href="/css/video_player.css">    
     <link rel="icon" type="image/x-icon" href="/resources/favicon.ico"/>
 
     <script src="/js/Objectid.js"></script>
@@ -49,10 +50,10 @@
     <div class="row header">
       <div class="col-xs-6">
         <div class="menu app_links_menu">
-          <a class="app_icon" href="https://play.google.com/store/apps/details?id=com.homage.app">
+          <a class="app_icon" href="/ios" target="_blank">
             <img src="/resources/minisite/AppStoreIcon.png"/>
           </a>
-          <a class="app_icon" href="https://itunes.apple.com/us/app/homage/id851746600?l=iw&amp;ls=1&amp;mt=8">
+          <a class="app_icon" href="/android" target="_blank">
             <img src="/resources/minisite/PlayStoreIcon.png"/>
           </a>
         </div>
@@ -106,6 +107,7 @@
       <div class="gallery_header">
         <div class="header_content_container">
           <div class="campaign_video_container">
+            <div class="campaign-video-play-button-container"></div>
             <div class="videocontent">
               <video id="campaign_video_player" class="video-js vjs-default-skin" width="350" height="200" poster="" controls="controls"  
                   data-setup="{}">
@@ -275,6 +277,7 @@
     myPlayer.on("play", function() {
       if (first) {
         first = false;
+        $(".campaign-video-play-button-container").hide()
         trackVideoStart();
       }       
     });
@@ -292,6 +295,8 @@
       first = true;
       trackVideoEnd();
       myPlayer.posterImage.show();
+      $(".campaign-video-play-button-container").show()
+      myPlayer.controls(false);
     });
   });
 
@@ -369,7 +374,11 @@
       trackVideoEnd();
       myPlayer.posterImage.show();
     });
-
+       
+    <% if @remake  %>
+      var remake_id = '<%= @remake["_id"] %>'
+      showVideoPlayer(remake_id)
+    <% end %>
   });
 
   function showVideoPlayer(remake_id) {
@@ -772,7 +781,8 @@
   });
 
   $('.trending-remakes-button').on('click', function(e) {
-    //fetch_remakes(TrendingQuery);
+    cleanGallery();
+    fetch_remakes(TrendingQuery);
   });
 
   function checkViewReportStatus () {
@@ -812,6 +822,16 @@
     $(".share_site_container").css("display","none");
   }
 
+  function reportSiteShare(campaign_id,share_method) {
+
+    info = {"campaign_id":campaign_id,"share_method":share_method}
+
+    $.post('/campaign_site/share', info , function(data,status){
+                 
+    });
+  }
+
+  campaign_id = '<%= @campaign["_id"].to_s %>'
   campaign_video = '<%= @campaign["video"].to_s %>'
   campaign_thumbnail = '<%= @campaign["thumbnail"].to_s %>'
   campaign_share_message = '<%= @campaign["share_message"].to_s %>'
@@ -819,26 +839,31 @@
 
   $(".twitter_site_share").on('click', function(e) {
     twitterShare(campaign_thumbnail,campaign_share_message,campaign_share_link);
+    reportSiteShare(campaign_id,TwitterShareMethod);
     hideSiteShareContainer();
   });
 
   $(".facebook_site_share").on('click', function(e) {
     facebookShare(campaign_thumbnail,campaign_share_message,campaign_share_link);
+    reportSiteShare(campaign_id,FacebookShareMethod);
     hideSiteShareContainer();
   });
 
   $(".gplus_site_share").on('click', function(e) {
     gplusShare(campaign_thumbnail,campaign_share_message,campaign_share_link);
+    reportSiteShare(campaign_id,GooglePlusShareMethod);
     hideSiteShareContainer();
   });
 
   $(".pinterest_site_share").on('click', function(e) {
     pinterestShare(campaign_thumbnail,campaign_share_message,campaign_share_link);
+    reportSiteShare(campaign_id,PinterestShareMethod);
     hideSiteShareContainer();
   });
 
   $(".email_site_share").on('click', function(e) {
     emailShare(campaign_thumbnail,campaign_share_message,campaign_share_link);
+    reportSiteShare(campaign_id,EmailShareMethod);
     hideSiteShareContainer();
   });
 
