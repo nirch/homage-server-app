@@ -9,7 +9,6 @@ test_users = test_db.collection("Users")
 test_remakes = test_db.collection("Remakes")
 test_stories = test_db.collection("Stories")
 test_campaigns = test_db.collection("Campaigns")
-test_shares = test_db.collection("Shares")
 
 prod_db = Mongo::MongoClient.from_uri("mongodb://Homage:homageIt12@troup.mongohq.com:10057/Homage_Prod").db
 prod_users = prod_db.collection("Users")
@@ -17,7 +16,6 @@ prod_remakes = prod_db.collection("Remakes")
 prod_shares = prod_db.collection("Shares")
 prod_sessions = prod_db.collection("Sessions")
 prod_stories = prod_db.collection("Stories")
-prod_campaigns = prod_db.collection("Campaigns")
 
 # AWS Connection
 aws_config = {access_key_id: "AKIAJTPGKC25LGKJUCTA", secret_access_key: "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"}
@@ -26,41 +24,60 @@ s3 = AWS::S3.new
 s3_bucket = s3.buckets['homageapp']
 
 
-homage_campaign = prod_campaigns.find_one({name: "HomageApp"})
-homage_campaign_id = homage_campaign["_id"]
-puts "homage_campaign_id: " + homage_campaign_id.to_s
-stories = prod_stories.find({active:true})
-for story in stories do 
-	story_id = story["_id"]
-	prod_stories.update({_id: story_id},{"$set" => {campaign_id: homage_campaign_id}})
+######################################
+# Updating all remakes with user name
+def user_name(user)
+	if user["facebook"] then
+		return user["facebook"]["name"]
+	elsif user["email"] then
+		# Getting the prefix of the email ("nir.channes" of "nir.channes@gmail.com")
+		prefix = user["email"].split("@")[0]
+
+		# Replacing dots '.' and underscores '_' with space
+		prefix.gsub!('.', ' ')
+		prefix.gsub!('_', ' ')
+
+		# Capitalizing each word
+		name = prefix.split.map(&:capitalize).join(' ')
+
+		return name
+	else
+		return nil
+	end
 end
 
-# grouped_shares = test_shares.aggregate([{ "$group" => {"_id" => {"remake_id" => "$remake_id"}, "shares" => {"$sum" => 1}} }])
-# puts grouped_shares
+def update_user_name_in_remakes(user, remakes_collection)
+	username = user_name(user)
 
-# for remake_shares in grouped_shares do
-# 	remake_id = remake_shares["_id"]["remake_id"]
-# 	shares = remake_shares["shares"]
-	
-# 	puts "Updating remake " + remake_id.to_s + " with shares: " + shares.to_s
-# 	remake = test_remakes.find_one(remake_id)
+	return if !username
 
-# 	if remake && remake["share_count"] && remake["share_count"] > shares
-# 		puts "REMAKE HAS MORE SHARES"
-# 	else
-# 		test_remakes.update({_id: remake_id}, {"$set" => {share_count: shares}}) if remake
-# 	end
+	remakes = remakes_collection.find({user_id:user["_id"]})
+	puts "Going to update " + remakes.count.to_s + " with the fullname: " + username
+	for remake in remakes do
+		puts "Updating remake " + remake["_id"].to_s + " with fullname: " + username
+		remakes_collection.update({_id: remake["_id"]}, {"$set" => {user_fullname: username}})
+	end
+end
+
+date = Time.parse("20140430Z")
+users = prod_users.find({"$or" => [{created_at:{"$gte"=>date}, facebook:{"$exists"=>true}}, {created_at:{"$gte"=>date}, email:{"$exists"=>true}}]})
+puts users.count
+for user in users do
+	update_user_name_in_remakes(user, prod_remakes)
+end
+######################################
+
+
+
+# homage_campaign = test_campaigns.find_one({name: "Homage App"})
+# homage_campaign_id = homage_campaign["_id"]
+# puts "homage_campaign_id: " + homage_campaign_id.to_s
+# stories = test_stories.find({active:true})
+# for story in stories do 
+# 	story_id = story["_id"]
+# 	test_stories.update({_id: story_id},{"$set" => {campaign_id: homage_campaign_id}})
 # end
 
-# remakes = test_remakes.find({})
-# puts "found: " + remakes.count.to_s + "remakes"
-# for remake in remakes do
-# 	remake_id = remake["_id"];
-# 	puts "remake id: " + remake_id.to_s
-# 	shares_for_remake = test_shares.find({remake_id: remake_id}).count
-# 	puts "shares_for_remake: " + shares_for_remake.to_s
-# 	test_remakes.update({_id:remake_id},{"$set" => {share_count: shares_for_remake}})
-# end
 
 #stories = prod_stories.find({active:true})
 #puts stories.count
