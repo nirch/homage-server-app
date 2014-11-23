@@ -2182,7 +2182,7 @@ end
 get '/download/remake/:remake_id' do
 	remake_id = params[:remake_id]
 
-	download_folder = "/download_folder/" + remake_id.to_s + "/"
+	download_folder = Pathname.new("/download_folder/" + remake_id.to_s + "/")
 	# Creating the download folder
 	FileUtils.mkdir_p download_folder
 
