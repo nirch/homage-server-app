@@ -12,7 +12,8 @@
     <link href="http://vjs.zencdn.net/4.8/video-js.css" rel="stylesheet">
     <script src="http://vjs.zencdn.net/4.8/video.js"></script>
     
-    <link rel="stylesheet" type="text/css" href="/css/new_minisite.css">    
+    <link rel="stylesheet" type="text/css" href="/css/new_minisite.css">
+    <link rel="stylesheet" type="text/css" href="/css/video_player.css">    
     <link rel="icon" type="image/x-icon" href="/resources/favicon.ico"/>
 
     <script src="/js/Objectid.js"></script>
@@ -49,16 +50,23 @@
     <div class="row header">
       <div class="col-xs-6">
         <div class="menu app_links_menu">
-          <a class="app_icon" href="https://play.google.com/store/apps/details?id=com.homage.app">
+          <a class="app_icon" href="/ios" target="_blank">
             <img src="/resources/minisite/AppStoreIcon.png"/>
           </a>
-          <a class="app_icon" href="https://itunes.apple.com/us/app/homage/id851746600?l=iw&amp;ls=1&amp;mt=8">
+          <a class="app_icon" href="/android" target="_blank">
             <img src="/resources/minisite/PlayStoreIcon.png"/>
           </a>
         </div>
       </div>
       <div class="col-xs-6">
         <div class="menu right_header_menu">
+          <div class="share_site_container">
+            <a class="secondary_font_label twitter_site_share"></a>
+            <a class="secondary_font_label facebook_site_share"></a>
+            <a class="secondary_font_label gplus_site_share"></a>
+            <a class="secondary_font_label pinterest_site_share"></a>
+            <a class="secondary_font_label email_site_share"></a>
+          </div>
           <a class="header_button header_share">share</a>
           <a class="header_button header_login">login</a>
         </div>
@@ -99,8 +107,9 @@
       <div class="gallery_header">
         <div class="header_content_container">
           <div class="campaign_video_container">
+            <div class="campaign-video-play-button-container"></div>
             <div class="videocontent">
-              <video id="campaign_video_player" class="video-js vjs-default-skin vjs-big-play-centered" width="350" height="200" poster="" controls="controls"  
+              <video id="campaign_video_player" class="video-js vjs-default-skin" width="350" height="200" poster="" controls="controls"  
                   data-setup="{}">
                   <source src="" type="video/mp4"/>
               </video>
@@ -130,14 +139,14 @@
     <div class="remake_video_container">
       
       <div class="remake_header">
-        <a class="secondary_font_label user_name_label"></a>
-        <a class="secondary_font_label like_count_label"></a>
-        <a class="secondary_font_label view_count_label"></a>
-        <a class="secondary_font_label share_count_label"></a>
+        <a class="secondary_font_label user_name_label overlay_user_name_label"></a>
+        <a class="secondary_font_label like_count_label overlay_like_count_label"></a>
+        <a class="secondary_font_label view_count_label overlay_view_count_label"></a>
+        <a class="secondary_font_label share_count_label overlay_share_count_label"></a>
       </div>
 
       <div class="videocontent remake_video_content">
-        <video id="remake_video_player" class="video-js vjs-default-skin vjs-big-play-centered" width="100%" height="100%" poster="" controls="controls"  
+        <video id="remake_video_player" class="video-js vjs-default-skin" width="100%" height="100%" poster="" controls="controls"  
             data-setup="{}">
             <source src="" type="video/mp4"/>
         </video>
@@ -268,6 +277,7 @@
     myPlayer.on("play", function() {
       if (first) {
         first = false;
+        $(".campaign-video-play-button-container").hide()
         trackVideoStart();
       }       
     });
@@ -285,12 +295,14 @@
       first = true;
       trackVideoEnd();
       myPlayer.posterImage.show();
+      $(".campaign-video-play-button-container").show()
+      myPlayer.controls(false);
     });
   });
 
   videojs('remake_video_player').ready(function() {
     var myPlayer = this;
-    var currentViewId
+    var currentViewId;
     var first = true;
     var thresholdReported = false;
     
@@ -362,6 +374,11 @@
       trackVideoEnd();
       myPlayer.posterImage.show();
     });
+       
+    <% if @remake  %>
+      var remake_id = '<%= @remake["_id"] %>'
+      showVideoPlayer(remake_id)
+    <% end %>
   });
 
   function showVideoPlayer(remake_id) {
@@ -369,7 +386,8 @@
     if (!campaign_video_player.paused()) {
       campaign_video_player.pause();
       campaign_video_player.currentTime(0);
-      campaign_video_player.posterImage.show();
+      campaign_video_player.trigger('ended');
+      // campaign_video_player.posterImage.show();
     }
 
     path = '/remake/' + remake_id.toString();
@@ -397,10 +415,10 @@
         toogleLikeButton(is_liked);
 
         $('.more_from_button').text("More from " + user_fullname);
-        $('.user_name_label').text(user_fullname);
-        $('.like_count_label').text(like_count);
-        $('.view_count_label').text(view_count);
-        $('.share_count_label').text(share_count);
+        $('.overlay_user_name_label').text(user_fullname);
+        $('.overlay_like_count_label').text(like_count);
+        $('.overlay_view_count_label').text(view_count);
+        $('.overlay_share_count_label').text(share_count);
 
         currentRemake["thumbnail"] = thumbnail;
         currentRemake["share_message"] = share_message;
@@ -626,10 +644,7 @@
     share_message = currentRemake["share_message"];
     share_link = reportShare(EmailShareMethod);
 
-    open_popup('mailto:', {
-      subject: share_message,
-      body: share_link
-    });
+    emailShare(thumbnail,share_message,share_link);
   });
 
  // Share.prototype.network_email = function() {
@@ -650,6 +665,41 @@
      //    caption: this.config.networks.facebook.caption,
      //    description: this.config.networks.facebook.description
 
+    facebookShare(thumbnail,share_message,share_link);
+  });
+
+  $(".twitter_share").on('click', function(e) {
+    thumbnail = currentRemake["thumbnail"];
+    share_message = currentRemake["share_message"];
+    share_link = reportShare(TwitterShareMethod);
+
+    twitterShare(thumbnail,share_message,share_link);
+  });
+
+  $(".gplus_share").on('click', function(e) {
+    thumbnail = currentRemake["thumbnail"];
+    share_message = currentRemake["share_message"];
+    share_link = reportShare(GooglePlusShareMethod);
+    
+    gplusShare(thumbnail,share_message,share_link);
+  });
+
+   $(".pinterest_share").on('click', function(e) {
+    thumbnail = currentRemake["thumbnail"];
+    share_message = currentRemake["share_message"];
+    share_link = reportShare(PinterestShareMethod);
+    
+    pinterestShare(thumbnail,share_message,share_link);
+   });
+
+  function emailShare(thumbnail,share_message,share_link) {
+    open_popup('mailto:', {
+      subject: share_message,
+      body: share_link
+    });
+  }
+
+  function facebookShare(thumbnail,share_message,share_link) {
     FB.ui(
      {
       method: 'feed',
@@ -661,40 +711,29 @@
 
         }
     );
-  });
+  }
 
-  $(".twitter_share").on('click', function(e) {
-    thumbnail = currentRemake["thumbnail"];
-    share_message = currentRemake["share_message"];
-    share_link = reportShare(TwitterShareMethod);
-
+  function twitterShare(thumbnail,share_message,share_link) {
     open_popup('https://twitter.com/intent/tweet', {
       text: share_message,
       url: share_link
     });
-  });
 
-  $(".gplus_share").on('click', function(e) {
-    thumbnail = currentRemake["thumbnail"];
-    share_message = currentRemake["share_message"];
-    share_link = reportShare(GooglePlusShareMethod);
-    
+  }
+
+  function gplusShare(thumbnail,share_message,share_link) {
     open_popup('https://plus.google.com/share', {
       url: share_link
     });
-  });
+  }
 
-   $(".pinterest_share").on('click', function(e) {
-    thumbnail = currentRemake["thumbnail"];
-    share_message = currentRemake["share_message"];
-    share_link = reportShare(PinterestShareMethod);
-    
+  function pinterestShare(thumbnail,share_message,share_link) {
     open_popup('https://www.pinterest.com/pin/create/button', {
       url: share_link,
       media: thumbnail,
       description: share_message
     });
-   });
+  }
 
   function toogleLikeButton(is_liked) {
     if (is_liked) {
@@ -742,7 +781,8 @@
   });
 
   $('.trending-remakes-button').on('click', function(e) {
-    //fetch_remakes(TrendingQuery);
+    cleanGallery();
+    fetch_remakes(TrendingQuery);
   });
 
   function checkViewReportStatus () {
@@ -766,6 +806,65 @@
   // Event for page unload to track the end of the view
   $(window).bind('beforeunload', function(){
     checkViewReportStatus();
+  });
+
+  $(".header_share").on('click', function(e){
+    showSiteShareContainer();
+  });
+
+  function showSiteShareContainer() {
+    $(".header_share").hide();
+    $(".share_site_container").css("display","inline-block");
+  }
+
+  function hideSiteShareContainer() {
+    $(".header_share").show();
+    $(".share_site_container").css("display","none");
+  }
+
+  function reportSiteShare(campaign_id,share_method) {
+
+    info = {"campaign_id":campaign_id,"share_method":share_method}
+
+    $.post('/campaign_site/share', info , function(data,status){
+                 
+    });
+  }
+
+  campaign_id = '<%= @campaign["_id"].to_s %>'
+  campaign_video = '<%= @campaign["video"].to_s %>'
+  campaign_thumbnail = '<%= @campaign["thumbnail"].to_s %>'
+  campaign_share_message = '<%= @campaign["share_message"].to_s %>'
+  campaign_share_link = '<%= @campaign["web_link"].to_s %>'
+
+  $(".twitter_site_share").on('click', function(e) {
+    twitterShare(campaign_thumbnail,campaign_share_message,campaign_share_link);
+    reportSiteShare(campaign_id,TwitterShareMethod);
+    hideSiteShareContainer();
+  });
+
+  $(".facebook_site_share").on('click', function(e) {
+    facebookShare(campaign_thumbnail,campaign_share_message,campaign_share_link);
+    reportSiteShare(campaign_id,FacebookShareMethod);
+    hideSiteShareContainer();
+  });
+
+  $(".gplus_site_share").on('click', function(e) {
+    gplusShare(campaign_thumbnail,campaign_share_message,campaign_share_link);
+    reportSiteShare(campaign_id,GooglePlusShareMethod);
+    hideSiteShareContainer();
+  });
+
+  $(".pinterest_site_share").on('click', function(e) {
+    pinterestShare(campaign_thumbnail,campaign_share_message,campaign_share_link);
+    reportSiteShare(campaign_id,PinterestShareMethod);
+    hideSiteShareContainer();
+  });
+
+  $(".email_site_share").on('click', function(e) {
+    emailShare(campaign_thumbnail,campaign_share_message,campaign_share_link);
+    reportSiteShare(campaign_id,EmailShareMethod);
+    hideSiteShareContainer();
   });
 
   fetch_remakes(AllQuery);
