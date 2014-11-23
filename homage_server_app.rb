@@ -16,7 +16,6 @@ require 'user_agent_parser'
 require 'sinatra/subdomain'
 require 'mixpanel-ruby'
 require 'mail'
-require 'rubygems'
 require 'zip'
 require File.expand_path '../mongo scripts/Analytics.rb', __FILE__
 
