@@ -23,14 +23,61 @@ AWS.config(aws_config)
 s3 = AWS::S3.new
 s3_bucket = s3.buckets['homageapp']
 
-homage_campaign = test_campaigns.find_one({name: "Homage App"})
-homage_campaign_id = homage_campaign["_id"]
-puts "homage_campaign_id: " + homage_campaign_id.to_s
-stories = test_stories.find({active:true})
-for story in stories do 
-	story_id = story["_id"]
-	test_stories.update({_id: story_id},{"$set" => {campaign_id: homage_campaign_id}})
+
+######################################
+# Updating all remakes with user name
+def user_name(user)
+	if user["facebook"] then
+		return user["facebook"]["name"]
+	elsif user["email"] then
+		# Getting the prefix of the email ("nir.channes" of "nir.channes@gmail.com")
+		prefix = user["email"].split("@")[0]
+
+		# Replacing dots '.' and underscores '_' with space
+		prefix.gsub!('.', ' ')
+		prefix.gsub!('_', ' ')
+
+		# Capitalizing each word
+		name = prefix.split.map(&:capitalize).join(' ')
+
+		return name
+	else
+		return nil
+	end
 end
+
+def update_user_name_in_remakes(user, remakes_collection)
+	username = user_name(user)
+
+	return if !username
+
+	remakes = remakes_collection.find({user_id:user["_id"]})
+	puts "Going to update " + remakes.count.to_s + " with the fullname: " + username
+	for remake in remakes do
+		puts "Updating remake " + remake["_id"].to_s + " with fullname: " + username
+		remakes_collection.update({_id: remake["_id"]}, {"$set" => {user_fullname: username}})
+	end
+end
+
+date = Time.parse("20140430Z")
+users = prod_users.find({"$or" => [{created_at:{"$gte"=>date}, facebook:{"$exists"=>true}}, {created_at:{"$gte"=>date}, email:{"$exists"=>true}}]})
+puts users.count
+for user in users do
+	update_user_name_in_remakes(user, prod_remakes)
+end
+######################################
+
+
+
+# homage_campaign = test_campaigns.find_one({name: "Homage App"})
+# homage_campaign_id = homage_campaign["_id"]
+# puts "homage_campaign_id: " + homage_campaign_id.to_s
+# stories = test_stories.find({active:true})
+# for story in stories do 
+# 	story_id = story["_id"]
+# 	test_stories.update({_id: story_id},{"$set" => {campaign_id: homage_campaign_id}})
+# end
+
 
 #stories = prod_stories.find({active:true})
 #puts stories.count

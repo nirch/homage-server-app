@@ -23,7 +23,7 @@ elsif env == "t" || env == "T" then
 	stories = TEST_STORIES
 else
 	puts "enter 'p' or 't' goddammit!"
-	exit
+	exit	
 end
 		
 
