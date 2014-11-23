@@ -1,3 +1,5 @@
 .elasticbeanstalk/
 .DS_Store
 *.log
+download_folder/
+views/test_s3_download.html
