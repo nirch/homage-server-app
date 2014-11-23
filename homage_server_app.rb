@@ -448,13 +448,13 @@ subdomain settings.play_subdomain do
 			shares.update({_id: @originating_share_id},{"$set" => {share_status: true}})
 		end
 
-		story_id = @remake["story_id"]
-		logger.debug "story_id" + story_id.to_s
-		campaign_id = settings.db.collection("Stories").find_one({_id: story_id})["campaign_id"]
-		logger.debug "campaign_id: " + campaign_id.to_s
-		@campaign = settings.db.collection("Campaigns").find_one({_id: campaign_id})
-		campaign_id = @campaign["_id"]
-		@stories = settings.db.collection("Stories").find({active:true, campaign_id: campaign_id})
+		# story_id = @remake["story_id"]
+		# logger.debug "story_id" + story_id.to_s
+		# campaign_id = settings.db.collection("Stories").find_one({_id: story_id})["campaign_id"]
+		# logger.debug "campaign_id: " + campaign_id.to_s
+		# @campaign = settings.db.collection("Campaigns").find_one({_id: campaign_id})
+		# campaign_id = @campaign["_id"]
+		# @stories = settings.db.collection("Stories").find({active:true, campaign_id: campaign_id})
 	
 		if BSON::ObjectId.legal?(@remake["user_id"]) then
 			@user = users.find_one(@remake["user_id"])
@@ -464,7 +464,8 @@ subdomain settings.play_subdomain do
 
 		@story = stories.find_one(@remake["story_id"])
 
-		erb :new_minisite
+		# erb :new_minisite
+		erb :HMGVideoPlayer
 	end
 end
 
