@@ -1424,6 +1424,7 @@ post '/render' do
 	remakes = settings.db.collection("Remakes")
 	remakes.update({_id: remake_id}, {"$set" => {status: RemakeStatus::PendingScenes, render_start:Time.now}})
 
+	handle_send_to_render_queue(remake_id)
 	# Thread.new{
 	# 	# Waiting until this remake is ready for rendering (or there is a timout)
 	# 	is_ready = is_remake_ready remake_id 
