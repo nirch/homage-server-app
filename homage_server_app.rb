@@ -1397,7 +1397,7 @@ def handle_send_to_render_queue(remake_id)
 
 	scenes_number = remake["footages"].count
 	scenes_ready = 0
-	for footage in remakes["footages"] do
+	for footage in remake["footages"] do
 		if footage["status"] == FootageStatus::Ready then
 			scenes_ready += 1
 		end
