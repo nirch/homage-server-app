@@ -1287,7 +1287,8 @@ def new_footage (remake_id, scene_id, take_id)
 	remakes = settings.db.collection("Remakes")
 
 	# Updating the status of this remake to in progress only if it currently has the status new
-	remake = remakes.find_and_modify({query: {_id: remake_id, status: RemakeStatus::New}, update:{"$set" => {status: RemakeStatus::InProgress}}, new:true})
+	remakes.find_and_modify({query: {_id: remake_id, status: RemakeStatus::New}, update:{"$set" => {status: RemakeStatus::InProgress}}})
+	remake.find_one(remake_id)
 
 	if is_latest_take(remake, scene_id, take_id) then
 		# Updating the status of this footage to uploaded
