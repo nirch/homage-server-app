@@ -190,6 +190,19 @@ module RemakesQueryType
   	TrendingQuery = 3
 end
 
+helpers do
+  def protected!
+    return if authorized?
+    headers['WWW-Authenticate'] = 'Basic realm="Restricted Area"'
+    halt 401, "Not authorized\n"
+  end
+
+  def authorized?
+    @auth ||=  Rack::Auth::Basic::Request.new(request.env)
+    @auth.provided? and @auth.basic? and @auth.credentials and @auth.credentials == ['admin', 'Homage2014']
+  end
+end
+
 get '/remakes' do
 		# input
 		skip = params[:skip].to_i if params[:skip] # Optional
@@ -311,15 +324,15 @@ get '/android' do
 	redirect "https://play.google.com/store/apps/details?id=com.homage.app", 302
 end
 
-get '/raw/date/:from_date' do
-	from_date = Time.parse(params[:from_date])
+# get '/raw/date/:from_date' do
+# 	from_date = Time.parse(params[:from_date])
 
-	@remakes = settings.db.collection("Remakes").find(created_at:{"$gte"=>from_date}, status:3).sort(created_at:-1)
-	@heading = @remakes.count.to_s + " Remakes from " + from_date.strftime("%d/%m/%Y")
-	@grade = true
+# 	@remakes = settings.db.collection("Remakes").find(created_at:{"$gte"=>from_date}, status:3).sort(created_at:-1)
+# 	@heading = @remakes.count.to_s + " Remakes from " + from_date.strftime("%d/%m/%Y")
+# 	@grade = true
 
-	erb :demodayraw
-end
+# 	erb :demodayraw
+# end
 
 
 #################
@@ -344,10 +357,29 @@ subdomain settings.play_subdomain do
 
 	get '/date/:from_date' do
 		from_date = Time.parse(params[:from_date])
-
-		@remakes = settings.db.collection("Remakes").find(created_at:{"$gte"=>from_date}, status:3).sort(created_at:-1)
-		@heading = @remakes.count.to_s + " Remakes from " + from_date.strftime("%d/%m/%Y")
-		@grade = true
+		raw = params[:raw]
+		badbackgrounds = ["-1","-2","-3","-4","-5","-6","-7","-8","-9","-10","-11"]
+		if raw == 'all'
+			@raw = true
+			@remakes = settings.db.collection("Remakes").find(created_at:{"$gte"=>from_date}, status:3).sort(created_at:-1)
+			@heading = @remakes.count.to_s + " Remakes from " + from_date.strftime("%d/%m/%Y")
+			@grade = true
+		elsif raw == 'bad'
+			@raw = true
+			@remakes = settings.db.collection("Remakes").find(created_at:{"$gte"=>from_date}, status:3,"footages.background"=> {"$in"=>badbackgrounds}).sort(created_at:-1)
+			@heading = @remakes.count.to_s + " Remakes from " + from_date.strftime("%d/%m/%Y")
+			@grade = true
+		elsif badbackgrounds.include?(raw)
+			@raw = true
+			@remakes = settings.db.collection("Remakes").find(created_at:{"$gte"=>from_date}, status:3,"footages.background"=> {"$in"=>[raw]}).sort(created_at:-1)
+			@heading = @remakes.count.to_s + " Remakes from " + from_date.strftime("%d/%m/%Y")
+			@grade = true
+		else
+			@raw = false
+			@remakes = settings.db.collection("Remakes").find(created_at:{"$gte"=>from_date}, status:3).sort(created_at:-1)
+			@heading = @remakes.count.to_s + " Remakes from " + from_date.strftime("%d/%m/%Y")
+			@grade = true
+		end
 
 		erb :demoday
 	end

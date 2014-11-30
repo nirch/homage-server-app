@@ -99,11 +99,18 @@
 		        </div>
 		    </div>
 		</div>
+		<!-- <button id="switchrawbutton" class="btn btn-lg btn-warning" onclick="SwitchRaw()">Raw</button> -->
 		<div id="links">
 			<% for remake in @remakes do %>	
 			<div id="video" class="video">
-			    <a id="video1" href=<%= remake["video"] %> title="<%= remake["_id"].to_s %>" type="video/mp4" data-poster=<%= remake["thumbnail"] %> data-gallery>
+				<% if @raw then %>
+			    	<a href=<%= remake["video"] %> title="<%= remake["_id"].to_s %>" type="video/mp4" data-poster=<%= remake["thumbnail"] %> data-gallery>
+			        <img src=<%= File.dirname(remake["thumbnail"]).to_s + "/" + remake["_id"].to_s + "_raw1.jpg" %> width=320 height=180 alt="<%= remake["title"] %>">
+		        <% else %>
+		        	<a id="video1" href=<%= remake["video"] %> title="<%= remake["_id"].to_s %>" type="video/mp4" data-poster=<%= remake["thumbnail"] %> data-gallery>
 			        <img src=<%= remake["thumbnail"] %> width=320 height=180 alt="<%= remake["title"] %>"></a>
+		        <% end %>
+		        <div class="background">Background score: <%= remake["footages"][0]["background"].to_s %></div>
 			    	<% if @grade then %>
 				        <div class="caption">
 				        	<%= remake["_id"].to_s %>
@@ -119,18 +126,6 @@
 			</div>
 			<!-- ListObjectsFromS3() -->
 
-			    <!-- initially hidden right-click menu--> 
-		       <!--  <div class="hide" id="rmenu">
-		            <ul>
-		                <li>
-		                    <div class="download" onclick="DownloadRemake(this)" value=<%= remake["_id"].to_s %>>
-		                    	Download <%= remake["_id"].to_s %>
-		                    <input type="hidden" name="remake_id" value=<%= remake["_id"].to_s %>>
-		                	</div>
-		                </li>
-		            </ul>
-		        </div> -->
-		         <!-- initially hidden right-click menu--> 
 			<% end %>
 
 <!-- 		    <a href="http://d293iqusjtyr94.cloudfront.net/Remakes/5300c3dec5c06a0c80000001/Dive%20School_5300c3dec5c06a0c80000001.mp4" title="Nir Channes" type="video/mp4" data-poster="http://d293iqusjtyr94.cloudfront.net/Remakes/5300c3dec5c06a0c80000001/Dive%20School_5300c3dec5c06a0c80000001.jpg" data-gallery>
@@ -196,16 +191,6 @@
 
 		})
 
-		// function SetupAWS(){
-		// 	AWS.config.update(
-		// 			  {
-		// 			    accessKeyId: "don't need",
-		// 			    secretAccessKey: "don't need",
-		// 			  }
-		// 			);
-		// 			AWS.config.region = 'us-east-1';
-		// 			return new AWS.S3();
-		// }
 		
 		//Download the remake from S3
 		function DownloadRemake(button, remake_id) {
@@ -233,78 +218,6 @@
 					    xmlHttp.open( "GET", theUrl, true );
 					    xmlHttp.send( null );
 		}
-
-		// var s3 = SetupAWS();
-
-					// var params = {
-					//   Bucket: 'homageapp', /* required */
-					//   Key: 'Remakes/' + remake_id + '/' + remake_id + '.zip' /* required */
-					// };
-
-					// s3.getSignedUrl('getObject', params, function (error, url) {
-					// 	if (error != null) {
-					//       alert("Failed to retrieve an object: " + error);
-					//     } else {
-					//     	alert(url);
-					    	
-					//     }
-					// });
-
-		
-
-		// function ListObjectsFromS3(remake_id){
-
-		// 	var s3 = SetupAWS();
-
-
-		// 	  var params = {
-		// 			  Bucket: 'homageapp', /* required */
-		// 			  //Delimiter: 'STRING_VALUE',
-		// 			  EncodingType: 'url',
-		// 			  //Marker: 'STRING_VALUE',
-		// 			  //MaxKeys: 0,
-		// 			  Prefix: 'Remakes/' + remake_id
-		// 			};
-		// 			s3.listObjects(params, function(err, data) {
-		// 			  if(err){
-
-		// 			   		alert(err + '\n' + err.stack); // an error occurred
-		// 			  }
-		// 			  else {   
-		// 			  	 //alert(data.Contents.length)
-		// 			  	 	var remake_urls = [];
-		// 			  		for (var i = 0; i < data.Contents.length; i++) {
-		// 				        //alert(data.Contents[i].Key)         // successful response
-		// 				        var remake_params = {
-		// 						  Bucket: 'homageapp', /* required */
-		// 						  Key: escape(data.Contents[i].Key) /* required */
-		// 						};
-		// 				        s3.getSignedUrl('getObject', remake_params, function (error, url) {
-		// 							if (error != null) {
-		// 						      alert("Failed to retrieve an object: " + error);
-		// 						    } else {
-		// 						    	var pom = document.createElement('a');
-		// 									  pom.setAttribute('href', url);
-		// 									  pom.setAttribute('download', url);
-		// 									  if(url.split('.')[1] == '.jpg'){
-		// 									  	pom.setAttribute('type', 'image/jpg');
-		// 									  }
-		// 									  else if(url.split('.')[1] == '.mov'){
-		// 									  	pom.setAttribute('type', 'video/mp4');
-		// 									  }
-		// 									  else
-		// 									  {
-		// 									  	pom.setAttribute('type', 'text/plain');
-		// 									  }
-		// 									  pom.setAttribute('class', 'remake')
-		// 									  pom.click();
-		// 						    }
-		// 						});
-		// 					}
-		// 					//document.getElementById("download-all").click();
-		// 				}
-		// 			});
-		// }
 		//Download the remake from S3-------------------------
 		
 	</script>
