@@ -57,6 +57,10 @@ configure :production do
 	process_footage_queue_url = "https://sqs.us-east-1.amazonaws.com/509268258673/ProcessFootageQueue"
     set :process_footage_queue, AWS::SQS.new.queues[process_footage_queue_url]
 
+	# Process Render Queue
+	render_queue_url = "https://sqs.us-east-1.amazonaws.com/509268258673/RenderQueue"
+    set :render_queue, AWS::SQS.new.queues[render_queue_url]
+
 	# Production AE server connection
 	set :homage_server_foreground_uri, URI.parse("http://homage-render-prod-elb-882305239.us-east-1.elb.amazonaws.com:4567/footage")
 	set :homage_server_render_uri, URI.parse("http://homage-render-prod-elb-882305239.us-east-1.elb.amazonaws.com:4567/render")
@@ -88,6 +92,10 @@ configure :test do
 	process_footage_queue_url = "https://sqs.us-east-1.amazonaws.com/509268258673/ProcessFootageQueueTest"
     set :process_footage_queue, AWS::SQS.new.queues[process_footage_queue_url]
 
+	# Process Render Queue
+	render_queue_url = "https://sqs.us-east-1.amazonaws.com/509268258673/RenderQueueTest"
+    set :render_queue, AWS::SQS.new.queues[render_queue_url]
+
 	# Test AE server connection
 	set :homage_server_foreground_uri, URI.parse("http://54.83.32.172:4567/footage")
 	set :homage_server_render_uri, URI.parse("http://54.83.32.172:4567/render")
@@ -113,6 +121,10 @@ module RemakeStatus
   Done = 3
   Timeout = 4
   Deleted = 5
+  PendingScenes = 6 			# Waiting for all the scenes to be processed (user requested for a video)
+  PendingQueue = 7 				# Waiting in the SQS to be processed
+  Failed = 8					# Something went wrong
+  ClientRequestedDeletion = 9
 end
 
 module FootageStatus
@@ -120,6 +132,7 @@ module FootageStatus
   Uploaded = 1
   Processing = 2
   Ready = 3
+  ProcessFailed = 4
 end
 
 module ErrorCodes
@@ -1299,15 +1312,14 @@ def to_boolean(str)
 	!!(str =~ /^(true|t|yes|y|1)$/i)
 end
 
-
 def new_footage (remake_id, scene_id, take_id)
 	logger.info "New footage for scene " + scene_id.to_s + " for remake " + remake_id.to_s + " with take_id " + take_id
 
 	# Fetching the remake for this footage
 	remakes = settings.db.collection("Remakes")
 
-	# Updating the status of this remake to in progress
-	remakes.update({_id: remake_id}, {"$set" => {status: RemakeStatus::InProgress}})
+	# Updating the status of this remake to in progress only if it currently has the status new
+	remakes.find_and_modify({query: {_id: remake_id, status: RemakeStatus::New}, update:{"$set" => {status: RemakeStatus::InProgress}}})
 	remake = remakes.find_one(remake_id)
 
 	if is_latest_take(remake, scene_id, take_id) then
@@ -1405,49 +1417,88 @@ def send_push_notification(device_token, alert, custom_data)
 end
 
 
+# This method checks the set of rules if the current remake is ready to be sent to the render queue
+	# 1. User clicked on "Create Movie" (status of remake is pending for scenes to complete)
+	# 2. All scenes are processed
+def remake_ready?(remake_id)
+	remake = settings.db.collection("Remakes").find_one(remake_id)
+
+	logger.info "Checking if remake " + remake_id.to_s + " is ready for render"
+	if remake["status"] == RemakeStatus::PendingScenes then
+		logger.info "Remake " + remake_id.to_s + " is in status PendignScenes, now checking if all scenes are processed"
+
+		scenes_number = remake["footages"].count
+		scenes_ready = 0
+		for footage in remake["footages"] do
+			if footage["status"] == FootageStatus::Ready then
+				scenes_ready += 1
+			end
+		end
+
+		if scenes_ready == scenes_number then
+			logger.info "Remake " + remake_id.to_s + " is ready for render"
+			return true	
+		else
+			logger.info "Remake " + remake_id.to_s + " has only " + scenes_ready.to_s + " out of " + scenes_number.to_s + " processed, hence is not ready"
+			return false
+		end 
+
+	else
+		logger.info "Remake " + remake_id.to_s + " is not in status PendingScenes, hence is not ready"
+		return false
+	end
+end
+
 post '/render' do
 	# input
 	remake_id = BSON::ObjectId.from_string(params[:remake_id])
 
 	# Updating the DB that the process has started
 	remakes = settings.db.collection("Remakes")
-	remakes.update({_id: remake_id}, {"$set" => {status: RemakeStatus::Rendering, render_start:Time.now}})
+	remakes.update({_id: remake_id}, {"$set" => {status: RemakeStatus::PendingScenes, render_start:Time.now}})
 
-	Thread.new{
-		# Waiting until this remake is ready for rendering (or there is a timout)
-		is_ready = is_remake_ready remake_id 
-		sleep_for = 900
-		sleep_duration = 5
-		while ! is_ready && sleep_for > 0 do
-			logger.info "Waiting for remake " + remake_id.to_s + " to be ready"
-			sleep sleep_duration
-			sleep_for -= sleep_duration
-			is_ready = is_remake_ready remake_id
-		end
+	# If remake is ready sending it to the render queue and updating the DB
+	if remake_ready?(remake_id) then
+		message = {remake_id: remake_id.to_s}
+		settings.render_queue.send_message(message.to_json)
 
-		if is_ready then
-			# Synchronizing the actual rendering (because we cannot have more than 1 rendering in parallel)
-			# if settings.rendering_semaphore.locked? then
-			# 	logger.info "Rendering for remake " + remake_id.to_s + " waiting for other threads to finish rendering"
-			# else
-			# 	logger.debug "Rendering is going to start for remake " + remake_id.to_s
-			# end	
+		remakes.update({_id: remake_id}, {"$set" => {status: RemakeStatus::PendingQueue}})
+	end
+	# Thread.new{
+	# 	# Waiting until this remake is ready for rendering (or there is a timout)
+	# 	is_ready = is_remake_ready remake_id 
+	# 	sleep_for = 900
+	# 	sleep_duration = 5
+	# 	while ! is_ready && sleep_for > 0 do
+	# 		logger.info "Waiting for remake " + remake_id.to_s + " to be ready"
+	# 		sleep sleep_duration
+	# 		sleep_for -= sleep_duration
+	# 		is_ready = is_remake_ready remake_id
+	# 	end
 
-			logger.info "Calling homage-server-render"
-			response = Net::HTTP.post_form(settings.homage_server_render_uri, {"remake_id" => remake_id.to_s})
-			logger.info "homage-server-render " + response.to_s
+	# 	if is_ready then
+	# 		# Synchronizing the actual rendering (because we cannot have more than 1 rendering in parallel)
+	# 		# if settings.rendering_semaphore.locked? then
+	# 		# 	logger.info "Rendering for remake " + remake_id.to_s + " waiting for other threads to finish rendering"
+	# 		# else
+	# 		# 	logger.debug "Rendering is going to start for remake " + remake_id.to_s
+	# 		# end	
 
-			# settings.rendering_semaphore.synchronize{
-			# 	render_video remake_id
-			# }
-		else
-			logger.warn "Timeout on the rendering of remake <" + remake_id.to_s + "> - updating DB"
-			result = remakes.update({_id: remake_id}, {"$set" => {status: RemakeStatus::Timeout}})
-			logger.info "DB update result: " + result.to_s
-			remake = remakes.find_one(remake_id)			
-			send_movie_timeout_push_notification(remake)
-		end
-	}
+	# 		logger.info "Calling homage-server-render"
+	# 		response = Net::HTTP.post_form(settings.homage_server_render_uri, {"remake_id" => remake_id.to_s})
+	# 		logger.info "homage-server-render " + response.to_s
+
+	# 		# settings.rendering_semaphore.synchronize{
+	# 		# 	render_video remake_id
+	# 		# }
+	# 	else
+	# 		logger.warn "Timeout on the rendering of remake <" + remake_id.to_s + "> - updating DB"
+	# 		result = remakes.update({_id: remake_id}, {"$set" => {status: RemakeStatus::Timeout}})
+	# 		logger.info "DB update result: " + result.to_s
+	# 		remake = remakes.find_one(remake_id)			
+	# 		send_movie_timeout_push_notification(remake)
+	# 	end
+	# }
 
 	remake = remakes.find_one(remake_id).to_json
 end
