@@ -427,6 +427,14 @@ subdomain settings.play_subdomain do
 		erb :new_minisite
 	end
 
+	get '/gallery/v1/:campaign_name' do
+		@config = getConfigDictionary();
+		@campaign = settings.db.collection("Campaigns").find_one({name: params[:campaign_name]})
+		campaign_id = @campaign["_id"]
+		@stories = settings.db.collection("Stories").find({active:true, campaign_id: campaign_id})
+		erb :minisiteV1
+	end
+
 	get '/:entity_id' do
 		remakes = settings.db.collection("Remakes")
 		users   = settings.db.collection("Users")
@@ -462,7 +470,9 @@ subdomain settings.play_subdomain do
 
 		@story = stories.find_one(@remake["story_id"])
 
-		erb :new_minisite
+		# erb :new_minisite
+		#erb :HMGVideoPlayer
+		erb :minisiteV1
 	end
 end
 
