@@ -14,7 +14,7 @@ AWS.config(aws_config)
 s3 = AWS::S3.new
 s3_bucket = s3.buckets['homageapp']
 
-launch_date = Time.parse("20141103Z")
+launch_date = Time.parse("20141124Z")
 
 # Number of failed remakes, remakes that were clicked on create movie but were not done
 total_remakes = prod_remakes.find(created_at:{"$gte"=>launch_date})
@@ -28,6 +28,7 @@ puts "Number of failed remakes: " + failed_remakes.count.to_s
 
 # Analyzing each remake
 upload_error_num = 0
+upload_failed_remakes = Array.new
 failed_not_upload = Array.new
 for remake in failed_remakes do
 	raw_scene_prefix = "Remakes/" + remake["_id"].to_s + "/raw_scene"
@@ -51,12 +52,24 @@ for remake in failed_remakes do
 			puts remake["_id"].to_s + " (all scenes processed)"
 		end
 	else
+		upload_failed_remakes.push(remake)
 		upload_error_num += 1
 	end
 end
 
 upload_error_percent = upload_error_num.to_f / failed_remakes.count.to_f * 100
 puts upload_error_percent.round.to_s + "% failed due to upload error (" + upload_error_num.to_s + " remakes)"
+
+puts "User details for remakes not uploading"
+for remake in upload_failed_remakes do
+	user = prod_users.find_one(remake["user_id"])
+
+	puts "User details for remake " + remake["_id"].to_s
+	puts "User id: " + user["_id"].to_s
+	puts "User name: " + remake["user_fullname"] if remake["user_fullname"]
+	puts "User device info: " + user["devices"].to_s 
+	puts
+end
 
 # puts "Remakes that failed not because of upload:"
 # for remake in failed_not_upload do

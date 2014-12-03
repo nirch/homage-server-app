@@ -16,6 +16,7 @@ require 'user_agent_parser'
 require 'sinatra/subdomain'
 require 'mixpanel-ruby'
 require 'mail'
+require 'zip'
 require File.expand_path '../mongo scripts/Analytics.rb', __FILE__
 
 current_session_ID = nil
@@ -56,6 +57,10 @@ configure :production do
 	process_footage_queue_url = "https://sqs.us-east-1.amazonaws.com/509268258673/ProcessFootageQueue"
     set :process_footage_queue, AWS::SQS.new.queues[process_footage_queue_url]
 
+	# Process Render Queue
+	render_queue_url = "https://sqs.us-east-1.amazonaws.com/509268258673/RenderQueue"
+    set :render_queue, AWS::SQS.new.queues[render_queue_url]
+
 	# Production AE server connection
 	set :homage_server_foreground_uri, URI.parse("http://homage-render-prod-elb-882305239.us-east-1.elb.amazonaws.com:4567/footage")
 	set :homage_server_render_uri, URI.parse("http://homage-render-prod-elb-882305239.us-east-1.elb.amazonaws.com:4567/render")
@@ -87,6 +92,10 @@ configure :test do
 	process_footage_queue_url = "https://sqs.us-east-1.amazonaws.com/509268258673/ProcessFootageQueueTest"
     set :process_footage_queue, AWS::SQS.new.queues[process_footage_queue_url]
 
+	# Process Render Queue
+	render_queue_url = "https://sqs.us-east-1.amazonaws.com/509268258673/RenderQueueTest"
+    set :render_queue, AWS::SQS.new.queues[render_queue_url]
+
 	# Test AE server connection
 	set :homage_server_foreground_uri, URI.parse("http://54.83.32.172:4567/footage")
 	set :homage_server_render_uri, URI.parse("http://54.83.32.172:4567/render")
@@ -112,6 +121,10 @@ module RemakeStatus
   Done = 3
   Timeout = 4
   Deleted = 5
+  PendingScenes = 6 			# Waiting for all the scenes to be processed (user requested for a video)
+  PendingQueue = 7 				# Waiting in the SQS to be processed
+  Failed = 8					# Something went wrong
+  ClientRequestedDeletion = 9
 end
 
 module FootageStatus
@@ -119,6 +132,7 @@ module FootageStatus
   Uploaded = 1
   Processing = 2
   Ready = 3
+  ProcessFailed = 4
 end
 
 module ErrorCodes
@@ -187,6 +201,19 @@ module RemakesQueryType
 	StoryQuery    = 1
   	MyTakesQuery  = 2
   	TrendingQuery = 3
+end
+
+helpers do
+  def protected!
+    return if authorized?
+    headers['WWW-Authenticate'] = 'Basic realm="Restricted Area"'
+    halt 401, "Not authorized\n"
+  end
+
+  def authorized?
+    @auth ||=  Rack::Auth::Basic::Request.new(request.env)
+    @auth.provided? and @auth.basic? and @auth.credentials and @auth.credentials == ['admin', 'Homage2014']
+  end
 end
 
 get '/remakes' do
@@ -310,15 +337,15 @@ get '/android' do
 	redirect "https://play.google.com/store/apps/details?id=com.homage.app", 302
 end
 
-get '/raw/date/:from_date' do
-	from_date = Time.parse(params[:from_date])
+# get '/raw/date/:from_date' do
+# 	from_date = Time.parse(params[:from_date])
 
-	@remakes = settings.db.collection("Remakes").find(created_at:{"$gte"=>from_date}, status:3).sort(created_at:-1)
-	@heading = @remakes.count.to_s + " Remakes from " + from_date.strftime("%d/%m/%Y")
-	@grade = true
+# 	@remakes = settings.db.collection("Remakes").find(created_at:{"$gte"=>from_date}, status:3).sort(created_at:-1)
+# 	@heading = @remakes.count.to_s + " Remakes from " + from_date.strftime("%d/%m/%Y")
+# 	@grade = true
 
-	erb :demodayraw
-end
+# 	erb :demodayraw
+# end
 
 
 #################
@@ -343,10 +370,29 @@ subdomain settings.play_subdomain do
 
 	get '/date/:from_date' do
 		from_date = Time.parse(params[:from_date])
-
-		@remakes = settings.db.collection("Remakes").find(created_at:{"$gte"=>from_date}, status:3).sort(created_at:-1)
-		@heading = @remakes.count.to_s + " Remakes from " + from_date.strftime("%d/%m/%Y")
-		@grade = true
+		raw = params[:raw]
+		badbackgrounds = ["-1","-2","-3","-4","-5","-6","-7","-8","-9","-10","-11"]
+		if raw == 'all'
+			@raw = true
+			@remakes = settings.db.collection("Remakes").find(created_at:{"$gte"=>from_date}, status:3).sort(created_at:-1)
+			@heading = @remakes.count.to_s + " Remakes from " + from_date.strftime("%d/%m/%Y")
+			@grade = true
+		elsif raw == 'bad'
+			@raw = true
+			@remakes = settings.db.collection("Remakes").find(created_at:{"$gte"=>from_date}, status:3,"footages.background"=> {"$in"=>badbackgrounds}).sort(created_at:-1)
+			@heading = @remakes.count.to_s + " Remakes from " + from_date.strftime("%d/%m/%Y")
+			@grade = true
+		elsif badbackgrounds.include?(raw)
+			@raw = true
+			@remakes = settings.db.collection("Remakes").find(created_at:{"$gte"=>from_date}, status:3,"footages.background"=> {"$in"=>[raw]}).sort(created_at:-1)
+			@heading = @remakes.count.to_s + " Remakes from " + from_date.strftime("%d/%m/%Y")
+			@grade = true
+		else
+			@raw = false
+			@remakes = settings.db.collection("Remakes").find(created_at:{"$gte"=>from_date}, status:3).sort(created_at:-1)
+			@heading = @remakes.count.to_s + " Remakes from " + from_date.strftime("%d/%m/%Y")
+			@grade = true
+		end
 
 		erb :demoday
 	end
@@ -1275,15 +1321,14 @@ def to_boolean(str)
 	!!(str =~ /^(true|t|yes|y|1)$/i)
 end
 
-
 def new_footage (remake_id, scene_id, take_id)
 	logger.info "New footage for scene " + scene_id.to_s + " for remake " + remake_id.to_s + " with take_id " + take_id
 
 	# Fetching the remake for this footage
 	remakes = settings.db.collection("Remakes")
 
-	# Updating the status of this remake to in progress
-	remakes.update({_id: remake_id}, {"$set" => {status: RemakeStatus::InProgress}})
+	# Updating the status of this remake to in progress only if it currently has the status new
+	remakes.find_and_modify({query: {_id: remake_id, status: RemakeStatus::New}, update:{"$set" => {status: RemakeStatus::InProgress}}})
 	remake = remakes.find_one(remake_id)
 
 	if is_latest_take(remake, scene_id, take_id) then
@@ -1381,49 +1426,88 @@ def send_push_notification(device_token, alert, custom_data)
 end
 
 
+# This method checks the set of rules if the current remake is ready to be sent to the render queue
+	# 1. User clicked on "Create Movie" (status of remake is pending for scenes to complete)
+	# 2. All scenes are processed
+def remake_ready?(remake_id)
+	remake = settings.db.collection("Remakes").find_one(remake_id)
+
+	logger.info "Checking if remake " + remake_id.to_s + " is ready for render"
+	if remake["status"] == RemakeStatus::PendingScenes then
+		logger.info "Remake " + remake_id.to_s + " is in status PendignScenes, now checking if all scenes are processed"
+
+		scenes_number = remake["footages"].count
+		scenes_ready = 0
+		for footage in remake["footages"] do
+			if footage["status"] == FootageStatus::Ready then
+				scenes_ready += 1
+			end
+		end
+
+		if scenes_ready == scenes_number then
+			logger.info "Remake " + remake_id.to_s + " is ready for render"
+			return true	
+		else
+			logger.info "Remake " + remake_id.to_s + " has only " + scenes_ready.to_s + " out of " + scenes_number.to_s + " processed, hence is not ready"
+			return false
+		end 
+
+	else
+		logger.info "Remake " + remake_id.to_s + " is not in status PendingScenes, hence is not ready"
+		return false
+	end
+end
+
 post '/render' do
 	# input
 	remake_id = BSON::ObjectId.from_string(params[:remake_id])
 
 	# Updating the DB that the process has started
 	remakes = settings.db.collection("Remakes")
-	remakes.update({_id: remake_id}, {"$set" => {status: RemakeStatus::Rendering, render_start:Time.now}})
+	remakes.update({_id: remake_id}, {"$set" => {status: RemakeStatus::PendingScenes, render_start:Time.now}})
 
-	Thread.new{
-		# Waiting until this remake is ready for rendering (or there is a timout)
-		is_ready = is_remake_ready remake_id 
-		sleep_for = 900
-		sleep_duration = 5
-		while ! is_ready && sleep_for > 0 do
-			logger.info "Waiting for remake " + remake_id.to_s + " to be ready"
-			sleep sleep_duration
-			sleep_for -= sleep_duration
-			is_ready = is_remake_ready remake_id
-		end
+	# If remake is ready sending it to the render queue and updating the DB
+	if remake_ready?(remake_id) then
+		message = {remake_id: remake_id.to_s}
+		settings.render_queue.send_message(message.to_json)
 
-		if is_ready then
-			# Synchronizing the actual rendering (because we cannot have more than 1 rendering in parallel)
-			# if settings.rendering_semaphore.locked? then
-			# 	logger.info "Rendering for remake " + remake_id.to_s + " waiting for other threads to finish rendering"
-			# else
-			# 	logger.debug "Rendering is going to start for remake " + remake_id.to_s
-			# end	
+		remakes.update({_id: remake_id}, {"$set" => {status: RemakeStatus::PendingQueue}})
+	end
+	# Thread.new{
+	# 	# Waiting until this remake is ready for rendering (or there is a timout)
+	# 	is_ready = is_remake_ready remake_id 
+	# 	sleep_for = 900
+	# 	sleep_duration = 5
+	# 	while ! is_ready && sleep_for > 0 do
+	# 		logger.info "Waiting for remake " + remake_id.to_s + " to be ready"
+	# 		sleep sleep_duration
+	# 		sleep_for -= sleep_duration
+	# 		is_ready = is_remake_ready remake_id
+	# 	end
 
-			logger.info "Calling homage-server-render"
-			response = Net::HTTP.post_form(settings.homage_server_render_uri, {"remake_id" => remake_id.to_s})
-			logger.info "homage-server-render " + response.to_s
+	# 	if is_ready then
+	# 		# Synchronizing the actual rendering (because we cannot have more than 1 rendering in parallel)
+	# 		# if settings.rendering_semaphore.locked? then
+	# 		# 	logger.info "Rendering for remake " + remake_id.to_s + " waiting for other threads to finish rendering"
+	# 		# else
+	# 		# 	logger.debug "Rendering is going to start for remake " + remake_id.to_s
+	# 		# end	
 
-			# settings.rendering_semaphore.synchronize{
-			# 	render_video remake_id
-			# }
-		else
-			logger.warn "Timeout on the rendering of remake <" + remake_id.to_s + "> - updating DB"
-			result = remakes.update({_id: remake_id}, {"$set" => {status: RemakeStatus::Timeout}})
-			logger.info "DB update result: " + result.to_s
-			remake = remakes.find_one(remake_id)			
-			send_movie_timeout_push_notification(remake)
-		end
-	}
+	# 		logger.info "Calling homage-server-render"
+	# 		response = Net::HTTP.post_form(settings.homage_server_render_uri, {"remake_id" => remake_id.to_s})
+	# 		logger.info "homage-server-render " + response.to_s
+
+	# 		# settings.rendering_semaphore.synchronize{
+	# 		# 	render_video remake_id
+	# 		# }
+	# 	else
+	# 		logger.warn "Timeout on the rendering of remake <" + remake_id.to_s + "> - updating DB"
+	# 		result = remakes.update({_id: remake_id}, {"$set" => {status: RemakeStatus::Timeout}})
+	# 		logger.info "DB update result: " + result.to_s
+	# 		remake = remakes.find_one(remake_id)			
+	# 		send_movie_timeout_push_notification(remake)
+	# 	end
+	# }
 
 	remake = remakes.find_one(remake_id).to_json
 end
@@ -2085,4 +2169,139 @@ get '/test/:entity_id' do
 		@story = stories.find_one(@remake["story_id"])
 
 		erb :HMGVideoPlayer
+end
+
+def download_remake_from_s3(remake_id_str, download_folder)
+
+	remakes = settings.db.collection("Remakes")
+	stories = settings.db.collection("Stories")
+
+	remake_id = BSON::ObjectId.from_string(remake_id_str)
+
+	# Getting the remake
+	remake = remakes.find_one(remake_id)
+	if !remake then
+		logger.info "Remake not found!"
+		return
+	end
+	story = stories.find_one(remake["story_id"])
+
+	s3 = AWS::S3.new
+	bucket = s3.buckets['homageapp']
+	# Getting all the remake's file from S3
+	remake_s3_prefix = "Remakes/" + remake["_id"].to_s
+	remake_s3_objects = bucket.objects.with_prefix(remake_s3_prefix)
+	files = []
+	for remake_s3_object in remake_s3_objects do
+		# Saving each file to the download folder
+		basename = remake_id.to_s + "_" + File.basename(remake_s3_object.key, ".*")
+		extension = File.extname(remake_s3_object.key)
+		if(extension == '.zip')
+			return remake_s3_object
+		end
+		download_to_path = download_folder + basename + extension
+
+		logger.info "Downloading file " + File.basename(remake_s3_object.key) + "..."
+
+		download_from_s3(remake_s3_object, download_to_path)
+		files.push basename + extension
+
+		if remake_s3_object.key.include? "raw_scene" then
+			scene_id = basename[-1,1].to_i # The last char is the scene_id
+			contour_orig_url = story["scenes"][scene_id - 1]["contours"]["360"]["contour_remote"]
+			contour_face_url = File.dirname(contour_orig_url) + "/Face/" + File.basename(contour_orig_url,".*") + "-face.ctr"
+
+			extension = ".ctr"
+			download_to_path = download_folder + basename + extension
+
+			logger.info "Downloading file " + File.basename(contour_face_url) + "..."
+			open(download_to_path, 'wb') do |file|
+				file << open(contour_face_url).read
+			end
+			files.push basename + extension
+		end
+	end
+
+	return files
+end
+
+def zipfolder(download_folder, input_filenames, remake_id)
+	zipfile_name = download_folder + remake_id.to_s + '.zip'
+
+		Zip::File.open(zipfile_name, Zip::File::CREATE) do |zipfile|
+		  	input_filenames.each do |filename|
+			    # Two arguments:
+			    # - The name of the file as it will appear in the archive
+			    # - The original file, including the path to find it
+			    logger.info 'zipping file' + filename
+				zipfile.add(filename, download_folder + '/' + filename)
+			  end
+			  #zipfile.get_output_stream("myFile") { |os| os.write "myFile contains just this" }
+			  logger.info 'finished zip'
+		end
+		logger.info remake_id.to_s + '.zip'
+		return remake_id.to_s + '.zip'
+end
+
+def upload_to_s3 (file_path, s3_key, acl, content_type=nil)
+	s3 = AWS::S3.new
+	bucket = s3.buckets['homageapp']
+	s3_object = bucket.objects[s3_key]
+
+	logger.info 'Uploading the file <' + file_path + '> to S3 path <' + s3_object.key + '>'
+	#file = File.new(file_path)
+	s3_object.write(Pathname.new(file_path), {:acl => acl, :content_type => content_type})
+	#file.close
+	logger.info "Uploaded successfully to S3, url is: " + s3_object.public_url.to_s
+
+	return s3_object
+end
+
+def download_from_s3 (s3_object, local_path)
+
+	logger.info "Downloading file from S3 with key " + s3_object.to_s
+	
+	File.open(local_path, 'wb') do |file|
+  		s3_object.read do |chunk|
+    		file.write(chunk)
+    	end
+    end
+
+  	logger.info "File downloaded successfully to: " + local_path
+end
+
+
+get '/download/remake/:remake_id' do
+	remake_id = params[:remake_id]
+
+	download_folder = File.dirname(__FILE__) + "/download_folder/" + remake_id.to_s + "/"
+
+	# Creating the download folder
+	FileUtils.mkdir_p download_folder
+
+	logger.info 'Start Download'
+	input_filenames = download_remake_from_s3(remake_id.to_s, download_folder)
+	s3_object = nil
+	#Was there a zip file or was it an array of strings?
+	if(input_filenames.instance_of? Array)
+	
+			#rubyzip
+			logger.info 'Start Zip'
+			zipfile_name = zipfolder(download_folder, input_filenames, remake_id)
+			logger.info 'Zipfile name: ' + zipfile_name
+
+			#upload zip to s3
+			logger.info 'Upload to S3' 
+			s3_key = 'Remakes/' + remake_id.to_s + '/' + zipfile_name
+			file_path = download_folder + zipfile_name
+			s3_object = upload_to_s3(file_path, s3_key, :public_read, 'application/zip')
+	else
+			s3_object = input_filenames
+	end
+
+	#delete all files from server
+	logger.info 'Remove Folder' 
+	FileUtils.rm_rf(download_folder)
+	#return  s3 link
+	return s3_object.public_url.to_s
 end

@@ -19,13 +19,33 @@
 		#links {
 			text-align: center;
 		}
-		#links a {
+		#links .video {
 			display:inline-block;
 			text-decoration:none;
 			color:black;
 		}
 		#links a img {
 			margin: 3px 1px;
+		}
+		.loading { 
+		  font-size: 1.5em; 
+		  font-family: Georgia; 
+		  visibility: hidden;
+		  /*color: #f0f0f0;*/
+		}
+		.glyphicon-refresh-animate {
+		    -animation: spin .7s infinite linear;
+		    -webkit-animation: spin2 .7s infinite linear;
+		}
+
+		@-webkit-keyframes spin2 {
+		    from { -webkit-transform: rotate(0deg);}
+		    to { -webkit-transform: rotate(360deg);}
+		}
+
+		@keyframes spin {
+		    from { transform: scale(1) rotate(0deg);}
+		    to { transform: scale(1) rotate(360deg);}
 		}
 	</style>
 
@@ -79,11 +99,18 @@
 		        </div>
 		    </div>
 		</div>
-
+		<!-- <button id="switchrawbutton" class="btn btn-lg btn-warning" onclick="SwitchRaw()">Raw</button> -->
 		<div id="links">
 			<% for remake in @remakes do %>	
-			    <a href=<%= remake["video"] %> title="<%= remake["_id"].to_s %>" type="video/mp4" data-poster=<%= remake["thumbnail"] %> data-gallery>
-			        <img src=<%= remake["thumbnail"] %> width=320 height=180 alt="<%= remake["title"] %>">
+			<div id="video" class="video">
+				<% if @raw then %>
+			    	<a href=<%= remake["video"] %> title="<%= remake["_id"].to_s %>" type="video/mp4" data-poster=<%= remake["thumbnail"] %> data-gallery>
+			        <img src=<%= File.dirname(remake["thumbnail"]).to_s + "/" + remake["_id"].to_s + "_raw1.jpg" %> width=320 height=180 alt="<%= remake["title"] %>">
+		        <% else %>
+		        	<a id="video1" href=<%= remake["video"] %> title="<%= remake["_id"].to_s %>" type="video/mp4" data-poster=<%= remake["thumbnail"] %> data-gallery>
+			        <img src=<%= remake["thumbnail"] %> width=320 height=180 alt="<%= remake["title"] %>"></a>
+		        <% end %>
+		        <div class="background">Background score: <%= remake["footages"][0]["background"].to_s %></div>
 			    	<% if @grade then %>
 				        <div class="caption">
 				        	<%= remake["_id"].to_s %>
@@ -92,9 +119,13 @@
 					    	Grade: <input type="text" value=<% if remake["grade"] then %> <%= remake["grade"] %> <% else %> "0" <% end %> name="grade">
 					       	<input type="submit" value="Update">
 					       	<input type="hidden" name="remake_id" value=<%= remake["_id"].to_s %>>
-					     </form>
+					    </form>
 					<% end %>
-			    </a>
+					<button id="downloadbutton" class="btn btn-lg btn-warning" onclick="DownloadRemake(this,'<%= remake["_id"].to_s %>')">Download</button>
+					<!-- <button type="button" onclick="DownloadRemake('<%= remake["_id"].to_s %>')">Download Remake</button> -->
+			</div>
+			<!-- ListObjectsFromS3() -->
+
 			<% end %>
 
 <!-- 		    <a href="http://d293iqusjtyr94.cloudfront.net/Remakes/5300c3dec5c06a0c80000001/Dive%20School_5300c3dec5c06a0c80000001.mp4" title="Nir Channes" type="video/mp4" data-poster="http://d293iqusjtyr94.cloudfront.net/Remakes/5300c3dec5c06a0c80000001/Dive%20School_5300c3dec5c06a0c80000001.jpg" data-gallery>
@@ -109,7 +140,10 @@
 		    <a href="http://d293iqusjtyr94.cloudfront.net/Remakes/530082a1c5c06a03ac000002/The%20Oscars_530082a1c5c06a03ac000002.mp4" title="Jonny Sacks" type="video/mp4" data-poster="http://d293iqusjtyr94.cloudfront.net/Remakes/530082a1c5c06a03ac000002/The%20Oscars_530082a1c5c06a03ac000002.jpg" data-gallery>
 		        <img src="http://d293iqusjtyr94.cloudfront.net/Remakes/530082a1c5c06a03ac000002/The%20Oscars_530082a1c5c06a03ac000002.jpg" width=320 height=180 alt="Jonny Sacks">
 		    </a>
+
+
  -->
+ <button id="download-all" type="hidden"></button>
 		</div>
 	</div>
 
@@ -117,9 +151,12 @@
 	<script src="http://netdna.bootstrapcdn.com/bootstrap/3.0.2/js/bootstrap.min.js"></script>
 	<script src="http://blueimp.github.io/Gallery/js/jquery.blueimp-gallery.min.js"></script>
 	<script src="/js/bootstrap-image-gallery.min.js"></script>
+	<script src="https://sdk.amazonaws.com/js/aws-sdk-2.0.27.min.js"></script>
 
 	<script>
 		$(document).ready(function(){
+
+
 			$("body").on("click", ".grade_form", function(e){
 				e.stopPropagation();
 				e.preventDefault();
@@ -135,9 +172,54 @@
 			$("body").on("click", ".grade_form input[type='submit']", function(e){
 				e.stopPropagation();
 				e.preventDefault();
-				$(this).closest("form").submit();
+				$(this).closest('form').submit();   
 			})
+
+			// form submit ajax
+			$('form').submit(function(event) {
+		        event.preventDefault();
+		        //console.log('submit closest done');
+		        $.ajax({
+		            type: "POST",
+		            url: $(this).attr('action'),
+		            data: $(this).serialize(),
+		            success: function(data){
+		                alert('Grade successfully applied!');                    
+		            }
+		        });
+		    });
+
 		})
+
+		
+		//Download the remake from S3
+		function DownloadRemake(button, remake_id) {
+
+					button.innerHTML = '<span class="glyphicon glyphicon-refresh glyphicon-refresh-animate" ></span> Loading...';
+					var theUrl = '/download/remake/' + remake_id;
+
+					var xmlHttp = null;
+
+					    xmlHttp = new XMLHttpRequest();
+
+					    xmlHttp.onreadystatechange=function()
+						  {
+						  if (xmlHttp.readyState==4 && xmlHttp.status==200)
+						    {
+						    	var pom = document.createElement('a');
+							  pom.setAttribute('href', xmlHttp.responseText);
+							  pom.setAttribute('download', remake_id + '.zip');
+							  pom.setAttribute('type', 'application/zip');
+							  pom.click();
+							  button.innerHTML = 'Download';
+						    }
+						  }
+
+					    xmlHttp.open( "GET", theUrl, true );
+					    xmlHttp.send( null );
+		}
+		//Download the remake from S3-------------------------
+		
 	</script>
 	<!-- <script src="/js/blueimp-gallery-video.js"></script> -->
 
