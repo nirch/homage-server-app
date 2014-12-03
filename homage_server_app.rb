@@ -2135,41 +2135,6 @@ get '/test/mail' do
 	"Mail sent successfully"
 end
 
-get '/test/minisite' do
-	erb :HMGMiniSite
-end
-
-get '/test/:entity_id' do
-		remakes = settings.db.collection("Remakes")
-		users   = settings.db.collection("Users")
-		shares  = settings.db.collection("Shares")
-		stories = settings.db.collection("Stories")
-		@config = getConfigDictionary();
-		
-		entity_id = BSON::ObjectId.from_string(params[:entity_id])
-		@share  = shares.find_one(entity_id)
-		if @share == nil then
-			@remake = remakes.find_one(entity_id)
-			@originating_share_id = ""
-		else 
-			remake_id = @share["remake_id"]
-			@remake = remakes.find_one(remake_id)
-			@originating_share_id = @share["_id"]
-			shares.update({_id: @originating_share_id},{"$set" => {share_status: true}})
-		end
-
-		
-		if BSON::ObjectId.legal?(@remake["user_id"]) then
-			@user = users.find_one(@remake["user_id"])
-		else
-			@user = users.find_one({_id: @remake["user_id"]})
-		end
-
-		
-		@story = stories.find_one(@remake["story_id"])
-
-		erb :HMGVideoPlayer
-end
 
 def download_remake_from_s3(remake_id_str, download_folder)
 
@@ -2304,4 +2269,52 @@ get '/download/remake/:remake_id' do
 	FileUtils.rm_rf(download_folder)
 	#return  s3 link
 	return s3_object.public_url.to_s
+end
+
+get '/test/gallery/v1/:campaign_name' do
+	@config = getConfigDictionary();
+	@campaign = settings.db.collection("Campaigns").find_one({name: params[:campaign_name]})
+	campaign_id = @campaign["_id"]
+	@stories = settings.db.collection("Stories").find({active:true, campaign_id: campaign_id})
+	erb :minisiteV1
+end
+
+get '/test/:entity_id' do
+	remakes = settings.db.collection("Remakes")
+	users   = settings.db.collection("Users")
+	shares  = settings.db.collection("Shares")
+	stories = settings.db.collection("Stories")
+	@config = getConfigDictionary();
+
+	entity_id = BSON::ObjectId.from_string(params[:entity_id])
+	@share  = shares.find_one(entity_id)
+	if @share == nil then
+		@remake = remakes.find_one(entity_id)
+		@originating_share_id = ""
+	else 
+		remake_id = @share["remake_id"]
+		@remake = remakes.find_one(remake_id)
+		@originating_share_id = @share["_id"]
+		shares.update({_id: @originating_share_id},{"$set" => {share_status: true}})
+	end
+
+	story_id = @remake["story_id"]
+	logger.debug "story_id" + story_id.to_s
+	campaign_id = settings.db.collection("Stories").find_one({_id: story_id})["campaign_id"]
+	logger.debug "campaign_id: " + campaign_id.to_s
+	@campaign = settings.db.collection("Campaigns").find_one({_id: campaign_id})
+	campaign_id = @campaign["_id"]
+	@stories = settings.db.collection("Stories").find({active:true, campaign_id: campaign_id})
+	
+	if BSON::ObjectId.legal?(@remake["user_id"]) then
+		@user = users.find_one(@remake["user_id"])
+	else
+		@user = users.find_one({_id: @remake["user_id"]})
+	end
+
+	@story = stories.find_one(@remake["story_id"])
+
+	# erb :new_minisite
+	#erb :HMGVideoPlayer
+	erb :minisiteV1
 end
