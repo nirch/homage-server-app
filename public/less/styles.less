@@ -344,15 +344,13 @@
   bottom: 0;
   left: 0;
   min-height: 35px;
-  width: 100%;
-  /*padding-bottom: 10px;
-  padding-left: 5px;
-  padding-right: 5px;*/
-  background: url('/resources/minisite/BigPlay.png') no-repeat center;
-  background-size: contain;
   z-index: 10;
-  margin-bottom: 10px;
-  max-width: 350px;
+  text-align: center;
+  width:100%;
+  font-size: 30px;
+  padding-bottom: 10px;
+  // margin-bottom: 10px;
+  // max-width: 350px;
 }
 
 @media(max-width:767px){
@@ -388,14 +386,14 @@
 
 
 // GALLERY GRID ADDTIONAL CSS
-.overlay_label {
-  font-size: 12px !important;
-  font-family: @main-font;
-  color: @main-text-color;
-  padding-left: 30px;
-  pointer-events: none;
-  min-height: 20px;
-}
+// .overlay_label {
+//   font-size: 12px !important;
+//   font-family: @main-font;
+//   color: @main-text-color;
+//   padding-left: 30px;
+//   pointer-events: none;
+//   min-height: 20px;
+// }
 
 // .user_name_label {
 //   font-size: 20px;
@@ -404,6 +402,49 @@
 //   // background-size: 60px 60px;
 //   float: left;
 // }
+
+.galereya-cell 
+{
+	span
+	{
+		font-size: 14px;
+	}
+
+	.circular-usr-thumbnail
+	{
+		height: 35px;
+		width: 35px;
+	}
+
+	.user_name
+	{
+		float:left;
+		padding-left:6px;
+		padding-top:7px;
+	}
+	.galereya-cell-desc-title
+	{
+		.like, .view, .share
+		{
+			float: right;
+			padding-left:5px;
+			margin-top: 7px;
+		}
+	}
+	.galereya-cell-desc-text
+	{
+		.like 
+		{
+			float: left;
+		}
+
+		.flag 
+		{
+			float: right;
+		}
+	}
+	
+}
 
 .hoverable_element:hover {
   color: #ff5f45;
@@ -591,26 +632,26 @@
 // }
 
 
-.like_label {
-  background: url('/resources/minisite/Unliked.png') no-repeat left center;
-  float: left
-}
+// .like_label {
+//   background: url('/resources/minisite/Unliked.png') no-repeat left center;
+//   float: left
+// }
 
-.flag_label {
-  background: url('/resources/minisite/Flag.png') no-repeat left center;
-  float: right;
-}
+// .flag_label {
+//   background: url('/resources/minisite/Flag.png') no-repeat left center;
+//   float: right;
+// }
 
-.play_label {
-  background: url('/resources/minisite/smallPlay.png') no-repeat center;
-}
+// .play_label {
+//   background: url('/resources/minisite/smallPlay.png') no-repeat center;
+// }
 
 // REMAKE VIDEO OVERLAY
 
 .videocontent
 {
 	width:100%;
-	max-width: 1200px;
+	max-width: 800px;
 	// min-width: 315px;
 	// background-color: brown;
 }
@@ -723,20 +764,20 @@
 // }
 
 /* centered columns styles */
-.row-centered {
-    text-align:center;
-    height:80%
-}
-.col-centered {
-    display:inline-block;
-    float:none;
-    /* reset the text-align */
-    text-align:left;
-    /* inline-block space fix */
-    margin-right:-4px;
-    width:80%;
-    height:100%;
-}
+// .row-centered {
+//     text-align:center;
+//     height:80%
+// }
+// .col-centered {
+//     display:inline-block;
+//     float:none;
+//      reset the text-align 
+//     text-align:left;
+//     /* inline-block space fix */
+//     margin-right:-4px;
+//     width:80%;
+//     height:100%;
+// }
 
 
 // ++++++++++++++++++ FOOTER ++++++++++++++++++++++++++++++++++++++

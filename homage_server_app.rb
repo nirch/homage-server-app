@@ -1173,9 +1173,18 @@ end
 
 def userLikedRemake(entity_id,remake_id)
 	current_user_likes = settings.db.collection("Likes").find({
-		"$or" => [{remake_id:remake_id, user_id: entity_id},
+		"$and" => [
+			{
+				"$or" => [{remake_id:remake_id, user_id: entity_id},
 				  {remake_id:remake_id, cookie_id: entity_id}]
-		}).count
+			},
+			{
+				like_state: true
+			}
+		]
+	}).count
+
+	puts "current_user_likes: " + current_user_likes.to_s
 
 	if current_user_likes != 0 then
 		return true
@@ -1703,7 +1712,14 @@ post '/remake/unlike' do
 	
 	remakes = settings.db.collection("Remakes")
 	remake = remakes.find_one(remake_id)
-	remakes.update({_id: remake_id},{"$inc" => {like_count: -1}})	
+
+	current_like_count = remake["like_count"] if remake["like_count"]
+	if current_like_count == 0 then
+		logger.error "like count is 0 and unlike recieved, wtf?! not doing anything"
+		return remake.to_json
+	else
+		remakes.update({_id: remake_id},{"$inc" => {like_count: -1}})
+	end
 
 	remake = remakes.find_one(remake_id)
 	return remake.to_json
@@ -1776,6 +1792,8 @@ def isViewUniqueFromUser(entity_type,entity_id,user_id,cookie_id)
    	elsif entity_type == "story" then
    		condition["story_id"] = entity_id
    		condition["remake_id"] = {"$exists" => false}
+   	elsif entity_type == "campaign_video" then
+   		condition["campaign_id"] = entity_id
    	end
 
    	logger.debug "condition: " + condition.to_s

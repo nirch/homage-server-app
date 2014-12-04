@@ -20,6 +20,9 @@
       less.watch();
     </script>
 
+    <!-- UNTIL MORE ROBUST SOLUTION - NEED TO COMPILE MANUALLY B4 GOING TO PRODUCTION  -->
+    <link href="/css/styles.css" rel="stylesheet"/>
+
     <!-- UTILS -->
     <script src="/js/Objectid.js"></script>
     <script src="/js/jquery.cookie.js"></script>
@@ -131,7 +134,9 @@
 
   <div class="col-sm-6 col-xs-12 col-sm-pull-6 tbs-col">
     <div class="campaign-video-container">
-      <div class="campaign-video-play-button-container"></div>
+      <span class="campaign-video-play-button-container">
+         <i class="fa fa-play"> </i>
+      </span>
       <div class="videocontent">
         <video id="campaign_video_player" class="video-js vjs-default-skin" width="350" height="200" poster="" controls="controls"  
         data-setup="{}">
@@ -805,6 +810,7 @@
       $('.video_overlay').hide();
       currentRemake = {};
       document.body.style.overflow = 'auto';
+      myPlayer.trigger('ended');
     }
   });
 
@@ -821,15 +827,15 @@
 
         remake_id = currentRemake["remake_id"];
 
-        impressionId = new ObjectId().toString();
-        impression_params = {"impression_id":impressionId, "remake_id":remake_id, "playback_event":0, "originating_screen":11, "cookie_id":$.cookie('homageCookieID')}
-        if (origin_id != "") {
-          impression_params["origin_id"] = origin_id
-        }
+        // impressionId = new ObjectId().toString();
+        // impression_params = {"impression_id":impressionId, "remake_id":remake_id, "playback_event":0, "originating_screen":11, "cookie_id":$.cookie('homageCookieID')}
+        // if (origin_id != "") {
+        //   impression_params["origin_id"] = origin_id
+        // }
         
-        $.post('/remake/impression', impression_params , function(data,status){
+        // $.post('/remake/impression', impression_params , function(data,status){
                  
-        });
+        // });
 
         view_params = {"view_id":currentViewId, "remake_id":remake_id, "playback_event":0, "originating_screen":11, "cookie_id":$.cookie('homageCookieID')}
         if (origin_id != "") {
@@ -897,6 +903,16 @@
       campaign_video_player.trigger('ended');
       // campaign_video_player.posterImage.show();
     }
+    
+    impressionId = new ObjectId().toString();
+    impression_params = {"impression_id":impressionId, "remake_id":remake_id, "playback_event":0, "originating_screen":11, "cookie_id":$.cookie('homageCookieID')}
+    if (origin_id != "") {
+      impression_params["origin_id"] = origin_id
+    }
+    
+    $.post('/remake/impression', impression_params , function(data,status){
+             
+    });
 
     path = '/remake/' + remake_id.toString();
 
