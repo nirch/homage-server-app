@@ -181,7 +181,7 @@
 {
 	list-style-type: none;
 	height: 100%;
-	margin-left: 20px;
+	/* margin-left: 20px; */
 	padding: 0px;
 	margin-bottom: 0px;
 }
@@ -204,7 +204,7 @@
 .filter-left li:hover,
 .filter-left li:focus
 {
-	border-bottom: 3px solid @main-theme-color;
+	border-bottom: 2px solid @main-theme-color;
 }
 
 .filter_clickable
@@ -222,13 +222,15 @@
 }
 
 .filter-left .filter_clickable:hover,
-.filter-left .filter_clickable:focus
+.filter-left .filter_clickable:focus,
+.filter-left .filter_clickable:active,
+.filter-left .filter_clickable.selected,
 {
 	color: @main-theme-color
 }
 
 .filter_clickable:hover,
-.filter_clickable:focus
+.filter_clickable:focus,
 {
 	color: @main-text-color;
 	text-decoration: none;
@@ -236,7 +238,7 @@
 
 .filter-right > .dropdown
 {
-	padding-right: 20px;
+	// padding-right: 20px;
 	min-width: 250px;
 }
 
@@ -252,6 +254,11 @@
 	color: @bright-grey-color;
 	font-family: @main-font;
   	font-size: 14px;
+}
+
+.filter-right > .dropdown > .dropdown-menu > li > a:hover {
+	color: @main-text-color;
+	font-size: 15px;
 }
 
 // styling of stories dropdown
@@ -314,18 +321,19 @@
 
 
 .campaign-button {
-  border: 1px solid #ff5f45;
-  background-color: rgba(0,0,0,0.7);
-  color: @main-theme-color;
-  font-size: 20px;
-  text-align: center;
-  font-family: @bold-font;
-  text-transform: uppercase;
-  padding-top: 10px;
-  margin-top: 20px;
-  padding-left: 15px;
-  padding-right: 15px;
-  text-decoration: none;
+  	border: 1px solid #ff5f45;
+	background-color: rgba(0, 0, 0, 0.7);
+	color: #ff5f45;
+	font-size: 20px;
+	text-align: center;
+	font-family: "bryant-web-compressed";
+	text-transform: uppercase;
+	padding-top: 20px;
+	/* margin-top: 20px; */
+	padding-left: 40px;
+	padding-right: 40px;
+	text-decoration: none;
+	padding-bottom: 16px;
 }
 
 .campaign-button:hover,
@@ -806,6 +814,7 @@
 .footer-left
 {
 	text-align: left;
+	padding-bottom: 0px;
 }
 
 #hmg-footer-logo

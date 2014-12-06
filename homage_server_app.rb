@@ -104,7 +104,7 @@ configure :test do
 	set :share_link_prefix, "http://play-test.homage.it"
 
 	# enables mixpanel for testing
-	# set :mixpanel, Mixpanel::Tracker.new("7d575048f24cb2424cd5c9799bbb49b1")
+	set :mixpanel, Mixpanel::Tracker.new("7d575048f24cb2424cd5c9799bbb49b1")
 
 	set :play_subdomain, :'play-test'
 end
@@ -315,10 +315,12 @@ get '/ios' do
  	shared_from = "Undefined"
 	shared_from = params[:src] if params[:src]
 	origin_id = params[:origin_id] if params[:origin_id]
+	campaign_id = params[:campaign_id] if params[:campaign_id]
 
 	info = Hash.new
 	info["shared_from"] = shared_from
 	info["origin_id"] = origin_id if origin_id
+	info["campaign_id"] = campaign_id if campaign_id
 
 	settings.mixpanel.track("12345", "InstalliOS", info) if settings.respond_to?(:mixpanel)	
 	redirect "https://itunes.apple.com/us/app/id851746600", 302
@@ -328,10 +330,12 @@ get '/android' do
 	shared_from = "Undefined"
 	shared_from = params[:src] if params[:src]
 	origin_id = params[:origin_id] if params[:origin_id]
+	campaign_id = params[:campaign_id] if params[:campaign_id]
 
 	info = Hash.new
 	info["shared_from"] = shared_from
 	info["origin_id"] = origin_id if origin_id
+	info["campaign_id"] = campaign_id if campaign_id
 
 	settings.mixpanel.track("12345", "InstallAndroid", info) if settings.respond_to?(:mixpanel)	
 	redirect "https://play.google.com/store/apps/details?id=com.homage.app", 302

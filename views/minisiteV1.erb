@@ -97,7 +97,7 @@
   <div class="col-sm-6 tbs-col">
     <ul class="filter-left">
       <li class="filter-label all-remakes-button"><a class="filter_clickable" href="#">All</a></li>
-      <li class="filter-label"><a class="filter_clickable" href="#">My Takes</a></li>
+      <li class="filter-label my-takes-button"><a class="filter_clickable" href="#">My Takes</a></li>
       <li class="filter-label trending-remakes-button"><a class="filter_clickable" href="#">Trending</a></li>
     </ul>
   </div>
@@ -105,7 +105,7 @@
   <div class="col-sm-6 tbs-col campaign-stories-col">
     <ul class="filter-right">
       <li class="dropdown filter-label">
-        <a href="#" class="dropdown-toggle filter_clickable" data-toggle="dropdown">Campaign Stories<span class="caret"></span></a>
+        <a href="#" class="dropdown-toggle hmg-dropdown-toggle-stories filter_clickable" data-toggle="dropdown">Campaign Stories<span class="caret"></span></a>
         <ul class="dropdown-menu campaign-stories-dropdown" role="menu">
           <li><a class="all-stories" href="#">All</a></li>
           <% for story in @stories do %>
@@ -154,8 +154,8 @@
 
 </div>
 
-<div class="row footer tbs-row hidden-sm hidden-xs">
-  <div class="col-xs-6 tbs-col">
+<div class="row footer tbs-row hidden-xs">
+  <div class="col-xs-9 tbs-col">
     <ul class="footer-left">
         <li class="footer-label"><a class="filter_clickable" href="#">Powered By Homage</a></li>
         <li class="footer-label"><a class="homage-footer-logo">
@@ -168,7 +168,7 @@
   </div>
 
   
-  <div class="col-xs-6 tbs-col">
+  <div class="col-xs-3 tbs-col">
     <ul class="footer-right">
       <li class="footer-label hmg-social-link">
         <a>
@@ -477,7 +477,7 @@
 
   $(".campaign-stories-dropdown .single-story").on('click', function(){
       story_name = $(this).text().toString();
-      console.log("story:" + story_name);
+      $('.hmg-dropdown-toggle-stories').html(story_name +' <span class="caret"></span>');
       currently_selected_story = story_name;
       cleanGallery();
       fetch_remakes(StoryQuery);
@@ -485,17 +485,28 @@
 
   $(".campaign-stories-dropdown .all-stories").on('click', function(){
     cleanGallery();
+    $('.hmg-dropdown-toggle-stories').html("Campaign Stories" +' <span class="caret"></span>');
     fetch_remakes(AllQuery);
   });
 
   $('.all-remakes-button').on('click', function(e) {
     cleanGallery();
     fetch_remakes(AllQuery);
+    $('.hmg-dropdown-toggle-stories').html("Campaign Stories" +' <span class="caret"></span>');
+  });
+
+  $('.my-takes-button').on('click', function(e) {
+    cleanGallery();
+    // fetch_remakes(myTakesQuery);
+    $(".all-remakes-button .filter_clickable").removeClass("selected");
+    $('.hmg-dropdown-toggle-stories').html("Campaign Stories" +' <span class="caret"></span>');
   });
 
   $('.trending-remakes-button').on('click', function(e) {
     cleanGallery();
     fetch_remakes(TrendingQuery);
+    $(".all-remakes-button .filter_clickable").removeClass("selected");
+    $('.hmg-dropdown-toggle-stories').html("Campaign Stories" +' <span class="caret"></span>');
   });
 
   $('body').on("finished_loading_images", function() {
@@ -903,7 +914,7 @@
       campaign_video_player.trigger('ended');
       // campaign_video_player.posterImage.show();
     }
-    
+
     impressionId = new ObjectId().toString();
     impression_params = {"impression_id":impressionId, "remake_id":remake_id, "playback_event":0, "originating_screen":11, "cookie_id":$.cookie('homageCookieID')}
     if (origin_id != "") {
@@ -999,7 +1010,15 @@
     }
   });
 
+  $('.app_icon').each(function() {
+    var href = this.href;
+    href = href + "?src=minisite&campaign_id=" + campaign_id
+    $(this).attr('href' , href);
+  })
+
   // MAIN
+  
+  $(".all-remakes-button .filter_clickable").toggleClass("selected")
   fetch_remakes(AllQuery);
 
 </script>
