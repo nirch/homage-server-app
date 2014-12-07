@@ -35,7 +35,7 @@
 
 <body>  
   
-  <!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++ MINISITE HEADER ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+  <!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++ MINISITE HEADER ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
   <nav class="navbar navbar-default" id="hmg-nav-bar" role="navigation">
   <div class="container-fluid">
 
@@ -92,19 +92,20 @@
   </div><!-- /.container-fluid -->
 </nav>
 
+<!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++ MINISITE STORIES FILTERS+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
 <div class="row filters tbs-row">
   <div class="col-sm-6 tbs-col">
     <ul class="filter-left">
-      <li class="filter-label all-remakes-button"><a class="filter_clickable" href="#">All</a></li>
-      <li class="filter-label my-takes-button"><a class="filter_clickable" href="#">My Takes</a></li>
-      <li class="filter-label trending-remakes-button"><a class="filter_clickable" href="#">Trending</a></li>
+      <li class="filter-label all-remakes-button"><a class="clickable-link" href="#">All</a></li>
+      <li class="filter-label my-takes-button"><a class="clickable-link" href="#">My Takes</a></li>
+      <li class="filter-label trending-remakes-button"><a class="clickable-link" href="#">Trending</a></li>
     </ul>
   </div>
 
   <div class="col-sm-6 tbs-col campaign-stories-col">
     <ul class="filter-right">
       <li class="dropdown filter-label">
-        <a href="#" class="dropdown-toggle hmg-dropdown-toggle-stories filter_clickable" data-toggle="dropdown">Campaign Stories<span class="caret"></span></a>
+        <a href="#" class="dropdown-toggle hmg-dropdown-toggle-stories clickable-link" data-toggle="dropdown">Campaign Stories<span class="caret"></span></a>
         <ul class="dropdown-menu campaign-stories-dropdown" role="menu">
           <li><a class="all-stories" href="#">All</a></li>
           <% for story in @stories do %>
@@ -117,7 +118,7 @@
 </div>
 
 
-
+<!-- ++++++++++++++++++++++++++++++++++ CAMAPIGN BANNER (AKA GALLERY HEADER) ++++++++++++++++++++++++++++++++++++++++++++++ -->
 <div class="row gallery-header">
   <div class="col-sm-6 col-xs-12 col-sm-push-6">
     <div class="campaign-info">
@@ -125,7 +126,7 @@
 
       </div>
 
-      <a class="campaign-button" href="http://homage.it/" target="_blank" >Go to Homage web site 
+      <a class="bold-font-label campaign-button" href="http://homage.it/" target="_blank" >Go to Homage web site 
 
       </a>
     </div>
@@ -146,23 +147,25 @@
   </div>
 </div>
 
-<div class="row gallery tbs-row">
+<!-- ++++++++++++++++++++++++++++++++++ CAMAPIGN VIDEO GALLERY ++++++++++++++++++++++++++++++++++++++++++++++ -->
+<div class="row tbs-row">
   <div id="gallery-container">
 
   </div>
 
 </div>
 
+<!-- ++++++++++++++++++++++++++++++++++ MINISITE FOOTER ++++++++++++++++++++++++++++++++++++++++++++++ -->
 <div class="row footer tbs-row hidden-xs">
   <div class="col-xs-9 tbs-col">
     <ul class="footer-left">
-        <li class="footer-label"><a class="filter_clickable" href="#">Powered By Homage</a></li>
+        <li class="footer-label"><a class="clickable-link" href="#">Powered By Homage</a></li>
         <li class="footer-label"><a class="homage-footer-logo">
           <img id="hmg-footer-logo"/>
         </a>
         </li>
-        <li class="footer-label"><a class="filter_clickable" href="#">Privacy Policy</a></li>
-        <li class="footer-label"><a class="filter_clickable" href="#">Terms Of Service</a></li>
+        <li class="footer-label"><a class="clickable-link" href="#">Privacy Policy</a></li>
+        <li class="footer-label"><a class="clickable-link" href="#">Terms Of Service</a></li>
     </ul>
   </div>
 
@@ -189,9 +192,10 @@
 </div>
 
 
-<div class="container-fluid video_overlay tbs-container-fluid">
+<!-- ++++++++++++++++++++++++++++++++++ SINGLE REMAKE VIDEO OVERLAY ++++++++++++++++++++++++++++++++++++++++ -->
+<div class="container-fluid video-overlay tbs-container-fluid">
   <div class="row hidden-xs">
-    <div class="close_button"></div>
+    <div class="close-button"></div>
   </div>
   
   <div class="row">
@@ -201,39 +205,39 @@
     </div> 
 
     <div class="col-sm-8">
-      <div class="container-fluid tbs-container-fluid overlay-remake-container">
+      <div class="container-fluid tbs-container-fluid">
         
-        <div class="row remake_header">  
-            <div class="col-sm-6 col-xs-12 user_container">
-              <div class="user_thumbnail_container">
+        <div class="row remake-header">  
+            <div class="col-sm-6 col-xs-12 user-container">
+              <div class="user-thumbnail-container">
                  <img class="circular-usr-thumbnail">
               </div>            
-              <div class="user_info_container">  
-                <div class="main_font_label user_name_label"></div>
-                <div class="main_font_label hoverable_element visible-xs more_from_button"></div>
+              <div class="user-info-container">  
+                <div class="main-font-label user-name-label"></div>
+                <div class="main-font-label hoverable-element visible-xs more-from-button"></div>
               </div>     
-              <div class="close_button visible-xs"></div>
+              <div class="close-button visible-xs"></div>
             </div>
 
             <div class="col-sm-6 hidden-xs">
-              <span class="social-count-container">
-                <span class="main_font_label social_count_label">
+              <span class="general-purpose-overlay-container">
+                <span class="main-font-label general-overlay-label">
                   <i class="fa fa-heart"> </i>
-                  <span class="like_count_label"></span>
+                  <span class="like-count-label"></span>
                 </span>
-                <span class="main_font_label social_count_label">
+                <span class="main-font-label general-overlay-label">
                   <i class="fa fa-eye"> </i>
-                  <span class="view_count_label"></span>
+                  <span class="view-count-label"></span>
                 </span>
-                <span class="main_font_label social_count_label">
+                <span class="main-font-label general-overlay-label">
                   <i class="fa fa-share-alt"> </i>
-                  <span class="share_count_label"></span>
+                  <span class="share-count-label"></span>
                 </span>             
               </span>
             </div>
         </div>
         
-        <div class="row remake_video_content"> 
+        <div class="row"> 
           <div class="col-xs-12">
             <div class="videocontent">
                <video id="remake_video_player" class="video-js vjs-default-skin" width="auto" height="  auto" poster="" controls="controls"  
@@ -245,80 +249,68 @@
            
         </div>
         
-        <div class="row visible-xs mobile-social-count-row">
-          <div class=" col-xs-12 tbs-col mobile-social-count-column">
-            <span class="mobile-social-count-container social-count-container">
-                <span class="main_font_label social_count_label like">
+        <div class="row visible-xs mobile-social-counters-row">
+          <div class="col-xs-12 tbs-col mobile-social-counters-column">
+            <span class="general-mobile-overlay-container general-purpose-overlay-container">
+                <span class="main-font-label general-overlay-label like">
                   <i class="fa fa-heart-o"> </i>
-                  <span class="like_count_label"></span>
+                  <span class="like-count-label"></span>
                 </span>
-                <span class="main_font_label social_count_label view">
+                <span class="main-font-label general-overlay-label view">
                   <i class="fa fa-eye"> </i>
-                  <span class="view_count_label"></span>
+                  <span class="view-count-label"></span>
                 </span>
-                <span class="main_font_label social_count_label share">
+                <span class="main-font-label general-overlay-label share">
                   <i class="fa fa-share-alt"> </i>
-                  <span class="share_count_label"></span>
+                  <span class="share-count-label"></span>
                 </span>             
               </span> 
           </div>
         </div>
         
-        <div class="row remake_actions">
+        <div class="row remake-actions">
           <div class="col-xs-12 tbs-col">
-            <span class="mobile-social-count-container social-count-container">
-                <span class="main_font_label social_count_label like">
+            <span class="general-mobile-overlay-container general-purpose-overlay-container">
+                <span class="main-font-label hoverable-element general-overlay-label like">
                   <i class="fa"> </i>
-                  <span class="like_button"></span>
+                  <span class="like-button"></span>
                 </span>
-                <span class="main_font_label social_count_label make_your_own">
-                  <span class="make_your_own">Make your own</span>
+                <span class="main-font-label hoverable-element general-overlay-label make-your-own">
+                  <span class="make-your-own-button">Make your own</span>
                 </span>
-                <span class="main_font_label hidden-xs social_count_label more_from">
-                  <span class="more_from_button"></span>
+                <span class="main-font-label hoverable-element hidden-xs general-overlay-label more-from">
+                  <span class="more-from-button"></span>
                 </span>  
-                <span class="main_font_label social_count_label flag">
+                <span class="main-font-label hoverable-element general-overlay-label flag">
                   <i class="fa fa-flag"> </i>
-                  <span class="flag_button"> Flag</span>
+                  <span class="flag-button"> Flag</span>
                 </span>           
             </span> 
-
-           <!--  <a class="secondary_font_label hoverable_element like_button"></a>
-            <a class="secondary_font_label hoverable_element make_your_own_button">Make your own</a>
-            <a class="secondary_font_label hoverable_element hidden-xs more_from_button"></a>
-            <a class="secondary_font_label hoverable_element flag_button">Flag</a> -->
           </div>
         </div>
 
-        <div class="row remake_social_bar">
+        <div class="row remake-social-bar">
           <div class="col-xs-12 tbs-col">
             <span class="social-action-container">
-                <span class="main_font_label social_count_label share">
-                  <span class="make_your_own">Share</span>
+                <span class="main-font-label share">
+                  <span>Share</span>
                 </span>
-                <span class="main_font_label social_count_label twitter_share">
+                <span class="main-font-label hoverable-element twitter_share">
                   <i class="fa fa-twitter"> </i>
                 </span>
-                <span class="main_font_label social_count_label facebook_share">
+                <span class="main-font-label hoverable-element facebook_share">
                   <i class="fa fa-facebook"> </i>
                 </span>
-                <span class="main_font_label social_count_label gplus_share">
+                <span class="main-font-label hoverable-element gplus_share">
                   <i class="fa fa-google-plus"> </i>
                 </span>
-                <span class="main_font_label social_count_label pinterest_share">
+                <span class="main-font-label hoverable-element pinterest_share">
                   <i class="fa fa-pinterest"> </i>
                 </span>
-                <span class="main_font_label social_count_label email_share">
+                <span class="main-font-label hoverable-element email_share">
                   <i class="fa fa-send"> </i>
                 </span>          
             </span> 
-            
-            <!-- <a class="secondary_font_label">Share</a>
-            <a class="secondary_font_label twitter_share"></a>
-            <a class="secondary_font_label facebook_share"></a>
-            <a class="secondary_font_label gplus_share"></a>
-            <a class="secondary_font_label pinterest_share"></a>
-            <a class="secondary_font_label email_share"></a> -->
           </div> 
         </div>
       </div>
@@ -475,6 +467,22 @@
       all_remakes = [];
   }
 
+  $('body').on("finished_loading_images", function() {
+    currentlyLoadingImgs = false;
+    if  ($(window).scrollTop() == $(document).height() - $(window).height()) {
+            fetch_remakes(current_query_type);
+    }
+  });
+
+  $('body').on("gallery_resized" , function() {
+    gallery_left_margin = $(".galereya-grid").css('margin-left')
+    gallery_right_margin = $(".galereya-grid").css('margin-right')
+    $(".campaign-video-container").css('margin-left',gallery_left_margin)
+    $(".campaign-info").css('margin-right',gallery_right_margin);
+  });
+
+  // STORIES DROPDOWN HANDLERS
+
   $(".campaign-stories-dropdown .single-story").on('click', function(){
       story_name = $(this).text().toString();
       $('.hmg-dropdown-toggle-stories').html(story_name +' <span class="caret"></span>');
@@ -489,6 +497,8 @@
     fetch_remakes(AllQuery);
   });
 
+  // FILTERS HANDLERS
+
   $('.all-remakes-button').on('click', function(e) {
     cleanGallery();
     fetch_remakes(AllQuery);
@@ -498,37 +508,24 @@
   $('.my-takes-button').on('click', function(e) {
     cleanGallery();
     // fetch_remakes(myTakesQuery);
-    $(".all-remakes-button .filter_clickable").removeClass("selected");
+    $(".all-remakes-button .clickable-link").removeClass("selected");
     $('.hmg-dropdown-toggle-stories').html("Campaign Stories" +' <span class="caret"></span>');
   });
 
   $('.trending-remakes-button').on('click', function(e) {
     cleanGallery();
     fetch_remakes(TrendingQuery);
-    $(".all-remakes-button .filter_clickable").removeClass("selected");
+    $(".all-remakes-button .clickable-link").removeClass("selected");
     $('.hmg-dropdown-toggle-stories').html("Campaign Stories" +' <span class="caret"></span>');
   });
 
-  $('body').on("finished_loading_images", function() {
-    currentlyLoadingImgs = false;
-    if  ($(window).scrollTop() == $(document).height() - $(window).height()) {
-            fetch_remakes(current_query_type);
-    }
-  });
 
-  $('body').on("gallery_resized" , function() {
-    gallery_left_margin = $(".galereya-grid").css('margin-left')
-    gallery_right_margin = $(".galereya-grid").css('margin-right')
-    $(".campaign-video-container").css('margin-left',gallery_left_margin)
-    $(".campaign-info").css('margin-right',gallery_right_margin);
-    // $(".header_content_container").width(gallery_new_width);
-    // $(".header_content_container").show();
-  });
+  // VIDEO PLAYERS
 
   // prevent right on video players
   $('video').on('contextmenu', function(e) {e.preventDefault();});
 
-  // CAMPAIGN VIDEO PLAYER
+  // campaign player
   videojs('campaign_video_player').ready(function(){
     var myPlayer = this;
     var campaign_id = '<%= @campaign["_id"].to_s %>'
@@ -596,7 +593,80 @@
     });
   });
 
-  // SHARE CONTAINER
+videojs('remake_video_player').ready(function() {
+    var myPlayer = this;
+    var currentViewId;
+    var first = true;
+    var thresholdReported = false;
+    
+    var trackVideoStart = function(){
+        currentViewId = new ObjectId().toString();
+        
+        if (currentRemake["remake_id"] == null) return;
+
+        remake_id = currentRemake["remake_id"];
+
+        view_params = {"view_id":currentViewId, "remake_id":remake_id, "playback_event":0, "originating_screen":11, "cookie_id":$.cookie('homageCookieID')}
+        if (origin_id != "") {
+          view_params["origin_id"] = origin_id
+        }
+        $.post('/remake/view', view_params, function(data,status){
+            // playReported = true;
+            // stopReported = false;
+            thresholdReported = false;
+          });
+    };
+
+    var trackVideoEnd = function() {
+      if (currentRemake["remake_id"] == null) return;
+
+      remake_id = currentRemake["remake_id"];
+      $.post('/remake/view', {"view_id":currentViewId, "remake_id":remake_id, "playback_event":1, "originating_screen":11, "total_duration":myPlayer.duration(), "playback_duration":myPlayer.currentTime(), "cookie_id":$.cookie('homageCookieID')}, function(data,status){
+          // stopReported = true;
+          // playReported = false;
+        });
+    };
+
+    var trackVideoReachedViewThreshold = function() {
+      if (currentRemake["remake_id"] == null) return;
+
+      remake_id = currentRemake["remake_id"];
+
+      $.post('/remake/view', {"view_id":currentViewId, "remake_id":remake_id, "playback_event":1, "originating_screen":11, "total_duration":myPlayer.duration(), "playback_duration":myPlayer.currentTime(), "cookie_id":$.cookie('homageCookieID')}, function(data,status){
+        });
+    }
+
+    myPlayer.on("play", function() {
+      if (first) {
+        first = false;
+        trackVideoStart();
+      }       
+    });
+
+    myPlayer.on("timeupdate" , function() {
+      duration = myPlayer.currentTime();
+      total_duration = myPlayer.duration();
+      if (duration > (total_duration * view_pct_threshold) && !thresholdReported) {
+        trackVideoReachedViewThreshold();
+        thresholdReported = true;
+      }
+    });
+
+    myPlayer.on("ended", function() {
+      first = true;
+      trackVideoEnd();
+      myPlayer.posterImage.show();
+    });
+       
+    <% if @remake  %>
+      var remake_id = '<%= @remake["_id"] %>'
+      showVideoPlayer(remake_id)
+    <% end %>
+  });
+
+  // SHARING
+
+  // header share container
   $("#hmg-header-share").on('click', function(e){
     showSiteShareContainer();
   });
@@ -626,6 +696,7 @@
   campaign_share_message = '<%= @campaign["share_message"].to_s %>'
   campaign_share_link = '<%= @campaign["web_link"].to_s %>'
 
+  // site share handlers
   $(".twitter_site_share").on('click', function(e) {
     twitterShare(campaign_thumbnail,campaign_share_message,campaign_share_link);
     reportSiteShare(campaign_id,TwitterShareMethod);
@@ -656,14 +727,6 @@
     hideSiteShareContainer();
   });
 
-  $(".email_share").on('click',function(e) {
-    thumbnail = currentRemake["thumbnail"];
-    share_message = currentRemake["share_message"];
-    share_link = reportShare(EmailShareMethod);
-
-    emailShare(thumbnail,share_message,share_link);
-  });
-
   var reportShare = function(share_method){
     // Tracking in our Server
     share_id = new ObjectId().toString();
@@ -683,24 +746,19 @@
     return share_link;
   };
 
- // Share.prototype.network_email = function() {
- //    return this.popup('mailto:', {
- //      subject: this.config.networks.email.title,
- //      body: this.config.networks.email.description
- //    });
- //  };
+  // share button handlers
+  $(".email_share").on('click',function(e) {
+    thumbnail = currentRemake["thumbnail"];
+    share_message = currentRemake["share_message"];
+    share_link = reportShare(EmailShareMethod);
+
+    emailShare(thumbnail,share_message,share_link);
+  });
 
   $(".facebook_share").on('click',function(e){
     thumbnail = currentRemake["thumbnail"];
     share_message = currentRemake["share_message"];
     share_link = reportShare(FacebookShareMethod);
-     // method: 'feed',
-     //    name: this.config.networks.facebook.title,
-     //    link: this.config.networks.facebook.url,
-     //    picture: this.config.networks.facebook.image,
-     //    caption: this.config.networks.facebook.caption,
-     //    description: this.config.networks.facebook.description
-
     facebookShare(thumbnail,share_message,share_link);
   });
 
@@ -814,96 +872,15 @@
   // REMAKE VIDEO PLAYER OVERLAY 
 
   // dismiss remake overlay upon pressing everywhere / close button
-  $(document).on('click tap','.video_overlay',function(e){
-    if($(e.target).is('.video_overlay') || $(e.target).is('.close_button') || $(e.target).is('.row')) {
+  $(document).on('click tap','.video-overlay',function(e){
+    if($(e.target).is('.video-overlay') || $(e.target).is('.close-button') || $(e.target).is('.row')) {
       var myPlayer = videojs('remake_video_player');
       myPlayer.pause();
-      $('.video_overlay').hide();
+      $('.video-overlay').hide();
       currentRemake = {};
       document.body.style.overflow = 'auto';
       myPlayer.trigger('ended');
     }
-  });
-
-  videojs('remake_video_player').ready(function() {
-    var myPlayer = this;
-    var currentViewId;
-    var first = true;
-    var thresholdReported = false;
-    
-    var trackVideoStart = function(){
-        currentViewId = new ObjectId().toString();
-        
-        if (currentRemake["remake_id"] == null) return;
-
-        remake_id = currentRemake["remake_id"];
-
-        // impressionId = new ObjectId().toString();
-        // impression_params = {"impression_id":impressionId, "remake_id":remake_id, "playback_event":0, "originating_screen":11, "cookie_id":$.cookie('homageCookieID')}
-        // if (origin_id != "") {
-        //   impression_params["origin_id"] = origin_id
-        // }
-        
-        // $.post('/remake/impression', impression_params , function(data,status){
-                 
-        // });
-
-        view_params = {"view_id":currentViewId, "remake_id":remake_id, "playback_event":0, "originating_screen":11, "cookie_id":$.cookie('homageCookieID')}
-        if (origin_id != "") {
-          view_params["origin_id"] = origin_id
-        }
-        $.post('/remake/view', view_params, function(data,status){
-            // playReported = true;
-            // stopReported = false;
-            thresholdReported = false;
-          });
-    };
-
-    var trackVideoEnd = function() {
-      if (currentRemake["remake_id"] == null) return;
-
-      remake_id = currentRemake["remake_id"];
-      $.post('/remake/view', {"view_id":currentViewId, "remake_id":remake_id, "playback_event":1, "originating_screen":11, "total_duration":myPlayer.duration(), "playback_duration":myPlayer.currentTime(), "cookie_id":$.cookie('homageCookieID')}, function(data,status){
-          // stopReported = true;
-          // playReported = false;
-        });
-    };
-
-    var trackVideoReachedViewThreshold = function() {
-      if (currentRemake["remake_id"] == null) return;
-
-      remake_id = currentRemake["remake_id"];
-
-      $.post('/remake/view', {"view_id":currentViewId, "remake_id":remake_id, "playback_event":1, "originating_screen":11, "total_duration":myPlayer.duration(), "playback_duration":myPlayer.currentTime(), "cookie_id":$.cookie('homageCookieID')}, function(data,status){
-        });
-    }
-
-    myPlayer.on("play", function() {
-      if (first) {
-        first = false;
-        trackVideoStart();
-      }       
-    });
-
-    myPlayer.on("timeupdate" , function() {
-      duration = myPlayer.currentTime();
-      total_duration = myPlayer.duration();
-      if (duration > (total_duration * view_pct_threshold) && !thresholdReported) {
-        trackVideoReachedViewThreshold();
-        thresholdReported = true;
-      }
-    });
-
-    myPlayer.on("ended", function() {
-      first = true;
-      trackVideoEnd();
-      myPlayer.posterImage.show();
-    });
-       
-    <% if @remake  %>
-      var remake_id = '<%= @remake["_id"] %>'
-      showVideoPlayer(remake_id)
-    <% end %>
   });
 
   function showVideoPlayer(remake_id) {
@@ -949,11 +926,11 @@
 
         toogleLikeButton(is_liked);
 
-        $('.more_from_button').text("More from " + user_fullname);
-        $('.user_name_label').text(user_fullname);
-        $('.like_count_label').text(" " + like_count);
-        $('.view_count_label').text(" " + view_count);
-        $('.share_count_label').text(" " + share_count);
+        $('.more-from-button').text("More from " + user_fullname);
+        $('.user-name-label').text(user_fullname);
+        $('.like-count-label').text(" " + like_count);
+        $('.view-count-label').text(" " + view_count);
+        $('.share-count-label').text(" " + share_count);
 
         currentRemake["thumbnail"] = thumbnail;
         currentRemake["share_message"] = share_message;
@@ -967,8 +944,8 @@
         myPlayer.src(video);
         myPlayer.posterImage.show();
         myPlayer.play();
-        var overlay = $('video_overlay');
-        $('.video_overlay').show();
+        var overlay = $('video-overlay');
+        $('.video-overlay').show();
         document.body.style.overflow = 'hidden';
     });
   }
@@ -976,53 +953,53 @@
   // like button logic
   function toogleLikeButton(is_liked) {
     if (is_liked) {
-      $('.like_button').addClass('liked_state')
-      $('.like_button').text("Unlike")
-      $('.like_button').removeClass('unliked_state')
-      $('.remake_actions .like i').addClass('fa-heart')
-      $('.remake_actions .like i').removeClass('fa-heart-o')
+      $('.like-button').addClass('liked_state')
+      $('.like-button').text("Unlike")
+      $('.like-button').removeClass('unliked_state')
+      $('.remake-actions .like i').addClass('fa-heart')
+      $('.remake-actions .like i').removeClass('fa-heart-o')
 
 
 
     } else {
-      $('.like_button').addClass('unliked_state')
-      $('.like_button').text("Like")
-      $('.like_button').removeClass('liked_state')
-      $('.remake_actions .like i').addClass('fa-heart-o')
-      $('.remake_actions .like i').removeClass('fa-heart')
+      $('.like-button').addClass('unliked_state')
+      $('.like-button').text("Like")
+      $('.like-button').removeClass('liked_state')
+      $('.remake-actions .like i').addClass('fa-heart-o')
+      $('.remake-actions .like i').removeClass('fa-heart')
     }
   }
 
-  $('.like_button').on('click', function(e) {
+  $('.like-button').on('click', function(e) {
     console.log("like clicked");
 
     like_params = {}
     like_params["remake_id"] = currentRemake["remake_id"];
     if ($.cookie('homageCookieID')) like_params["cookie_id"] = $.cookie('homageCookieID');
 
-    if ($('.like_button').hasClass('unliked_state')) {
+    if ($('.like-button').hasClass('unliked_state')) {
       toogleLikeButton(true);
       $.post('/remake/like' , like_params)
 
-    } else if ($('.like_button').hasClass('liked_state')) {
+    } else if ($('.like-button').hasClass('liked_state')) {
       toogleLikeButton(false);
       $.post('/remake/unlike' , like_params)
     }
   });
 
+
+  // add href to app_icons 
   $('.app-icon').each(function() {
     var href = this.href;
     href = href + "?src=minisite&campaign_id=" + campaign_id
     $(this).attr('href' , href);
   })
 
-  // MAIN
-  
-  $(".all-remakes-button .filter_clickable").toggleClass("selected")
+  // MAIN 
+  $(".all-remakes-button .clickable-link").toggleClass("selected")
   fetch_remakes(AllQuery);
 
 </script>
-
 </body>
 
 

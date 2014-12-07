@@ -18,13 +18,44 @@
 .tbs-col {
   height: 100%;
 }
-.main_font_label {
+.main-font-label {
   font-size: 12px;
   font-family: "proxima-nova";
 }
 .bold-font-label {
   font-size: 12px;
   font-family: "bryant-web-compressed";
+}
+.fa {
+  color: #ffffff;
+}
+.clickable-link {
+  text-decoration: none;
+  font-family: "proxima-nova";
+  text-transform: uppercase;
+  color: #707070;
+  height: 100%;
+  display: inline-block;
+  padding-top: 20px;
+  padding-left: 10px;
+  padding-right: 10px;
+  padding-bottom: 20px;
+}
+.clickable-link:hover,
+.clickable-link:focus {
+  color: #ffffff;
+  text-decoration: none;
+}
+.hoverable-element:hover {
+  color: #ff5f45 !important;
+  text-decoration: none;
+}
+.hoverable-element:hover .span {
+  color: #ff5f45 !important;
+  text-decoration: none;
+}
+.hoverable-element:hover .fa {
+  color: #ff5f45 !important;
 }
 /*+++++++++++++++++++++++++++ HEADER +++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 #hmg-nav-bar {
@@ -105,7 +136,7 @@
   display: inline-block !important;
 }
 /*++++++++++++++++++++++++++++++++++++++++ HEADER END +++++++++++++++++++++++++++++++++++++++++++*/
-/*+++++++++++++++ FILTERS ++++++++++++++++++++++++++++++++++*/
+/*+++++++++++++++++++++++++++++++++++++++++ FILTERS ++++++++++++++++++++++++++++++++++*/
 .filters {
   background-color: #252525;
   margin-left: 0px;
@@ -114,7 +145,6 @@
 .filter-left {
   list-style-type: none;
   height: 100%;
-  /* margin-left: 20px; */
   padding: 0px;
   margin-bottom: 0px;
 }
@@ -133,28 +163,11 @@
 .filter-left li:focus {
   border-bottom: 2px solid #ff5f45;
 }
-.filter_clickable {
-  text-decoration: none;
-  font-family: "proxima-nova";
-  text-transform: uppercase;
-  color: #707070;
-  height: 100%;
-  display: inline-block;
-  padding-top: 20px;
-  padding-left: 10px;
-  padding-right: 10px;
-  padding-bottom: 20px;
-}
-.filter-left .filter_clickable:hover,
-.filter-left .filter_clickable:focus,
-.filter-left .filter_clickable:active,
-.filter-left .filter_clickable.selected {
+.filter-left .clickable-link:hover,
+.filter-left .clickable-link:focus,
+.filter-left .clickable-link:active,
+.filter-left .clickable-link.selected {
   color: #ff5f45;
-}
-.filter_clickable:hover,
-.filter_clickable:focus {
-  color: #ffffff;
-  text-decoration: none;
 }
 .filter-right > .dropdown {
   min-width: 250px;
@@ -181,6 +194,9 @@
   background-color: #363636;
   color: #ffffff;
 }
+.campaign-stories-col {
+  padding: 0px;
+}
 @media (max-width: 767px) {
   .filter-right,
   .filter-left {
@@ -190,12 +206,19 @@
     background-color: #363636;
   }
 }
-.campaign-stories-col {
-  padding: 0px;
-}
 .gallery-header {
   margin-top: 50px;
   margin-bottom: 150px;
+}
+.background_image {
+  background-image: url("/resources/minisite/GirlsWithPhonelowres.jpg");
+  background-size: 100%;
+  position: fixed;
+  height: 100%;
+  width: 100%;
+  z-index: -10;
+  top: 0;
+  left: 0;
 }
 .campaign-info {
   height: 100%;
@@ -213,10 +236,8 @@
   color: #ff5f45;
   font-size: 20px;
   text-align: center;
-  font-family: "bryant-web-compressed";
   text-transform: uppercase;
   padding-top: 20px;
-  /* margin-top: 20px; */
   padding-left: 40px;
   padding-right: 40px;
   text-decoration: none;
@@ -299,199 +320,6 @@
 .galereya-cell .galereya-cell-desc-text .flag {
   float: right;
 }
-.hoverable_element:hover {
-  color: #ff5f45;
-  text-decoration: none;
-}
-.remake_header {
-  height: 60px;
-}
-.user_container {
-  height: inherit;
-}
-.user_container .close_button {
-  margin-top: 17px;
-  margin-right: 8px;
-  cursor: pointer;
-}
-.user_thumbnail_container {
-  float: left;
-  height: 100%;
-  margin-top: 2px;
-}
-.user_info_container {
-  float: left;
-  position: relative;
-  height: inherit;
-  min-width: 180px;
-  padding-left: 10px;
-}
-.user_info_container .user_name_label {
-  font-size: 20px;
-  color: #ffffff;
-  padding-top: 7px;
-}
-.user_info_container .more_from_button {
-  top: 50%;
-  color: #707070;
-  font-size: 14px;
-}
-.social-count-container {
-  padding-top: 6px;
-  float: right;
-}
-.social-count-container .social_count_label {
-  font-size: 14px;
-  cursor: default;
-  color: #ffffff;
-}
-.fa {
-  color: #ffffff;
-}
-.user-thumbnail {
-  content: url('/resources/minisite/anonymous_user.jpeg') no-repeat left center;
-  height: 60px;
-  width: 60px;
-}
-.circular-usr-thumbnail {
-  width: 50px;
-  height: 50px;
-  border-radius: 150px;
-  -webkit-border-radius: 150px;
-  -moz-border-radius: 150px;
-  background: url('/resources/minisite/anonymous_user.jpeg') no-repeat;
-  background-size: contain;
-  border: 2px solid #ff5f45;
-}
-.mobile-social-count-row {
-  height: 40px;
-  margin-top: 10px;
-}
-.mobile-social-count-column {
-  width: 100%;
-  border-bottom: 2px solid #363636;
-}
-.mobile-social-count-container {
-  width: 100%;
-  text-align: center;
-}
-.mobile-social-count-container .like {
-  float: left;
-}
-.mobile-social-count-container .share {
-  float: right;
-}
-.remake_actions {
-  height: 40px;
-  margin-top: 10px;
-  border-bottom: 2px solid #363636;
-}
-.remake_actions .like {
-  margin-right: 15px;
-  min-width: 60px;
-  text-align: left;
-}
-@media (max-width: 767px) {
-  .remake_actions .like {
-    margin-right: 0px;
-  }
-}
-@media (min-width: 767px) {
-  .remake_actions .make_your_own {
-    float: left;
-    margin-right: 10px;
-  }
-}
-@media (min-width: 767px) {
-  .remake_actions .more_from {
-    float: left;
-    margin-right: 15px;
-  }
-}
-.remake_actions .flag {
-  float: right;
-}
-.remake_social_bar {
-  height: 40px;
-  margin-top: 10px;
-}
-.remake_social_bar .tbs-col {
-  text-align: center;
-}
-.remake_social_bar .social-action-container {
-  float: left;
-}
-.remake_social_bar .social-action-container .main_font_label {
-  margin-right: 10px;
-  color: #ffffff;
-  font-size: 14px;
-}
-@media (max-width: 767px) {
-  .remake_social_bar .social-action-container {
-    float: none;
-  }
-}
-.videocontent {
-  width: 100%;
-  max-width: 640px;
-  margin: 0px auto;
-}
-.video-js {
-  padding-top: 56.25%;
-}
-.vjs-fullscreen {
-  padding-top: 0px;
-}
-.video_overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  height: 100%;
-  width: 100%;
-  z-index: 20000000000;
-  background-color: rgba(0, 0, 0, 0.85);
-  display: none;
-  cursor: pointer;
-  overflow-y: auto;
-}
-.close_button {
-  background: url('/resources/minisite/XClose.png') no-repeat left center;
-  float: right;
-  height: 15px;
-  width: 15px;
-  margin-top: 30px;
-  margin-right: 40px;
-}
-.remake_video_container {
-  display: inline-block;
-  position: relative;
-  height: 100%;
-  width: 70%;
-  background-color: transparent;
-}
-.remake_footer {
-  width: 100%;
-  height: 10%;
-  border-bottom: 1px solid #707070;
-}
-.secondary_font_label {
-  font-size: 12px;
-  font-family: 'proxima-nova';
-  color: #ffffff;
-  padding-left: 30px;
-  /*margin: 0 auto; */
-  text-align: left;
-  /*pointer-events: none;*/
-  cursor: default;
-  margin-top: 15px;
-  margin-left: 15px;
-  float: left;
-  min-height: 20px;
-}
-.like_button {
-  z-index: 3423423000000;
-}
-/* centered columns styles */
 .footer {
   background-color: #000000;
   height: 60px;
@@ -516,6 +344,9 @@
 #hmg-footer-logo {
   content: url('/resources/minisite/HomageLogoFooter.png');
 }
+.hmg-social-link {
+  margin-right: 15px;
+}
 #hmg-fb-link {
   content: url('/resources/minisite/FacebookRegular.png');
 }
@@ -530,16 +361,159 @@
   list-style-type: none;
   height: 100%;
 }
-.hmg-social-link {
-  margin-right: 15px;
+.general-purpose-overlay-container {
+  padding-top: 6px;
+  float: right;
 }
-.background_image {
-  background-image: url("/resources/minisite/GirlsWithPhonelowres.jpg");
-  background-size: 100%;
-  position: fixed;
+.general-purpose-overlay-container .general-overlay-label {
+  font-size: 16px;
+  cursor: default;
+  color: #ffffff;
+}
+.close-button {
+  background: url('/resources/minisite/XClose.png') no-repeat left center;
+  float: right;
+  height: 15px;
+  width: 15px;
+  margin-top: 30px;
+  margin-right: 40px;
+}
+.remake-header {
+  height: 60px;
+}
+.user-container {
+  height: inherit;
+}
+.user-container .close-button {
+  margin-top: 17px;
+  margin-right: 8px;
+  cursor: pointer;
+}
+.user-thumbnail-container {
+  float: left;
   height: 100%;
+  margin-top: 2px;
+}
+.user-info-container {
+  float: left;
+  position: relative;
+  height: inherit;
+  min-width: 180px;
+  padding-left: 10px;
+}
+.user-info-container .user-name-label {
+  font-size: 20px;
+  color: #ffffff;
+  padding-top: 7px;
+}
+.user-info-container .more-from-button {
+  top: 50%;
+  color: #707070;
+  font-size: 14px;
+}
+.user-thumbnail {
+  content: url('/resources/minisite/anonymous_user.jpeg') no-repeat left center;
+  height: 60px;
+  width: 60px;
+}
+.circular-usr-thumbnail {
+  width: 50px;
+  height: 50px;
+  border-radius: 150px;
+  -webkit-border-radius: 150px;
+  -moz-border-radius: 150px;
+  background: url('/resources/minisite/anonymous_user.jpeg') no-repeat;
+  background-size: contain;
+  border: 2px solid #ff5f45;
+}
+.mobile-social-counters-row {
+  height: 40px;
+  margin-top: 10px;
+}
+.mobile-social-counters-column {
   width: 100%;
-  z-index: -10;
+  border-bottom: 2px solid #363636;
+}
+.general-mobile-overlay-container {
+  width: 100%;
+  text-align: center;
+}
+.general-mobile-overlay-container .like {
+  float: left;
+}
+.general-mobile-overlay-container .share {
+  float: right;
+}
+.remake-actions {
+  height: 40px;
+  margin-top: 10px;
+  border-bottom: 2px solid #363636;
+}
+.remake-actions .like {
+  margin-right: 15px;
+  min-width: 60px;
+  text-align: left;
+}
+@media (max-width: 767px) {
+  .remake-actions .like {
+    margin-right: 0px;
+  }
+}
+@media (min-width: 767px) {
+  .remake-actions .make-your-own {
+    float: left;
+    margin-right: 10px;
+  }
+}
+@media (min-width: 767px) {
+  .remake-actions .more-from {
+    float: left;
+    margin-right: 15px;
+  }
+}
+.remake-actions .flag {
+  float: right;
+}
+.remake-social-bar {
+  height: 40px;
+  margin-top: 10px;
+}
+.remake-social-bar .tbs-col {
+  text-align: center;
+}
+.remake-social-bar .social-action-container {
+  float: left;
+}
+.remake-social-bar .social-action-container .main-font-label {
+  margin-right: 10px;
+  color: #ffffff;
+  font-size: 16px;
+}
+@media (max-width: 767px) {
+  .remake-social-bar .social-action-container {
+    float: none;
+  }
+}
+.videocontent {
+  width: 100%;
+  max-width: 640px;
+  margin: 0px auto;
+}
+.video-js {
+  padding-top: 56.25%;
+}
+.vjs-fullscreen {
+  padding-top: 0px;
+}
+.video-overlay {
+  position: fixed;
   top: 0;
   left: 0;
+  height: 100%;
+  width: 100%;
+  z-index: 20000000000;
+  background-color: rgba(0, 0, 0, 0.85);
+  display: none;
+  cursor: pointer;
+  overflow-y: auto;
 }
