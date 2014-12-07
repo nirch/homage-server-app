@@ -55,7 +55,7 @@
 	font-family: @bold-font
 }
 
-/*+++++++++ HEADER +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+/*+++++++++++++++++++++++++++ HEADER +++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
 #hmg-nav-bar {
 	background-color: @header-color;
@@ -67,6 +67,19 @@
 #hmg-nav-bar-collapse
 {
 	border-top: 2px solid @medium-grey-color;
+}
+
+#hmg-navbar-toggle-menu
+{
+	background: url('/resources/minisite/MenuLinesHorizMobile.png') no-repeat;
+	border: none;
+	margin-top: 23px;
+}
+
+#hmg-header-logo
+{
+	height: 68px;
+	margin-left: 5px;
 }
 
 #hmg-logo-mobile
@@ -86,7 +99,6 @@
 
 .header-button {
 	font-size: 20px;
-	font-family: @bold-font;
 	color: @main-theme-color !important;
 	text-transform: uppercase;
 	text-align: center;
@@ -122,19 +134,6 @@
   background: url('/resources/minisite/LoginWhite.png') no-repeat left center;
 }
 
-#hmg-navbar-toggle-menu
-{
-	background: url('/resources/minisite/MenuLinesHorizMobile.png') no-repeat;
-	border: none;
-	margin-top: 23px;
-}
-
-#hmg-header-logo
-{
-	height: 68px;
-	margin-left: 5px;
-}
-
 // share container
 #share-site-container {
   display: none;
@@ -166,7 +165,7 @@
 {
 	display: inline-block !important
 }
-/*++++++++++++ HEADER END ++++++++++++++++++++++++++++++++++*/
+/*++++++++++++++++++++++++++++++++++++++++ HEADER END +++++++++++++++++++++++++++++++++++++++++++*/
 
 /*+++++++++++++++ FILTERS ++++++++++++++++++++++++++++++++++*/
 
@@ -659,7 +658,8 @@
 .videocontent
 {
 	width:100%;
-	// max-width: 800px;
+	max-width: 640px;
+	margin: 0px auto;
 	// min-width: 315px;
 	// background-color: brown;
 }
@@ -677,6 +677,7 @@
   background-color: rgba(0,0,0,0.85);
   display: none;
   cursor: pointer;
+  overflow-y: auto;
 }
 
 .close_button {

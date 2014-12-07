@@ -34,7 +34,8 @@
 </head>
 
 <body>  
-  <!-- header navbar -->
+  
+  <!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++ MINISITE HEADER ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
   <nav class="navbar navbar-default" id="hmg-nav-bar" role="navigation">
   <div class="container-fluid">
 
@@ -52,19 +53,19 @@
     <div class="collapse navbar-collapse" id="hmg-nav-bar-collapse">
       <ul class="nav navbar-nav">
         <li>
-          <a class="app_icon" href="/ios" target="_blank">
+          <a class="app-icon" href="/ios" target="_blank">
             <img id="hmg-appstore-link"/>
           </a>
         </li>
         <li>
-          <a class="app_icon" href="/android" target="_blank">
+          <a class="app-icon" href="/android" target="_blank">
             <img id="hmg-playstore-link"/>
           </a>
         </li>
       </ul>
       
       <ul class="nav navbar-nav navbar-right">
-        <li><a id="hmg-header-share" class="header-button" href="#">Share</a></li>
+        <li><a id="hmg-header-share" class="bold-font-label header-button" href="#">Share</a></li>
         <li id="share-site-container">
             <a class="header-share-site-button twitter_site_share"></a>
             <a class="header-share-site-button facebook_site_share"></a>
@@ -73,7 +74,7 @@
             <a class="header-share-site-button email_site_share"></a>
         </li>
         <li class="dropdown hidden-lg hidden-md hidden-sm hidden-xs">
-          <a id="hmg-header-login" href="#" class="dropdown-toggle header-button" data-toggle="dropdown" role="button" aria-expanded="false">Login 
+          <a id="hmg-header-login" href="#" class="dropdown-toggle bold-font-label header-button" data-toggle="dropdown" role="button" aria-expanded="false">Login 
             <!-- <img id="hmg-header-login"> -->
             <!-- <span class="caret"></span> -->
           </a>
@@ -1009,7 +1010,7 @@
     }
   });
 
-  $('.app_icon').each(function() {
+  $('.app-icon').each(function() {
     var href = this.href;
     href = href + "?src=minisite&campaign_id=" + campaign_id
     $(this).attr('href' , href);

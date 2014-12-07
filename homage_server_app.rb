@@ -277,7 +277,7 @@ get '/remakes' do
 			like_weight = 0.4
 			view_weight = 0.1
 
-		    trending_proj={"$project" => {"_id" => 1, "created_at" => 1, "grade" => 1, "share_count" => 1, "share_link" => 1, "significant_views" => 1, "status" => 1, "story_id" => 1, "thumbnail" => 1, "unique_significant_views" => 1, "unique_views" => 1, "unique_web_impressions" => 1, "user_id" => 1, "video" => 1, "views" => 1, "web_impressions" => 1, "like_count" => 1,
+		    trending_proj={"$project" => {"_id" => 1, "created_at" => 1, "grade" => 1, "user_fullname" => 1, "share_count" => 1, "share_link" => 1, "significant_views" => 1, "status" => 1, "story_id" => 1, "thumbnail" => 1, "unique_significant_views" => 1, "unique_views" => 1, "unique_web_impressions" => 1, "user_id" => 1, "video" => 1, "views" => 1, "web_impressions" => 1, "like_count" => 1,
 		    	"trending_score" => {"$add" => [{"$multiply" => ["$like_count",like_weight]},{"$multiply" => ["$share_count",share_weight]},{"$multiply" => ["$views",view_weight]}]}}}
 
 		    sort = {"$sort" => {"trending_score" => -1, "created_at" => -1}}

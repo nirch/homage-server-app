@@ -26,7 +26,7 @@
   font-size: 12px;
   font-family: "bryant-web-compressed";
 }
-/*+++++++++ HEADER +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+/*+++++++++++++++++++++++++++ HEADER +++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 #hmg-nav-bar {
   background-color: #000000;
   border: none;
@@ -35,6 +35,15 @@
 }
 #hmg-nav-bar-collapse {
   border-top: 2px solid #363636;
+}
+#hmg-navbar-toggle-menu {
+  background: url('/resources/minisite/MenuLinesHorizMobile.png') no-repeat;
+  border: none;
+  margin-top: 23px;
+}
+#hmg-header-logo {
+  height: 68px;
+  margin-left: 5px;
 }
 #hmg-logo-mobile {
   content: url("/resources/minisite/HomageLogoMobile.png");
@@ -47,7 +56,6 @@
 }
 .header-button {
   font-size: 20px;
-  font-family: "bryant-web-compressed";
   color: #ff5f45 !important;
   text-transform: uppercase;
   text-align: center;
@@ -73,15 +81,6 @@
 #hmg-header-login:hover {
   background: url('/resources/minisite/LoginWhite.png') no-repeat left center;
 }
-#hmg-navbar-toggle-menu {
-  background: url('/resources/minisite/MenuLinesHorizMobile.png') no-repeat;
-  border: none;
-  margin-top: 23px;
-}
-#hmg-header-logo {
-  height: 68px;
-  margin-left: 5px;
-}
 #share-site-container {
   display: none;
   padding-top: 15px;
@@ -105,7 +104,7 @@
 .header-share-site-button {
   display: inline-block !important;
 }
-/*++++++++++++ HEADER END ++++++++++++++++++++++++++++++++++*/
+/*++++++++++++++++++++++++++++++++++++++++ HEADER END +++++++++++++++++++++++++++++++++++++++++++*/
 /*+++++++++++++++ FILTERS ++++++++++++++++++++++++++++++++++*/
 .filters {
   background-color: #252525;
@@ -434,6 +433,8 @@
 }
 .videocontent {
   width: 100%;
+  max-width: 640px;
+  margin: 0px auto;
 }
 .video-js {
   padding-top: 56.25%;
@@ -451,6 +452,7 @@
   background-color: rgba(0, 0, 0, 0.85);
   display: none;
   cursor: pointer;
+  overflow-y: auto;
 }
 .close_button {
   background: url('/resources/minisite/XClose.png') no-repeat left center;
