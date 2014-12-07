@@ -74,7 +74,7 @@ end
 #ready_remakes = test_remakes.find({share_link:{"$exists"=>true}})
 #puts ready_remakes.count
 
-launch_date = Time.parse("20141101Z")
+launch_date = Time.parse("20141129Z")
 
 i = 0
 rotated_video = false
@@ -111,6 +111,12 @@ ready_remakes = remakes.find({created_at:{"$gte"=>launch_date}, status:3}).each 
 			# create variables
 			#-----------------
 			remake_id = r["_id"]
+
+			log.info "---------------------******Starting " + remake_id.to_s + "*******---------------------"
+			log.info "**************************************************************************************"
+			log.info "***************8**********************************************************************"
+			log.info "**************************************************************************************"
+
 			file_name = remake_id.to_s
 			s3_key = r["footages"][0]["raw_video_s3_key"]
 			s3_upload_key = File.dirname(s3_key).to_s + "/" + file_name + thumbnail_extension
@@ -210,6 +216,11 @@ ready_remakes = remakes.find({created_at:{"$gte"=>launch_date}, status:3}).each 
 			File.delete thumbnail_path
 			File.delete download_contour_path
 			log.info "Files Deleted bye bye..."
+
+			log.info "---------------------******Ending " + remake_id.to_s + "*******---------------------"
+			log.info "************************************************************************************"
+			log.info "************************************************************************************"
+			log.info "************************************************************************************"
 
 		rescue Exception => err
 			log.info ":::::::Failed to process::::: " + file_name + "::::::::"

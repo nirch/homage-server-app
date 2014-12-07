@@ -203,18 +203,18 @@ module RemakesQueryType
   	TrendingQuery = 3
 end
 
-helpers do
-  def protected!
-    return if authorized?
-    headers['WWW-Authenticate'] = 'Basic realm="Restricted Area"'
-    halt 401, "Not authorized\n"
-  end
+# helpers do
+#   def protected!
+#     return if authorized?
+#     headers['WWW-Authenticate'] = 'Basic realm="Restricted Area"'
+#     halt 401, "Not authorized\n"
+#   end
 
-  def authorized?
-    @auth ||=  Rack::Auth::Basic::Request.new(request.env)
-    @auth.provided? and @auth.basic? and @auth.credentials and @auth.credentials == ['admin', 'Homage2014']
-  end
-end
+#   def authorized?
+#     @auth ||=  Rack::Auth::Basic::Request.new(request.env)
+#     @auth.provided? and @auth.basic? and @auth.credentials and @auth.credentials == ['admin', 'Homage2014']
+#   end
+# end
 
 get '/remakes' do
 		# input
@@ -371,6 +371,7 @@ subdomain settings.play_subdomain do
 	get '/date/:from_date' do
 		from_date = Time.parse(params[:from_date])
 		raw = params[:raw]
+		userremakeid = BSON::ObjectId.from_string(params[:remakeid]) if params[:remakeid]
 		badbackgrounds = ["-1","-2","-3","-4","-5","-6","-7","-8","-9","-10","-11"]
 		if raw == 'all'
 			@raw = true
@@ -391,6 +392,13 @@ subdomain settings.play_subdomain do
 			@raw = false
 			@remakes = settings.db.collection("Remakes").find(created_at:{"$gte"=>from_date}, status:3).sort(created_at:-1)
 			@heading = @remakes.count.to_s + " Remakes from " + from_date.strftime("%d/%m/%Y")
+			@grade = true
+		end
+
+		if userremakeid != nil
+			@raw = true
+			@remakes = settings.db.collection("Remakes").find(_id:userremakeid)
+			@heading = "Remakes id " + userremakeid.to_s
 			@grade = true
 		end
 

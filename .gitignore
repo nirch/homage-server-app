@@ -3,3 +3,15 @@
 *.log
 download_folder/
 views/test_s3_download.html
+mongo scripts/backgrounddetection/_dump-bg/bg-001-A.bmp
+mongo scripts/backgrounddetection/_dump-bg/bg-001-D.bmp
+mongo scripts/backgrounddetection/_dump-bg/bg-001-D1.bmp
+mongo scripts/backgrounddetection/_dump-bg/bg-001-D2.bmp
+mongo scripts/backgrounddetection/_dump-bg/bg-001-E.bmp
+mongo scripts/backgrounddetection/_dump-bg/bg-001-SRC.bmp
+mongo scripts/backgrounddetection/_dump-bg/mask-000.bmp
+mongo scripts/backgrounddetection/cropped.jpg
+mongo scripts/backgrounddetection/cropped.ctr
+mongo scripts/backgrounddetection/parameters.xml
+mongo scripts/test_dan.rb
+Gemfile.lock
