@@ -1,14 +1,61 @@
 @font-face {
-font-family: "bryant-web-compressed";
-src: url("/resources/Bryant-MediumCompressed.otf") format("opentype");
+  font-family: "bryant-web-compressed";
+  src: url("/resources/Bryant-MediumCompressed.otf") format("opentype");
 }
 
 @font-face {
-font-family: "proxima-nova";
-src: url("/resources/ProximaNova-Light.otf") format("opentype");
+  font-family: "proxima-nova";
+  src: url("/resources/ProximaNova-Light.otf") format("opentype");
 }
 
-/*header*/
+/*+++++++++++++ HEADER ++++++++++++ */
+
+#hmg-nav-bar {
+  background-color: #000000;
+}
+
+#hmg-appstore-link
+{
+  /*background: url('/resources/minisite/AppStoreIcon.png') no-repeat center;*/
+  content:url("/resources/minisite/AppStoreIcon.png");
+}
+
+#hmg-header-logo
+{
+  content:url("/resources/minisite/homageLogoMobile.png");
+}
+
+#hmg-playstore-link
+{
+  content:url("/resources/minisite/PlayStoreIcon.png");
+}
+
+#header-clickable {
+  font-size: 20px;
+  font-family: 'bryant-web-compressed';
+  color: #ff5f45;
+  text-transform: uppercase;
+  text-align: center;
+  cursor: pointer;
+}
+
+#header_button:hover {
+  color: #ffffff;
+  text-decoration: none;
+}
+
+#hmg-header-share
+{
+  content:url("/resources/minisite/ShareRegular.png");
+}
+
+#hmg-header-login
+{
+  content:url("/resources/minisite/Login.png");
+}
+
+
+/*header
 .header {
 	background-color: #000000;
 	height: 70px;
@@ -21,14 +68,14 @@ src: url("/resources/ProximaNova-Light.otf") format("opentype");
 }
 
 .right_header_menu {
-	/*margin-top: 20px;*/
+	margin-top: 20px;
 	height: 100%;
 	float: right;
 }
 
 .app_icon {
 	margin-right: 20px;
-}
+}*/
 
 .hoverable_element:hover {
   color: #ff5f45;

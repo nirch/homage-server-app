@@ -104,7 +104,7 @@ configure :test do
 	set :share_link_prefix, "http://play-test.homage.it"
 
 	# enables mixpanel for testing
-	# set :mixpanel, Mixpanel::Tracker.new("7d575048f24cb2424cd5c9799bbb49b1")
+	#set :mixpanel, Mixpanel::Tracker.new("7d575048f24cb2424cd5c9799bbb49b1")
 
 	set :play_subdomain, :'play-test'
 end
@@ -280,7 +280,7 @@ get '/remakes' do
 		    trending_proj={"$project" => {"_id" => 1, "created_at" => 1, "grade" => 1, "share_count" => 1, "share_link" => 1, "significant_views" => 1, "status" => 1, "story_id" => 1, "thumbnail" => 1, "unique_significant_views" => 1, "unique_views" => 1, "unique_web_impressions" => 1, "user_id" => 1, "video" => 1, "views" => 1, "web_impressions" => 1, "like_count" => 1,
 		    	"trending_score" => {"$add" => [{"$multiply" => ["$like_count",like_weight]},{"$multiply" => ["$share_count",share_weight]},{"$multiply" => ["$views",view_weight]}]}}}
 
-		    sort = {"$sort" => {"trending_score" => -1}}
+		    sort = {"$sort" => {"trending_score" => -1, "created_at" => -1}}
 
 		    aggregation_pipeline.push(trending_proj)
 		    aggregation_pipeline.push(sort)
@@ -315,10 +315,12 @@ get '/ios' do
  	shared_from = "Undefined"
 	shared_from = params[:src] if params[:src]
 	origin_id = params[:origin_id] if params[:origin_id]
+	campaign_id = params[:campaign_id] if params[:campaign_id]
 
 	info = Hash.new
 	info["shared_from"] = shared_from
 	info["origin_id"] = origin_id if origin_id
+	info["campaign_id"] = campaign_id if campaign_id
 
 	settings.mixpanel.track("12345", "InstalliOS", info) if settings.respond_to?(:mixpanel)	
 	redirect "https://itunes.apple.com/us/app/id851746600", 302
@@ -328,10 +330,12 @@ get '/android' do
 	shared_from = "Undefined"
 	shared_from = params[:src] if params[:src]
 	origin_id = params[:origin_id] if params[:origin_id]
+	campaign_id = params[:campaign_id] if params[:campaign_id]
 
 	info = Hash.new
 	info["shared_from"] = shared_from
 	info["origin_id"] = origin_id if origin_id
+	info["campaign_id"] = campaign_id if campaign_id
 
 	settings.mixpanel.track("12345", "InstallAndroid", info) if settings.respond_to?(:mixpanel)	
 	redirect "https://play.google.com/store/apps/details?id=com.homage.app", 302
@@ -481,6 +485,14 @@ subdomain settings.play_subdomain do
 		erb :new_minisite
 	end
 
+	get '/gallery/v1/:campaign_name' do
+		@config = getConfigDictionary();
+		@campaign = settings.db.collection("Campaigns").find_one({name: params[:campaign_name]})
+		campaign_id = @campaign["_id"]
+		@stories = settings.db.collection("Stories").find({active:true, campaign_id: campaign_id})
+		erb :minisiteV1
+	end
+
 	get '/:entity_id' do
 		remakes = settings.db.collection("Remakes")
 		users   = settings.db.collection("Users")
@@ -500,13 +512,13 @@ subdomain settings.play_subdomain do
 			shares.update({_id: @originating_share_id},{"$set" => {share_status: true}})
 		end
 
-		# story_id = @remake["story_id"]
-		# logger.debug "story_id" + story_id.to_s
-		# campaign_id = settings.db.collection("Stories").find_one({_id: story_id})["campaign_id"]
-		# logger.debug "campaign_id: " + campaign_id.to_s
-		# @campaign = settings.db.collection("Campaigns").find_one({_id: campaign_id})
-		# campaign_id = @campaign["_id"]
-		# @stories = settings.db.collection("Stories").find({active:true, campaign_id: campaign_id})
+		story_id = @remake["story_id"]
+		logger.debug "story_id" + story_id.to_s
+		campaign_id = settings.db.collection("Stories").find_one({_id: story_id})["campaign_id"]
+		logger.debug "campaign_id: " + campaign_id.to_s
+		@campaign = settings.db.collection("Campaigns").find_one({_id: campaign_id})
+		campaign_id = @campaign["_id"]
+		@stories = settings.db.collection("Stories").find({active:true, campaign_id: campaign_id})
 	
 		if BSON::ObjectId.legal?(@remake["user_id"]) then
 			@user = users.find_one(@remake["user_id"])
@@ -517,7 +529,8 @@ subdomain settings.play_subdomain do
 		@story = stories.find_one(@remake["story_id"])
 
 		# erb :new_minisite
-		erb :HMGVideoPlayer
+		#erb :HMGVideoPlayer
+		erb :minisiteV1
 	end
 end
 
@@ -1059,6 +1072,11 @@ post '/remake' do
 	remake[:share_count] = 0
 	remake[:like_count] = 0
 	remake[:views] = 0
+	remake[:unique_views] = 0
+	remake[:web_impressions] = 0
+	remake[:unique_web_impressions] = 0
+	remake[:significant_views] = 0
+	remake[:unique_significant_views] = 0
 
 	# Creating a new remake document in the DB
 	remake_objectId = remakes.save(remake)
@@ -1172,9 +1190,18 @@ end
 
 def userLikedRemake(entity_id,remake_id)
 	current_user_likes = settings.db.collection("Likes").find({
-		"$or" => [{remake_id:remake_id, user_id: entity_id},
+		"$and" => [
+			{
+				"$or" => [{remake_id:remake_id, user_id: entity_id},
 				  {remake_id:remake_id, cookie_id: entity_id}]
-		}).count
+			},
+			{
+				like_state: true
+			}
+		]
+	}).count
+
+	puts "current_user_likes: " + current_user_likes.to_s
 
 	if current_user_likes != 0 then
 		return true
@@ -1702,7 +1729,14 @@ post '/remake/unlike' do
 	
 	remakes = settings.db.collection("Remakes")
 	remake = remakes.find_one(remake_id)
-	remakes.update({_id: remake_id},{"$inc" => {like_count: -1}})	
+
+	current_like_count = remake["like_count"] if remake["like_count"]
+	if current_like_count == 0 then
+		logger.error "like count is 0 and unlike recieved, wtf?! not doing anything"
+		return remake.to_json
+	else
+		remakes.update({_id: remake_id},{"$inc" => {like_count: -1}})
+	end
 
 	remake = remakes.find_one(remake_id)
 	return remake.to_json
@@ -1775,6 +1809,8 @@ def isViewUniqueFromUser(entity_type,entity_id,user_id,cookie_id)
    	elsif entity_type == "story" then
    		condition["story_id"] = entity_id
    		condition["remake_id"] = {"$exists" => false}
+   	elsif entity_type == "campaign_video" then
+   		condition["campaign_id"] = entity_id
    	end
 
    	logger.debug "condition: " + condition.to_s
@@ -2134,41 +2170,6 @@ get '/test/mail' do
 	"Mail sent successfully"
 end
 
-get '/test/minisite' do
-	erb :HMGMiniSite
-end
-
-get '/test/:entity_id' do
-		remakes = settings.db.collection("Remakes")
-		users   = settings.db.collection("Users")
-		shares  = settings.db.collection("Shares")
-		stories = settings.db.collection("Stories")
-		@config = getConfigDictionary();
-		
-		entity_id = BSON::ObjectId.from_string(params[:entity_id])
-		@share  = shares.find_one(entity_id)
-		if @share == nil then
-			@remake = remakes.find_one(entity_id)
-			@originating_share_id = ""
-		else 
-			remake_id = @share["remake_id"]
-			@remake = remakes.find_one(remake_id)
-			@originating_share_id = @share["_id"]
-			shares.update({_id: @originating_share_id},{"$set" => {share_status: true}})
-		end
-
-		
-		if BSON::ObjectId.legal?(@remake["user_id"]) then
-			@user = users.find_one(@remake["user_id"])
-		else
-			@user = users.find_one({_id: @remake["user_id"]})
-		end
-
-		
-		@story = stories.find_one(@remake["story_id"])
-
-		erb :HMGVideoPlayer
-end
 
 def download_remake_from_s3(remake_id_str, download_folder)
 
@@ -2303,4 +2304,52 @@ get '/download/remake/:remake_id' do
 	FileUtils.rm_rf(download_folder)
 	#return  s3 link
 	return s3_object.public_url.to_s
+end
+
+get '/test/gallery/v1/:campaign_name' do
+	@config = getConfigDictionary();
+	@campaign = settings.db.collection("Campaigns").find_one({name: params[:campaign_name]})
+	campaign_id = @campaign["_id"]
+	@stories = settings.db.collection("Stories").find({active:true, campaign_id: campaign_id})
+	erb :minisiteV1
+end
+
+get '/test/:entity_id' do
+	remakes = settings.db.collection("Remakes")
+	users   = settings.db.collection("Users")
+	shares  = settings.db.collection("Shares")
+	stories = settings.db.collection("Stories")
+	@config = getConfigDictionary();
+
+	entity_id = BSON::ObjectId.from_string(params[:entity_id])
+	@share  = shares.find_one(entity_id)
+	if @share == nil then
+		@remake = remakes.find_one(entity_id)
+		@originating_share_id = ""
+	else 
+		remake_id = @share["remake_id"]
+		@remake = remakes.find_one(remake_id)
+		@originating_share_id = @share["_id"]
+		shares.update({_id: @originating_share_id},{"$set" => {share_status: true}})
+	end
+
+	story_id = @remake["story_id"]
+	logger.debug "story_id" + story_id.to_s
+	campaign_id = settings.db.collection("Stories").find_one({_id: story_id})["campaign_id"]
+	logger.debug "campaign_id: " + campaign_id.to_s
+	@campaign = settings.db.collection("Campaigns").find_one({_id: campaign_id})
+	campaign_id = @campaign["_id"]
+	@stories = settings.db.collection("Stories").find({active:true, campaign_id: campaign_id})
+	
+	if BSON::ObjectId.legal?(@remake["user_id"]) then
+		@user = users.find_one(@remake["user_id"])
+	else
+		@user = users.find_one({_id: @remake["user_id"]})
+	end
+
+	@story = stories.find_one(@remake["story_id"])
+
+	# erb :new_minisite
+	#erb :HMGVideoPlayer
+	erb :minisiteV1
 end

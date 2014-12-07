@@ -123,7 +123,7 @@
     display: none;
     overflow: hidden;
 
-    width: 150px;
+    /*width: 150px;*/
     padding: 0 1px; /* Webkit padding on transition fix */
 
     cursor: pointer;
@@ -137,7 +137,7 @@
 .galereya-cell-img {
     display: block;
 
-    width: 150px;
+    /*width: 150px;*/
 
     image-rendering: optimizeSpeed;
 }
@@ -177,8 +177,8 @@
     left:0;
     min-height: 50px;
     width: 100%;
-    padding-top: 10px;
-    padding-left: 5px;
+    padding-top: 5px;
+    padding-left: 10px;
     padding-right: 5px;
 }
 
@@ -456,6 +456,12 @@
     .galereya-slider-slide {
         background-image: url('../img/black_lozenge_@2X.png');
     }
+}
+
+/*keeps cells at same size all the time - its just a copy of the below media query*/
+.galereya-cell,
+.galereya-cell-img {
+        width: 350px;
 }
 
 /* Other devices and screens */

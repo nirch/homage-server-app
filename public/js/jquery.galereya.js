@@ -230,19 +230,41 @@
                 .wrap('<div class="galereya-cell" data-index="' + $cells.length + '"></div>')
                 .parent()
                 .append('<div class="galereya-cell-play-button-container">\
-                                <a class="overlay_label play_label"></a>\
+                                <span class="main_font_label social_count_label play">\
+                                    <i class="fa fa-play"> </i>\
+                                </span>\
                             </div>')
                 .append('<div class="galereya-cell-desc">\
                                 <div class="galereya-cell-desc-title">\
-                                    <a class="overlay_label user_name_label">' + info.user_name + '</a>\
-                                    <a class="overlay_label like_count_label">' + info.like_count + '</a>\
-                                    <a class="overlay_label view_count_label">' + info.view_count + '</a>\
-                                    <a class="overlay_label share_count_label">' + info.share_count + '</a>\
+                                    <span class="user_thumbnail_container">\
+                                        <img class="circular-usr-thumbnail">\
+                                    </span>\
+                                    <span class="main_font_label user_name">' + info.user_name + '</span>\
+                                    <span class="main_font_label social_count_label like">\
+                                      <i class="fa fa-heart-o"> </i>\
+                                      <span>' + info.like_count + '</span>\
+                                    </span>\
+                                    <span class="main_font_label social_count_label view">\
+                                      <i class="fa fa-eye"> </i>\
+                                      <span>' + info.view_count + '</span>\
+                                    </span>\
+                                    <span class="main_font_label social_count_label share">\
+                                      <i class="fa fa-share-alt"> </i>\
+                                      <span>' + info.share_count + '</span>\
+                                    </span>\
                                 </div>\
                                 <div class="galereya-cell-desc-text">\
-                                    <a class="overlay_label like_label">Like</a>\
-                                    <a class="overlay_label play_label"></a>\
-                                    <a class="overlay_label flag_label">Flag</a>\
+                                    <span class="main_font_label social_count_label like">\
+                                      <i class="fa fa-heart-o"> </i>\
+                                      <span> Like</span>\
+                                    </span>\
+                                    <span class="main_font_label social_count_label play">\
+                                      <i class="fa fa-play"> </i>\
+                                    </span>\
+                                    <span class="main_font_label social_count_label flag">\
+                                      <i class="fa fa-flag"> </i>\
+                                      <span> Flag</span>\
+                                    </span>\
                                 </div>\
                             </div>')
                 .append('<div class="galereya-cell-overlay" />');
@@ -343,19 +365,41 @@
                     .wrap('<div class="galereya-cell" data-index="' + i + '"></div>')
                     .parent()
                     .append('<div class="galereya-cell-play-button-container">\
-                                <a class="overlay_label play_label"></a>\
+                                <span class="main_font_label social_count_label play">\
+                                    <i class="fa fa-play"> </i>\
+                                </span>\
                             </div>')
                     .append('<div class="galereya-cell-desc">\
                                 <div class="galereya-cell-desc-title">\
-                                    <a class="overlay_label user_name_label">' + user_name + '</a>\
-                                    <a class="overlay_label like_count_label">' + like_count + '</a>\
-                                    <a class="overlay_label view_count_label">' + view_count + '</a>\
-                                    <a class="overlay_label share_count_label">' + share_count + '</a>\
+                                    <span class="user_thumbnail_container">\
+                                        <img class="circular-usr-thumbnail">\
+                                    </span>\
+                                    <span class="main_font_label user_name">' + user_name + '</span>\
+                                    <span class="main_font_label social_count_label like">\
+                                      <i class="fa fa-heart-o"> </i>\
+                                      <span>' + like_count + '</span>\
+                                    </span>\
+                                    <span class="main_font_label social_count_label view">\
+                                      <i class="fa fa-eye"> </i>\
+                                      <span>' + view_count + '</span>\
+                                    </span>\
+                                    <span class="main_font_label social_count_label share">\
+                                      <i class="fa fa-share-alt"> </i>\
+                                      <span>' + share_count + '</span>\
+                                    </span>\
                                 </div>\
                                 <div class="galereya-cell-desc-text">\
-                                    <a class="overlay_label like_label">Like</a>\
-                                    <a class="overlay_label play_label"></a>\
-                                    <a class="overlay_label flag_label">Flag</a>\
+                                    <span class="main_font_label social_count_label like">\
+                                      <i class="fa fa-heart-o"> </i>\
+                                      <span> Like</span>\
+                                    </span>\
+                                    <span class="main_font_label social_count_label play">\
+                                      <i class="fa fa-play"> </i>\
+                                    </span>\
+                                    <span class="main_font_label social_count_label flag">\
+                                      <i class="fa fa-flag"> </i>\
+                                      <span> Flag</span>\
+                                    </span>\
                                 </div>\
                             </div>')
                     .append('<div class="galereya-cell-overlay" />');

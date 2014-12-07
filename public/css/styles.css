@@ -1,0 +1,543 @@
+@font-face {
+  font-family: "bryant-web-compressed";
+  src: url("/resources/Bryant-MediumCompressed.otf") format("opentype");
+}
+@font-face {
+  font-family: "proxima-nova";
+  src: url("/resources/ProximaNova-Light.otf") format("opentype");
+}
+.tbs-container-fluid {
+  height: 100%;
+}
+.tbs-row {
+  height: 100%;
+  margin-left: 0px;
+  margin-right: 0px;
+  width: 100%;
+}
+.tbs-col {
+  height: 100%;
+}
+.main_font_label {
+  font-size: 12px;
+  font-family: "proxima-nova";
+}
+.bold-font-label {
+  font-size: 12px;
+  font-family: "bryant-web-compressed";
+}
+/*+++++++++ HEADER +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+#hmg-nav-bar {
+  background-color: #000000;
+  border: none;
+  border-radius: 0px;
+  margin-bottom: 0px;
+}
+#hmg-nav-bar-collapse {
+  border-top: 2px solid #363636;
+}
+#hmg-logo-mobile {
+  content: url("/resources/minisite/HomageLogoMobile.png");
+}
+#hmg-appstore-link {
+  content: url("/resources/minisite/AppStoreIcon.png");
+}
+#hmg-playstore-link {
+  content: url("/resources/minisite/PlayStoreIcon.png");
+}
+.header-button {
+  font-size: 20px;
+  font-family: "bryant-web-compressed";
+  color: #ff5f45 !important;
+  text-transform: uppercase;
+  text-align: center;
+  cursor: pointer;
+  text-decoration: none;
+  padding-top: 20px !important;
+  margin-left: 5px;
+}
+.header-button:hover {
+  color: #ffffff !important;
+}
+#hmg-header-share {
+  background: url("/resources/minisite/ShareRegular.png") no-repeat left center;
+  padding-left: 22px !important;
+}
+#hmg-header-share:hover {
+  background: url('/resources/minisite/ShareWhite.png') no-repeat left center;
+}
+#hmg-header-login {
+  background: url("/resources/minisite/Login.png") no-repeat left center;
+  padding-left: 25px !important;
+}
+#hmg-header-login:hover {
+  background: url('/resources/minisite/LoginWhite.png') no-repeat left center;
+}
+#hmg-navbar-toggle-menu {
+  background: url('/resources/minisite/MenuLinesHorizMobile.png') no-repeat;
+  border: none;
+  margin-top: 23px;
+}
+#hmg-header-logo {
+  height: 68px;
+  margin-left: 5px;
+}
+#share-site-container {
+  display: none;
+  padding-top: 15px;
+  padding-right: 14px;
+}
+.facebook_site_share {
+  background: url('/resources/minisite/FacebookPressed.png') no-repeat left center;
+}
+.twitter_site_share {
+  background: url('/resources/minisite/TwitterPressed.png') no-repeat left center;
+}
+.gplus_site_share {
+  background: url('/resources/minisite/GPlusPressed.png') no-repeat left center;
+}
+.pinterest_site_share {
+  background: url('/resources/minisite/PinterestPressed.png') no-repeat left center;
+}
+.email_site_share {
+  background: url('/resources/minisite/EmailPressed.png') no-repeat left center;
+}
+.header-share-site-button {
+  display: inline-block !important;
+}
+/*++++++++++++ HEADER END ++++++++++++++++++++++++++++++++++*/
+/*+++++++++++++++ FILTERS ++++++++++++++++++++++++++++++++++*/
+.filters {
+  background-color: #252525;
+  margin-left: 0px;
+  margin-right: 0px;
+}
+.filter-left {
+  list-style-type: none;
+  height: 100%;
+  /* margin-left: 20px; */
+  padding: 0px;
+  margin-bottom: 0px;
+}
+.filter-right {
+  height: 100%;
+  text-align: right;
+  list-style-type: none;
+  margin-bottom: 0px;
+}
+.filter-label {
+  display: inline-block;
+  list-style-type: none;
+  height: 100%;
+}
+.filter-left li:hover,
+.filter-left li:focus {
+  border-bottom: 2px solid #ff5f45;
+}
+.filter_clickable {
+  text-decoration: none;
+  font-family: "proxima-nova";
+  text-transform: uppercase;
+  color: #707070;
+  height: 100%;
+  display: inline-block;
+  padding-top: 20px;
+  padding-left: 10px;
+  padding-right: 10px;
+  padding-bottom: 20px;
+}
+.filter-left .filter_clickable:hover,
+.filter-left .filter_clickable:focus,
+.filter-left .filter_clickable:active,
+.filter-left .filter_clickable.selected {
+  color: #ff5f45;
+}
+.filter_clickable:hover,
+.filter_clickable:focus {
+  color: #ffffff;
+  text-decoration: none;
+}
+.filter-right > .dropdown {
+  min-width: 250px;
+}
+.filter-right > .dropdown > .dropdown-menu {
+  background-color: #363636;
+  border: none;
+  width: 100%;
+  margin: 0px;
+}
+.filter-right > .dropdown > .dropdown-menu > li > a {
+  background-color: transparent;
+  color: #707070;
+  font-family: "proxima-nova";
+  font-size: 14px;
+}
+.filter-right > .dropdown > .dropdown-menu > li > a:hover {
+  color: #ffffff;
+  font-size: 15px;
+}
+.filter-right > .open,
+.filter-right > .open:hover,
+.filter-right > .open:focus {
+  background-color: #363636;
+  color: #ffffff;
+}
+@media (max-width: 767px) {
+  .filter-right,
+  .filter-left {
+    text-align: center;
+  }
+  .filter-right {
+    background-color: #363636;
+  }
+}
+.campaign-stories-col {
+  padding: 0px;
+}
+.gallery-header {
+  margin-top: 50px;
+  margin-bottom: 150px;
+}
+.campaign-info {
+  height: 100%;
+  float: right;
+  text-align: center;
+}
+.campaign-logo {
+  background: url('/resources/minisite/HomageBanner.png') no-repeat center;
+  min-height: 130px;
+  margin-bottom: 30px;
+}
+.campaign-button {
+  border: 1px solid #ff5f45;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: #ff5f45;
+  font-size: 20px;
+  text-align: center;
+  font-family: "bryant-web-compressed";
+  text-transform: uppercase;
+  padding-top: 20px;
+  /* margin-top: 20px; */
+  padding-left: 40px;
+  padding-right: 40px;
+  text-decoration: none;
+  padding-bottom: 16px;
+}
+.campaign-button:hover,
+.campaign-button:focus {
+  text-decoration: none;
+  color: #ffffff;
+}
+.campaign-video-container {
+  float: left;
+  position: relative;
+}
+.campaign-video-play-button-container {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  min-height: 35px;
+  z-index: 10;
+  text-align: center;
+  width: 100%;
+  font-size: 30px;
+  padding-bottom: 10px;
+}
+@media (max-width: 767px) {
+  .campaign-info {
+    float: none;
+    margin-right: 0px !important;
+    margin-bottom: 40px;
+  }
+  .campaign-logo {
+    background: url('/resources/minisite/HomageLogoBannerMobile.png') no-repeat center;
+    margin-bottom: 0px;
+    margin-top: 0px;
+  }
+  .gallery-header {
+    margin-top: 0px;
+    margin-bottom: 30px;
+  }
+}
+.vjs-fullscreen {
+  padding-top: 0px;
+}
+.vjs-default-skin {
+  color: #cccccc;
+}
+.vjs-big-play-button {
+  display: none !important;
+}
+.fluid-width-video-wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%!important;
+  height: 100%!important;
+}
+.galereya-cell span {
+  font-size: 14px;
+}
+.galereya-cell .circular-usr-thumbnail {
+  height: 35px;
+  width: 35px;
+}
+.galereya-cell .user_name {
+  float: left;
+  padding-left: 6px;
+  padding-top: 7px;
+}
+.galereya-cell .galereya-cell-desc-title .like,
+.galereya-cell .galereya-cell-desc-title .view,
+.galereya-cell .galereya-cell-desc-title .share {
+  float: right;
+  padding-left: 5px;
+  margin-top: 7px;
+}
+.galereya-cell .galereya-cell-desc-text .like {
+  float: left;
+}
+.galereya-cell .galereya-cell-desc-text .flag {
+  float: right;
+}
+.hoverable_element:hover {
+  color: #ff5f45;
+  text-decoration: none;
+}
+.remake_header {
+  height: 60px;
+}
+.user_container {
+  height: inherit;
+}
+.user_container .close_button {
+  margin-top: 17px;
+  margin-right: 8px;
+  cursor: pointer;
+}
+.user_thumbnail_container {
+  float: left;
+  height: 100%;
+  margin-top: 2px;
+}
+.user_info_container {
+  float: left;
+  position: relative;
+  height: inherit;
+  min-width: 180px;
+  padding-left: 10px;
+}
+.user_info_container .user_name_label {
+  font-size: 20px;
+  color: #ffffff;
+  padding-top: 7px;
+}
+.user_info_container .more_from_button {
+  top: 50%;
+  color: #707070;
+  font-size: 14px;
+}
+.social-count-container {
+  padding-top: 6px;
+  float: right;
+}
+.social-count-container .social_count_label {
+  font-size: 14px;
+  cursor: default;
+  color: #ffffff;
+}
+.fa {
+  color: #ffffff;
+}
+.user-thumbnail {
+  content: url('/resources/minisite/anonymous_user.jpeg') no-repeat left center;
+  height: 60px;
+  width: 60px;
+}
+.circular-usr-thumbnail {
+  width: 50px;
+  height: 50px;
+  border-radius: 150px;
+  -webkit-border-radius: 150px;
+  -moz-border-radius: 150px;
+  background: url('/resources/minisite/anonymous_user.jpeg') no-repeat;
+  background-size: contain;
+  border: 2px solid #ff5f45;
+}
+.mobile-social-count-row {
+  height: 40px;
+  margin-top: 10px;
+}
+.mobile-social-count-column {
+  width: 100%;
+  border-bottom: 2px solid #363636;
+}
+.mobile-social-count-container {
+  width: 100%;
+  text-align: center;
+}
+.mobile-social-count-container .like {
+  float: left;
+}
+.mobile-social-count-container .share {
+  float: right;
+}
+.remake_actions {
+  height: 40px;
+  margin-top: 10px;
+  border-bottom: 2px solid #363636;
+}
+.remake_actions .like {
+  margin-right: 15px;
+  min-width: 60px;
+  text-align: left;
+}
+@media (max-width: 767px) {
+  .remake_actions .like {
+    margin-right: 0px;
+  }
+}
+@media (min-width: 767px) {
+  .remake_actions .make_your_own {
+    float: left;
+    margin-right: 10px;
+  }
+}
+@media (min-width: 767px) {
+  .remake_actions .more_from {
+    float: left;
+    margin-right: 15px;
+  }
+}
+.remake_actions .flag {
+  float: right;
+}
+.remake_social_bar {
+  height: 40px;
+  margin-top: 10px;
+}
+.remake_social_bar .tbs-col {
+  text-align: center;
+}
+.remake_social_bar .social-action-container {
+  float: left;
+}
+.remake_social_bar .social-action-container .main_font_label {
+  margin-right: 10px;
+  color: #ffffff;
+  font-size: 14px;
+}
+@media (max-width: 767px) {
+  .remake_social_bar .social-action-container {
+    float: none;
+  }
+}
+.videocontent {
+  width: 100%;
+}
+.video-js {
+  padding-top: 56.25%;
+}
+.vjs-fullscreen {
+  padding-top: 0px;
+}
+.video_overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  z-index: 20000000000;
+  background-color: rgba(0, 0, 0, 0.85);
+  display: none;
+  cursor: pointer;
+}
+.close_button {
+  background: url('/resources/minisite/XClose.png') no-repeat left center;
+  float: right;
+  height: 15px;
+  width: 15px;
+  margin-top: 30px;
+  margin-right: 40px;
+}
+.remake_video_container {
+  display: inline-block;
+  position: relative;
+  height: 100%;
+  width: 70%;
+  background-color: transparent;
+}
+.remake_footer {
+  width: 100%;
+  height: 10%;
+  border-bottom: 1px solid #707070;
+}
+.secondary_font_label {
+  font-size: 12px;
+  font-family: 'proxima-nova';
+  color: #ffffff;
+  padding-left: 30px;
+  /*margin: 0 auto; */
+  text-align: left;
+  /*pointer-events: none;*/
+  cursor: default;
+  margin-top: 15px;
+  margin-left: 15px;
+  float: left;
+  min-height: 20px;
+}
+.like_button {
+  z-index: 3423423000000;
+}
+/* centered columns styles */
+.footer {
+  background-color: #000000;
+  height: 60px;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  z-index: 200000000000;
+}
+.footer-right,
+.footer-left {
+  height: 100%;
+}
+.footer-right {
+  text-align: right;
+  padding-top: 20px;
+  padding-bottom: 20px;
+}
+.footer-left {
+  text-align: left;
+  padding-bottom: 0px;
+}
+#hmg-footer-logo {
+  content: url('/resources/minisite/HomageLogoFooter.png');
+}
+#hmg-fb-link {
+  content: url('/resources/minisite/FacebookRegular.png');
+}
+#hmg-twitter-link {
+  content: url('/resources/minisite/TwitterRegular.png');
+}
+#hmg-vimeo-link {
+  content: url('/resources/minisite/VimeoRegular.png');
+}
+.footer-label {
+  display: inline-block;
+  list-style-type: none;
+  height: 100%;
+}
+.hmg-social-link {
+  margin-right: 15px;
+}
+.background_image {
+  background-image: url("/resources/minisite/GirlsWithPhonelowres.jpg");
+  background-size: 100%;
+  position: fixed;
+  height: 100%;
+  width: 100%;
+  z-index: -10;
+  top: 0;
+  left: 0;
+}
