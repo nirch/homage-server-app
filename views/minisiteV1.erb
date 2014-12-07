@@ -30,9 +30,6 @@
     <!-- REMAKE GALLERY -->
     <link href="/css/jquery.galereya.css" rel="stylesheet"/>
     <script src="/js/jquery.galereya.js"></script>
-
-    
-
 </head>
 
 <body>  
@@ -333,6 +330,9 @@
   </div>
 </div>
 
+<div class="background_image">
+
+</div>
 
 
 
@@ -425,10 +425,8 @@
         share_count = remake["share_count"] ? remake["share_count"] : 0;
 
         info = {lowsrc: lowsrc, fullsrc: fullsrc, description: description, category: category, _id: remake_id, like_count: like_count, view_count: view_count, share_count: share_count}
-        if (remake["user_fullname"]) {
-          info["user_name"] = remake["user_fullname"];
-        }
-        
+        info["user_name"] = remake["user_fullname"] ? remake["user_fullname"] : "Guest";
+                
         single_batch_remakes.push(info)
         all_remakes.push(info);
       }
@@ -940,7 +938,7 @@
         thumbnail = json_data["thumbnail"].toString();
         share_message = json_data["share_message"] ? json_data["share_message"] : "";
         video = json_data["video"].toString();
-        user_fullname = json_data["user_fullname"] ? json_data["user_fullname"] : "this user";
+        user_fullname = json_data["user_fullname"] ? json_data["user_fullname"] : "Guest";
 
         like_count = json_data["like_count"] ? json_data["like_count"] : 0;
         view_count = json_data["views"] ? json_data["views"] : 0;
