@@ -485,7 +485,7 @@ subdomain settings.play_subdomain do
 		erb :new_minisite
 	end
 
-	get '/gallery/v1/:campaign_name' do
+	get '/campaign/:campaign_name' do
 		@config = getConfigDictionary();
 		@campaign = settings.db.collection("Campaigns").find_one({name: params[:campaign_name]})
 		campaign_id = @campaign["_id"]
