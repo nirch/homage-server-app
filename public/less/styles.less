@@ -316,7 +316,7 @@
 	margin-bottom: 150px;
 }
 
-// minisite background image 
+// minisite background image:  
 .background_image {
 	background-image: url("/resources/minisite/GirlsWithPhonelowres.jpg");
 	background-size: 100%;
@@ -430,7 +430,7 @@
 		width: 35px;
 	}
 
-	.user_name
+	.user-name
 	{
 		float:left;
 		padding-left:6px;
@@ -497,21 +497,6 @@
 .hmg-social-link
 {
 	margin-right: 15px;
-}
-
-#hmg-fb-link
-{
-	content:url('/resources/minisite/FacebookRegular.png')
-}
-
-#hmg-twitter-link
-{
-	content:url('/resources/minisite/TwitterRegular.png')
-}
-
-#hmg-vimeo-link
-{
-	content:url('/resources/minisite/VimeoRegular.png')
 }
 
 .footer-label
@@ -700,6 +685,8 @@
 	margin: 0px auto;
 }
 
+
+
 .video-js {padding-top: 56.25%}
 .vjs-fullscreen {padding-top: 0px}
 
@@ -715,3 +702,72 @@
   cursor: pointer;
   overflow-y: auto;
 }
+
+.movie-finished-overlay
+{
+	background-color: rgba(0, 0, 0, 0.7);
+	position: absolute;
+	top:0px;
+	bottom: 0px;
+	display: none;
+}
+
+.movie-finished-text
+{
+	position:absolute;
+	top: 20%;
+	padding-bottom: 15px;
+	border-bottom: 2px solid @medium-grey-color;
+	width:70%;
+	text-align: center;
+	margin-right:15%;
+	margin-left: 15%;
+	.subject
+	{
+		font-size: 20px;
+	}
+	.content 
+	{
+		font-size: 18px;
+	}	
+}
+
+.movie-finished-actions
+{
+	position: absolute;
+	top: 40%;
+	width:70%;
+	text-align: center;
+	margin-right:15%;
+	margin-left: 15%;
+	
+	.social-action-container
+	{
+		.fa
+		{
+			font-size:16px;
+			padding-left:5px;
+		}
+	}
+}
+
+.app-icons-container
+{
+	position:absolute;
+	top: 60%;
+	width:70%;
+	text-align: center;
+	margin-right:15%;
+	margin-left: 15%;
+	.main-font-label
+	{
+		padding-bottom: 10px;
+	}
+	.app-icon
+	{
+		padding-left:10px;
+		padding-right:10px;
+	}
+
+}
+

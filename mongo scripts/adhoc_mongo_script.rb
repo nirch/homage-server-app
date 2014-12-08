@@ -16,6 +16,7 @@ prod_remakes = prod_db.collection("Remakes")
 prod_shares = prod_db.collection("Shares")
 prod_sessions = prod_db.collection("Sessions")
 prod_stories = prod_db.collection("Stories")
+prod_campaigns = prod_db.collection("Campaigns")
 
 # AWS Connection
 aws_config = {access_key_id: "AKIAJTPGKC25LGKJUCTA", secret_access_key: "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"}
@@ -23,14 +24,33 @@ AWS.config(aws_config)
 s3 = AWS::S3.new
 s3_bucket = s3.buckets['homageapp']
 
+# stories = test_stories.find({active:true})
 
+# puts "test"
+# for story in stories do
+# 	puts "campaign id for: " + story["name"].to_s + ": " + story["campaign_id"].to_s
+# end
 
-remakes = test_remakes.find({"footages.background"=> {"$in"=>["-10","-11"]}})
-# puts remakes.count
+# puts "prod"
+# stories = prod_stories.find({active:true})
 
-for remake in remakes do
-	puts remake["footages"][0]["background"].to_s
-end
+# # for story in stories do
+# # 	campaign_id = BSON::ObjectId.from_string("544ead1e454c610d1600000f")
+# # 	story_id = story["_id"]
+# # 	prod_stories.update({_id:story_id},{"$set" => {campaign_id: campaign_id}})
+# # end
+
+# puts "rafi"
+# for story in stories do
+# 	puts "campaign id for: " + story["name"].to_s + ": " + story["campaign_id"].to_s
+# end
+
+# remakes = test_remakes.find({"footages.background"=> {"$in"=>["-10","-11"]}})
+# # puts remakes.count
+
+# for remake in remakes do
+# 	puts remake["footages"][0]["background"].to_s
+# end
 
 # ######################################
 # # Updating all remakes with user name

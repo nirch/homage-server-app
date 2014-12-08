@@ -302,7 +302,7 @@
   height: 35px;
   width: 35px;
 }
-.galereya-cell .user_name {
+.galereya-cell .user-name {
   float: left;
   padding-left: 6px;
   padding-top: 7px;
@@ -346,15 +346,6 @@
 }
 .hmg-social-link {
   margin-right: 15px;
-}
-#hmg-fb-link {
-  content: url('/resources/minisite/FacebookRegular.png');
-}
-#hmg-twitter-link {
-  content: url('/resources/minisite/TwitterRegular.png');
-}
-#hmg-vimeo-link {
-  content: url('/resources/minisite/VimeoRegular.png');
 }
 .footer-label {
   display: inline-block;
@@ -516,4 +507,54 @@
   display: none;
   cursor: pointer;
   overflow-y: auto;
+}
+.movie-finished-overlay {
+  background-color: rgba(0, 0, 0, 0.7);
+  position: absolute;
+  top: 0px;
+  bottom: 0px;
+  display: none;
+}
+.movie-finished-text {
+  position: absolute;
+  top: 20%;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #363636;
+  width: 70%;
+  text-align: center;
+  margin-right: 15%;
+  margin-left: 15%;
+}
+.movie-finished-text .subject {
+  font-size: 20px;
+}
+.movie-finished-text .content {
+  font-size: 18px;
+}
+.movie-finished-actions {
+  position: absolute;
+  top: 40%;
+  width: 70%;
+  text-align: center;
+  margin-right: 15%;
+  margin-left: 15%;
+}
+.movie-finished-actions .social-action-container .fa {
+  font-size: 16px;
+  padding-left: 5px;
+}
+.app-icons-container {
+  position: absolute;
+  top: 60%;
+  width: 70%;
+  text-align: center;
+  margin-right: 15%;
+  margin-left: 15%;
+}
+.app-icons-container .main-font-label {
+  padding-bottom: 10px;
+}
+.app-icons-container .app-icon {
+  padding-left: 10px;
+  padding-right: 10px;
 }
