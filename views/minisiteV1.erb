@@ -31,6 +31,24 @@
     <!-- REMAKE GALLERY -->
     <link href="/css/jquery.galereya.css" rel="stylesheet"/>
     <script src="/js/jquery.galereya.js"></script>
+
+    <script>
+      window.fbAsyncInit = function() {
+        FB.init({
+          appId      : '447743458659084',
+          xfbml      : true,
+          version    : 'v2.2'
+        });
+      };
+
+      (function(d, s, id){
+         var js, fjs = d.getElementsByTagName(s)[0];
+         if (d.getElementById(id)) {return;}
+         js = d.createElement(s); js.id = id;
+         js.src = "//connect.facebook.net/en_US/sdk.js";
+         fjs.parentNode.insertBefore(js, fjs);
+       }(document, 'script', 'facebook-jssdk'));
+    </script>
 </head>
 
 <body>  
@@ -645,10 +663,7 @@ videojs('remake_video_player').ready(function() {
     
     var trackVideoStart = function(){
 
-        height = $('.overlay-video-row .videocontent').height();
-        width  = $('.overlay-video-row .videocontent').width();
-        $('.movie-finished-overlay').height(height);
-        $('.movie-finished-overlay').width(width);
+        
 
         currentViewId = new ObjectId().toString();
         
@@ -710,6 +725,7 @@ videojs('remake_video_player').ready(function() {
     });
 
     myPlayer.on("resize" , function() {
+      console.log("Resize");
       // height = $('.overlay-video-row .videocontent').height();
       // width  = $('.overlay-video-row .videocontent').width();
       // $('.movie-finished-overlay').height(height);
@@ -1047,6 +1063,10 @@ videojs('remake_video_player').ready(function() {
   });
 
   function showShareOverlay() {
+    height = $('.overlay-video-row .videocontent').height();
+    width  = $('.overlay-video-row .videocontent').width();
+    $('.movie-finished-overlay').height(height);
+    $('.movie-finished-overlay').width(width);
     $('.movie-finished-overlay').show();
   }
 

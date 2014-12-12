@@ -285,7 +285,7 @@ get '/remakes' do
 		    aggregation_pipeline.push(trending_proj)
 		    aggregation_pipeline.push(sort)
 		else
-			sort = {"$sort" => {"created_at" => -1, "grade" => -1}}
+			sort = {"$sort" => {"grade" => -1, "created_at" => -1}}
 			aggregation_pipeline.push(sort)
 		end
 
