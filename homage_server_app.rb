@@ -104,7 +104,7 @@ configure :test do
 	set :share_link_prefix, "http://play-test.homage.it"
 
 	# enables mixpanel for testing
-	#set :mixpanel, Mixpanel::Tracker.new("7d575048f24cb2424cd5c9799bbb49b1")
+	# set :mixpanel, Mixpanel::Tracker.new("7d575048f24cb2424cd5c9799bbb49b1")
 
 	set :play_subdomain, :'play-test'
 end
@@ -1617,7 +1617,7 @@ post '/remake/share' do
 	remake_id = BSON::ObjectId.from_string(params[:remake_id]) 
 	user_id   =  BSON::ObjectId.from_string(params[:user_id]) if params[:user_id]
 	share_method = params[:share_method].to_i if params[:share_method]
-	origin_id  = params[:origin_id].to_s if params[:origin_id]
+	origin_id  = BSON::ObjectId.from_string(params[:origin_id]) if params[:origin_id]
 	share_link = params[:share_link].to_s if params[:share_link]
 	share_status = params[:share_status] if params[:share_status] 
 
@@ -1664,6 +1664,7 @@ post '/campaign_site/share' do
 	info = Hash.new
 	info["share_method"] = params[:share_method].to_i if params[:share_method]
 	info["campaign_id"] = params[:campaign_id] if params[:campaign_id]
+	info["origin_id"] = params[:origin_id].to_s if params[:origin_id]
 	settings.mixpanel.track("12345", "campaign_site_share", info) if settings.respond_to?(:mixpanel)
 end
 
@@ -1873,7 +1874,7 @@ post '/remake/impression' do
 	user_id =  BSON::ObjectId.from_string(params[:user_id]) if params[:user_id]
 	cookie_id = BSON::ObjectId.from_string(params[:cookie_id]) if params[:cookie_id]
 	orig_screen = params[:originating_screen].to_i
-	origin_id  = params[:origin_id].to_s if params[:origin_id]
+	origin_id  = BSON::ObjectId.from_string(params[:origin_id]) if params[:origin_id]
 	view_source = getViewSource(user_os, userAgentStr, orig_screen)
 
 	remake = remakes.find_one(remake_id)
@@ -1911,7 +1912,7 @@ def trackView(entity_type,params, user_os, userAgentStr)
 	
 	#start related props
 	view["originating_screen"] = params[:originating_screen].to_i
-	view["origin_id"]          = params[:origin_id].to_s if params[:origin_id]
+	view["origin_id"]          = BSON::ObjectId.from_string(params[:origin_id]) if params[:origin_id]
 	view["view_source"]        = getViewSource(user_os, userAgentStr,view["originating_screen"])
 
 	# end/update related props

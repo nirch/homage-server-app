@@ -27,7 +27,7 @@
   font-family: "bryant-web-compressed";
 }
 .fa {
-  color: #ffffff;
+  color: #f0f0f0;
 }
 .clickable-link {
   text-decoration: none;
@@ -43,7 +43,7 @@
 }
 .clickable-link:hover,
 .clickable-link:focus {
-  color: #ffffff;
+  color: #f0f0f0;
   text-decoration: none;
 }
 .hoverable-element:hover {
@@ -59,7 +59,7 @@
 }
 /*+++++++++++++++++++++++++++ HEADER +++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 #hmg-nav-bar {
-  background-color: #000000;
+  background-color: #141414;
   border: none;
   border-radius: 0px;
   margin-bottom: 0px;
@@ -96,7 +96,7 @@
   margin-left: 5px;
 }
 .header-button:hover {
-  color: #ffffff !important;
+  color: #f0f0f0 !important;
 }
 #hmg-header-share {
   background: url("/resources/minisite/ShareRegular.png") no-repeat left center;
@@ -148,6 +148,13 @@
   padding: 0px;
   margin-bottom: 0px;
 }
+.filter-left li {
+  border-bottom: 2px solid #252525;
+}
+.filter-left li:hover,
+.filter-left li:focus {
+  border-bottom: 2px solid #ff5f45;
+}
 .filter-right {
   height: 100%;
   text-align: right;
@@ -158,10 +165,6 @@
   display: inline-block;
   list-style-type: none;
   height: 100%;
-}
-.filter-left li:hover,
-.filter-left li:focus {
-  border-bottom: 2px solid #ff5f45;
 }
 .filter-left .clickable-link:hover,
 .filter-left .clickable-link:focus,
@@ -185,14 +188,14 @@
   font-size: 14px;
 }
 .filter-right > .dropdown > .dropdown-menu > li > a:hover {
-  color: #ffffff;
+  color: #f0f0f0;
   font-size: 15px;
 }
 .filter-right > .open,
 .filter-right > .open:hover,
 .filter-right > .open:focus {
   background-color: #363636;
-  color: #ffffff;
+  color: #f0f0f0;
 }
 .campaign-stories-col {
   padding: 0px;
@@ -246,7 +249,7 @@
 .campaign-button:hover,
 .campaign-button:focus {
   text-decoration: none;
-  color: #ffffff;
+  color: #f0f0f0;
 }
 .campaign-video-container {
   float: left;
@@ -307,6 +310,9 @@
   padding-left: 6px;
   padding-top: 7px;
 }
+.galereya-cell .galereya-cell-desc {
+  background-color: rgba(0, 0, 0, 0.65);
+}
 .galereya-cell .galereya-cell-desc-title .like,
 .galereya-cell .galereya-cell-desc-title .view,
 .galereya-cell .galereya-cell-desc-title .share {
@@ -321,7 +327,7 @@
   float: right;
 }
 .footer {
-  background-color: #000000;
+  background-color: #141414;
   height: 60px;
   position: fixed;
   bottom: 0;
@@ -359,7 +365,7 @@
 .general-purpose-overlay-container .general-overlay-label {
   font-size: 16px;
   cursor: default;
-  color: #ffffff;
+  color: #f0f0f0;
 }
 .close-button {
   background: url('/resources/minisite/XClose.png') no-repeat left center;
@@ -394,7 +400,7 @@
 }
 .user-info-container .user-name-label {
   font-size: 20px;
-  color: #ffffff;
+  color: #f0f0f0;
   padding-top: 7px;
 }
 .user-info-container .more-from-button {
@@ -477,7 +483,7 @@
 }
 .remake-social-bar .social-action-container .main-font-label {
   margin-right: 10px;
-  color: #ffffff;
+  color: #f0f0f0;
   font-size: 16px;
 }
 @media (max-width: 767px) {

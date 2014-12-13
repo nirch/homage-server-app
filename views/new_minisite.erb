@@ -478,9 +478,9 @@
 
     share_params = {"share_id": share_id, "remake_id":remake_id, "share_method":share_method,
             "share_link": share_link, "cookie_id":$.cookie('homageCookieID')}
-    // if (origin_id != "") {
-    //   share_params["origin_id"] = origin_id
-    // }
+    if (origin_id != "") {
+       share_params["origin_id"] = origin_id
+    }
     $.post('/remake/share', share_params, 
                  function(data,status){
                  }

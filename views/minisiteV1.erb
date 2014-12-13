@@ -12,6 +12,10 @@
     <!-- VIDEO JS -->
     <link href="http://vjs.zencdn.net/4.8/video-js.css" rel="stylesheet">
     <script src="http://vjs.zencdn.net/4.8/video.js"></script>
+
+    <!-- REMAKE GALLERY -->
+    <link href="/css/jquery.galereya.css" rel="stylesheet"/>
+    <script src="/js/jquery.galereya.js"></script>
     
     <!-- LESS -->
     <link rel="stylesheet/less" type="text/css" href="/less/styles.less">
@@ -28,10 +32,7 @@
     <script src="/js/jquery.cookie.js"></script>
      <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
     
-    <!-- REMAKE GALLERY -->
-    <link href="/css/jquery.galereya.css" rel="stylesheet"/>
-    <script src="/js/jquery.galereya.js"></script>
-
+    
     <script>
       window.fbAsyncInit = function() {
         FB.init({
@@ -415,7 +416,7 @@
   var current_user = null;
   var currently_selected_story = null;
   var current_query_type = null;
-  var origin_id  = '<%= @originating_share_id %>'
+  var origin_id  = '<%= @originating_share_id.to_s %>'
  
 
   // share method ENUM
@@ -662,9 +663,6 @@ videojs('remake_video_player').ready(function() {
     var thresholdReported = false;
     
     var trackVideoStart = function(){
-
-        
-
         currentViewId = new ObjectId().toString();
         
         if (currentRemake["remake_id"] == null) return;
@@ -756,8 +754,10 @@ videojs('remake_video_player').ready(function() {
   }
 
   function reportSiteShare(campaign_id,share_method) {
-
     info = {"campaign_id":campaign_id,"share_method":share_method}
+    if (origin_id != "") {
+       info["origin_id"] = origin_id
+    }
 
     $.post('/campaign_site/share', info , function(data,status){
                  
@@ -809,9 +809,9 @@ videojs('remake_video_player').ready(function() {
 
     share_params = {"share_id": share_id, "remake_id":remake_id, "share_method":share_method,
             "share_link": share_link, "cookie_id":$.cookie('homageCookieID')}
-    // if (origin_id != "") {
-    //   share_params["origin_id"] = origin_id
-    // }
+    if (origin_id != "") {
+       share_params["origin_id"] = origin_id
+    }
     $.post('/remake/share', share_params, 
                  function(data,status){
                  }
@@ -1083,6 +1083,10 @@ videojs('remake_video_player').ready(function() {
   $('.app-icon').each(function() {
     var href = this.href;
     href = href + "?src=minisite&campaign_id=" + campaign_id
+    if (origin_id != "") {
+        href = href + "&origin_id=" + origin_id
+    }
+    console.log("href " + href)
     $(this).attr('href' , href);
   })
 

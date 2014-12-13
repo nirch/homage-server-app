@@ -1,12 +1,12 @@
 @main-theme-color: #ff5f45;
-@main-text-color: #ffffff;
+@main-text-color: #F0F0F0;
 
 @bright-grey-color: #707070;
 @medium-grey-color: #363636;
 @dark-grey-color: #252525;
 
-@header-color: #000000;
-@footer-color: #000000;
+@header-color: #141414;
+@footer-color: #141414;
 
 @bold-font: "bryant-web-compressed";
 @main-font: "proxima-nova";
@@ -212,7 +212,7 @@
 
 .filters 
 {
-	background-color: #252525;
+	background-color: @dark-grey-color;
 	margin-left:0px;
 	margin-right: 0px;
 }
@@ -223,6 +223,17 @@
 	height: 100%;
 	padding: 0px;
 	margin-bottom: 0px;
+
+	li
+	{
+		border-bottom: 2px solid @dark-grey-color;
+	}
+
+	li:hover,
+	li:focus
+	{
+		border-bottom: 2px solid @main-theme-color;
+	}
 }
 
 .filter-right
@@ -238,12 +249,6 @@
 	display: inline-block;
 	list-style-type: none;
 	height:100%;
-}
-
-.filter-left li:hover,
-.filter-left li:focus
-{
-	border-bottom: 2px solid @main-theme-color;
 }
 
 .filter-left .clickable-link:hover,
@@ -436,6 +441,12 @@
 		padding-left:6px;
 		padding-top:7px;
 	}
+
+	.galereya-cell-desc
+	{
+		background-color: rgba(0,0,0,0.65);
+	}
+
 	.galereya-cell-desc-title
 	{
 		.like, .view, .share
