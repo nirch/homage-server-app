@@ -5,6 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimum-scale=1.0, maximum-scale=1.0">
 
 
+    <% if @story then %>
+      <meta name="description" content='<%= @story["share_message"] %>'>
+      <meta name="twitter:description" content='<%= @story["share_message"] %>'/>
+      <meta property="og:description" content='<%= @story["share_message"] %>'/>
+      <meta property="og:title" content="<%= @story["share_message"] %> "/>
+      <meta name="twitter:title" content="<%= @story["share_message"] %> "/>
+    <% end %>
+
+    <% if @remake then %>
+      <meta property="og:image" content='<%= @remake["thumbnail"] %>'/>
+      <meta name="twitter:image:src" content='<%=  @remake["thumbnail"] %>'/>
+    <% end %>
+    
+    <meta property="og:site_name" content="Homage"/>
+    <meta name="twitter:card" content="summary"/>
+    <meta name="twitter:site" content="@homagination"/>
+    <meta name="twitter:creator" content="@homagination"/>
+
+
     <!-- BOOTSTRAP AND JQUERY -->
     <link rel="stylesheet" type="text/css" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">  
     <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
@@ -32,7 +51,6 @@
     <script src="/js/Objectid.js"></script>
     <script src="/js/jquery.cookie.js"></script>
      <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
-    
     
     <script>
       window.fbAsyncInit = function() {
