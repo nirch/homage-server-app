@@ -6,11 +6,11 @@
 
 
     <% if @story then %>
-      <meta name="description" content='<%= @story["share_message"] %>'>
-      <meta name="twitter:description" content='<%= @story["share_message"] %>'/>
-      <meta property="og:description" content='<%= @story["share_message"] %>'/>
-      <meta property="og:title" content="<%= @story["share_message"] %> "/>
-      <meta name="twitter:title" content="<%= @story["share_message"] %> "/>
+      <meta name="description" content='<%= CGI.escapeHTML @story["share_message"] %>'>
+      <meta name="twitter:description" content='<%= CGI.escapeHTML @story["share_message"] %>'/>
+      <meta property="og:description" content='<%= CGI.escapeHTML @story["share_message"] %>'/>
+      <meta property="og:title" content='<%= CGI.escapeHTML @story["share_message"] %> '/>
+      <meta name="twitter:title" content='<%= CGI.escapeHTML @story["share_message"] %> '/>
     <% end %>
 
     <% if @remake then %>
