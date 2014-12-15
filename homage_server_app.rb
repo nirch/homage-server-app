@@ -21,23 +21,23 @@ require File.expand_path '../mongo scripts/Analytics.rb', __FILE__
 # require 'erubis'
 
 current_session_ID = nil
-HTML_ESCAPE	=	{ '&' => '&amp;', '>' => '&gt;', '<' => '&lt;', '"' => '&quot;', "'" => '&#x27;' }
+HTML_ESCAPE	=	{ '&' => '&amp;', '>' => '&gt;', '<' => '&lt;', '"' => '&quot;', "'" => '&#39;' }
+# HACK ALERT! removing Chuku as it not working on facebook open graph scraping
+HTML_ESCAPE	=	{ '&' => '&amp;', '>' => '&gt;', '<' => '&lt;', '"' => '&quot;', "'" => '' }
 HTML_ESCAPE_REGEXP	=	/[&"'><]/
 
 helpers do
   def h(s)
     s = s.to_s
 	if s.html_safe?
-	  puts "rafi"
 	  s 
-	else
-	  puts "yossi"		
+	else		
 	  s = s.gsub(HTML_ESCAPE_REGEXP, HTML_ESCAPE)
-	  puts "after gsub: " + s
+	  # puts "after gsub: " + s
 	  s = s.html_safe
-	  puts "S after html safe: " + s
+	  # puts "S after html safe: " + s
 	end
-	puts "S: " + s
+	# puts "S: " + s
 	return s
   end
 end
