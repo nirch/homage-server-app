@@ -21,7 +21,7 @@ require File.expand_path '../mongo scripts/Analytics.rb', __FILE__
 # require 'erubis'
 
 current_session_ID = nil
-HTML_ESCAPE	=	{ '&' => '&amp;', '>' => '&gt;', '<' => '&lt;', '"' => '&quot;', "'" => '&#39;' }
+HTML_ESCAPE	=	{ '&' => '&amp;', '>' => '&gt;', '<' => '&lt;', '"' => '&quot;', "'" => '&#x27;' }
 HTML_ESCAPE_REGEXP	=	/[&"'><]/
 
 helpers do
