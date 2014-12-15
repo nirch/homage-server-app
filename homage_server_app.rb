@@ -18,7 +18,7 @@ require 'mixpanel-ruby'
 require 'mail'
 require 'zip'
 require File.expand_path '../mongo scripts/Analytics.rb', __FILE__
-
+# require 'erubis'
 
 current_session_ID = nil
 
@@ -26,6 +26,7 @@ configure do
 	# Global configuration (regardless of the environment)
 	aws_config = {access_key_id: "AKIAJTPGKC25LGKJUCTA", secret_access_key: "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"}
 	AWS.config(aws_config)
+	# set :erb, :escape_html => true
 
 	# Using Amazon's SES for mail delivery
 	Mail.defaults do
@@ -216,6 +217,19 @@ end
 #     @auth.provided? and @auth.basic? and @auth.credentials and @auth.credentials == ['admin', 'Homage2014']
 #   end
 # end
+
+
+get '/test/cgi' do
+	x = "Don't bla bla cgi"
+	y = CGI::escapeHTML(x)
+	puts y
+end
+
+get '/test/rack' do
+	x = "Don't bla bla rack"
+	y = Rack::Utils.escape_html(x)
+	puts y
+end
 
 get '/remakes' do
 		# input
@@ -491,6 +505,10 @@ subdomain settings.play_subdomain do
 		@campaign = settings.db.collection("Campaigns").find_one({name: params[:campaign_name]})
 		campaign_id = @campaign["_id"]
 		@stories = settings.db.collection("Stories").find({active:true, campaign_id: campaign_id})
+		info = Hash.new
+		info["reason"] = "campaign_gallery"
+		info["campaign_id"] = campaign_id
+		settings.mixpanel.track("12345", "MinisiteView", info) if settings.respond_to?(:mixpanel)	
 		erb :minisiteV1
 	end
 
@@ -529,8 +547,10 @@ subdomain settings.play_subdomain do
 
 		@story = stories.find_one(@remake["story_id"])
 
-		# erb :new_minisite
-		#erb :HMGVideoPlayer
+		info = Hash.new
+		info["reason"] = "remake_share"
+		info["campaign_id"] = campaign_id
+		settings.mixpanel.track("12345", "MinisiteView", info) if settings.respond_to?(:mixpanel)
 		erb :minisiteV1
 	end
 end
