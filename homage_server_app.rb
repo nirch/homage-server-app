@@ -11,7 +11,7 @@ require 'houston'
 require 'time'
 require 'chartkick'
 require 'aws-sdk'
-require 'active_support'
+require 'active_support/core_ext'
 require 'user_agent_parser'
 require 'sinatra/subdomain'
 require 'mixpanel-ruby'
@@ -22,11 +22,11 @@ require File.expand_path '../mongo scripts/Analytics.rb', __FILE__
 
 current_session_ID = nil
 
-# helpers do
-#   def h(text)
-#     Rack::Utils.escape_html(text)
-#   end
-# end
+helpers do
+  def h(text)
+    CGI::escapeHTML(text)
+  end
+end
 
 configure do
 	# Global configuration (regardless of the environment)
