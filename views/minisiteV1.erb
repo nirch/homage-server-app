@@ -6,11 +6,11 @@
 
 
     <% if @story then %>
-      <meta name="description" content='<%= Rack::Utils.escape_html(@story["share_message"]) %>'>
-      <meta name="twitter:description" content='<%= Rack::Utils.escape_html(@story["share_message"]) %>'/>
-      <meta property="og:description" content='<%= Rack::Utils.escape_html(@story["share_message"]) %>'/>
-      <meta property="og:title" content='<%= Rack::Utils.escape_html(@story["share_message"]) %> '/>
-      <meta name="twitter:title" content='<%= Rack::Utils.escape_html(@story["share_message"]) %> '/>
+      <meta name="description" content='<%= h(@story["share_message"]) %>'>
+      <meta name="twitter:description" content='<%= h(@story["share_message"]) %>'/>
+      <meta property="og:description" content='<%= h(@story["share_message"]) %>'/>
+      <meta property="og:title" content='<%= h(@story["share_message"]) %> '/>
+      <meta name="twitter:title" content='<%= h(@story["share_message"]) %> '/>
     <% end %>
 
     <% if @remake then %>

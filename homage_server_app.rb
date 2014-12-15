@@ -22,6 +22,12 @@ require File.expand_path '../mongo scripts/Analytics.rb', __FILE__
 
 current_session_ID = nil
 
+helpers do
+  def h(text)
+    Rack::Utils.escape_html(text)
+  end
+end
+
 configure do
 	# Global configuration (regardless of the environment)
 	aws_config = {access_key_id: "AKIAJTPGKC25LGKJUCTA", secret_access_key: "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"}
