@@ -21,10 +21,24 @@ require File.expand_path '../mongo scripts/Analytics.rb', __FILE__
 # require 'erubis'
 
 current_session_ID = nil
+HTML_ESCAPE	=	{ '&' => '&amp;', '>' => '&gt;', '<' => '&lt;', '"' => '&quot;', "'" => '&#39;' }
+HTML_ESCAPE_REGEXP	=	/[&"'><]/
 
 helpers do
-  def h(text)
-    CGI::escapeHTML(text)
+  def h(s)
+    s = s.to_s
+	if s.html_safe?
+	  puts "rafi"
+	  s 
+	else
+	  puts "yossi"		
+	  s = s.gsub(HTML_ESCAPE_REGEXP, HTML_ESCAPE)
+	  puts "after gsub: " + s
+	  s = s.html_safe
+	  puts "S after html safe: " + s
+	end
+	puts "S: " + s
+	return s
   end
 end
 
