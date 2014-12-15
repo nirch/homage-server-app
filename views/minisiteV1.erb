@@ -7,15 +7,13 @@
 
     <% if @story then %>
       <meta name="description" content='<%= h(@story["share_message"]) %>'>
-      <meta name="twitter:description" content='<%= h(@story["share_message"]) %>'/>
-      <meta property="og:description" content='<%= h(@story["share_message"]) %>'/>
       <meta property="og:title" content='<%= h(@story["share_message"]) %> '/>
       <meta name="twitter:title" content='<%= h(@story["share_message"]) %> '/>
     <% end %>
 
     <% if @remake then %>
       <meta property="og:image" content='<%= @remake["thumbnail"] %>'/>
-      <meta name="twitter:image:src" content='<%=  @remake["thumbnail"] %>'/>
+      <meta name="twitter:image" content='<%=  @remake["thumbnail"] %>'/>
     <% end %>
     
     <meta property="og:site_name" content="Homage"/>
