@@ -30,7 +30,7 @@
 
 .tbs-row
 {
-	height:100%;
+	// height:100%;
 	margin-left: 0px;
 	margin-right: 0px;
 	width: 100%;
@@ -315,10 +315,46 @@
 
 // ++++++++++++++++++++++++++++++++++ CAMAPIGN BANNER ++++++++++++++++++++++++++++++++++++++++++++++
 
-.gallery-header
+
+
+.gallery-row
 {
-	margin-top: 50px;
-	margin-bottom: 150px;
+	position: relative;
+	.tbs-container-fluid
+	{
+		overflow-y: auto;
+		visibility: hidden;
+	}
+	.loading-gallery
+	{
+		position: absolute;
+		top: 0;
+		left: 0;
+		height: 100%;
+		width: 100%;
+		z-index: 20000000000;
+		background-color: transparent;
+		.fa
+		{
+			color: @main-theme-color;
+		}
+	}
+
+	.banner 
+	{
+		padding-top: 60px;
+	}
+	.gallery
+	{
+		padding-top: 150px;
+	}
+	.spinner
+	{
+		position: absolute;
+		left:45%;
+		top:45%;
+		font-size: 100px;
+	}
 }
 
 // minisite background image:  
@@ -402,11 +438,18 @@
 		margin-top: 0px;
 	}
 
-	.gallery-header
+	.gallery-row
 	{
 		margin-top: 0px;
 		margin-bottom: 30px;
 	}
+}
+
+
+#gallery-container
+{
+	padding-top: 30px;
+	padding-bottom: 60px;
 }
 
 // +++ hide camapign video player play original button (inserted our own button) ++++++ 
@@ -469,6 +512,22 @@
 		}
 	}
 	
+}
+
+.loading-images
+{
+	position: relative;
+	.spinner
+	{
+		position: absolute;
+		left:45%;
+		top:5%;
+		font-size: 40px;
+	}
+	.fa
+	{
+		color: @main-theme-color;
+	}
 }
 
 // +++++++++++++++++++++++++++++++++++++ FOOTER +++++++++++++++++++++++++++++++++++++++++++++

@@ -10,7 +10,6 @@
   height: 100%;
 }
 .tbs-row {
-  height: 100%;
   margin-left: 0px;
   margin-right: 0px;
   width: 100%;
@@ -209,9 +208,36 @@
     background-color: #363636;
   }
 }
-.gallery-header {
-  margin-top: 50px;
-  margin-bottom: 150px;
+.gallery-row {
+  position: relative;
+}
+.gallery-row .tbs-container-fluid {
+  overflow-y: auto;
+  visibility: hidden;
+}
+.gallery-row .loading-gallery {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  z-index: 20000000000;
+  background-color: transparent;
+}
+.gallery-row .loading-gallery .fa {
+  color: #ff5f45;
+}
+.gallery-row .banner {
+  padding-top: 60px;
+}
+.gallery-row .gallery {
+  padding-top: 150px;
+}
+.gallery-row .spinner {
+  position: absolute;
+  left: 45%;
+  top: 45%;
+  font-size: 100px;
 }
 .background_image {
   background-image: url("/resources/minisite/GirlsWithPhonelowres.jpg");
@@ -277,10 +303,14 @@
     margin-bottom: 0px;
     margin-top: 0px;
   }
-  .gallery-header {
+  .gallery-row {
     margin-top: 0px;
     margin-bottom: 30px;
   }
+}
+#gallery-container {
+  padding-top: 30px;
+  padding-bottom: 60px;
 }
 .vjs-fullscreen {
   padding-top: 0px;
@@ -325,6 +355,18 @@
 }
 .galereya-cell .galereya-cell-desc-text .flag {
   float: right;
+}
+.loading-images {
+  position: relative;
+}
+.loading-images .spinner {
+  position: absolute;
+  left: 45%;
+  top: 5%;
+  font-size: 40px;
+}
+.loading-images .fa {
+  color: #ff5f45;
 }
 .footer {
   background-color: #141414;
