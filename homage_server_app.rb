@@ -586,7 +586,12 @@ get '/stories' do
 	limit = params[:limit].to_i if params[:limit] # Optional
 	remakes_num = params[:remakes].to_i if params[:remakes] # Optional
 
-	stories = settings.db.collection("Stories").find({}, {fields: {after_effects: 0}}).sort({order_id: 1})
+	homage_campaign = settings.db.collection("Campaigns").find_one({name: "HomageApp"})
+	homage_campaign_id = homage_campaign["_id"]
+	campaign_id = request.env["HTTP_CAMPAIGN_ID"] ? BSON::ObjectId.from_string(request.env["HTTP_CAMPAIGN_ID"].to_s) : homage_campaign_id
+	logger.debug "getting stories for campaign_id: " + campaign_id.to_s;
+
+	stories = settings.db.collection("Stories").find({campaign_id: campaign_id}, {fields: {after_effects: 0}}).sort({order_id: 1})
 	stories = stories.skip(skip) if skip
 	stories = stories.limit(limit) if limit
 
@@ -2397,3 +2402,4 @@ get '/test/:entity_id' do
 	#erb :HMGVideoPlayer
 	erb :minisiteV1
 end
+
