@@ -24,6 +24,23 @@ AWS.config(aws_config)
 s3 = AWS::S3.new
 s3_bucket = s3.buckets['homageapp']
 
+
+
+# # Testing is_public in remakes
+
+# date = Time.parse("20140830Z")
+# public_user = test_users.find_one(created_at:{"$gte"=>date}, is_public:true)
+# private_user = test_users.find_one(created_at:{"$gte"=>date}, is_public:false)
+
+# public_remakes = test_remakes.find({user_id:public_user["_id"]})
+# puts "public_remakes"
+# for remake in public_remakes do puts remake end
+
+# private_remakes = test_remakes.find({user_id:private_user["_id"]})
+# puts "private_remakes"
+# for remake in private_remakes do puts remake end
+
+
 # stories = test_stories.find({active:true})
 
 # puts "test"
