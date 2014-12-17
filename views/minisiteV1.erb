@@ -7,15 +7,13 @@
 
     <% if @story then %>
       <meta name="description" content='<%= h(@story["share_message"]) %>'>
-      <meta name="twitter:description" content='<%= h(@story["share_message"]) %>'/>
-      <meta property="og:description" content='<%= h(@story["share_message"]) %>'/>
       <meta property="og:title" content='<%= h(@story["share_message"]) %> '/>
       <meta name="twitter:title" content='<%= h(@story["share_message"]) %> '/>
     <% end %>
 
     <% if @remake then %>
       <meta property="og:image" content='<%= @remake["thumbnail"] %>'/>
-      <meta name="twitter:image:src" content='<%=  @remake["thumbnail"] %>'/>
+      <meta name="twitter:image" content='<%=  @remake["thumbnail"] %>'/>
     <% end %>
     
     <meta property="og:site_name" content="Homage"/>
@@ -73,7 +71,7 @@
 
 <body>  
   
-  <!-- ++++++++++++++++++++++++++++++++++++++ MINISITE HEADER++++++++++++++++++++++++++++++++++++++++++++ -->
+  <!-- ++++++++++++++++++++++++++ MINISITE HEADER++++++++++++++++++++++++++++++++++++ -->
   <nav class="navbar navbar-default" id="hmg-nav-bar" role="navigation">
   <div class="container-fluid">
 
@@ -156,42 +154,65 @@
 </div>
 
 
-<!-- ++++++++++++++++++++++ CAMAPIGN BANNER (AKA GALLERY HEADER) ++++++++++++++++++++++++++++++++++++++ -->
-<div class="row gallery-header">
-  <div class="col-sm-6 col-xs-12 col-sm-push-6">
-    <div class="campaign-info">
-      <div class="campaign-logo">
+<!-- ++++++++++++++++++++++ CAMAPIGN VIDEO GALLERY  ++++++++++++++++++++++++++++++++++++++ -->
+<div class="row gallery-row">
+  <div class="loading-gallery">
+    <div class="spinner">
+      <i class="fa fa-refresh fa-spin"></i>
+    </div>
+  </div>
+
+  <div class="container-fluid tbs-container-fluid scrolable-gallery">
+    <div class="row tbs-row banner">
+      <div class="col-sm-6 col-xs-12 col-sm-push-6 tbs-col">
+        <div class="campaign-info">
+          <div class="campaign-logo">
+
+          </div>
+
+          <a class="bold-font-label campaign-button" href="http://homage.it/" target="_blank" >Go to Homage web site 
+
+          </a>
+        </div>
+      </div> 
+
+      <div class="col-sm-6 col-xs-12 col-sm-pull-6 tbs-col">
+        <div class="campaign-video-container">
+          <span class="campaign-video-play-button-container">
+           <i class="fa fa-play"> </i>
+          </span>
+          <div class="videocontent">
+              <video id="campaign_video_player" class="video-js vjs-default-skin" width="350" height="200" poster="" controls="controls"  
+              data-setup="{}">
+              <source src="" type="video/mp4"/>
+            </video>
+          </div> 
+        </div>   
+      </div>
+    </div>
+    <div class="row tbs-row gallery">
+      <div id="gallery-container">
 
       </div>
 
-      <a class="bold-font-label campaign-button" href="http://homage.it/" target="_blank" >Go to Homage web site 
-
-      </a>
+      <div class="loading-images">
+        <div class="spinner">
+        <i class="fa fa-refresh fa-spin"></i>
+      </div>
+  </div>
     </div>
-  </div> 
-
-  <div class="col-sm-6 col-xs-12 col-sm-pull-6 tbs-col">
-    <div class="campaign-video-container">
-      <span class="campaign-video-play-button-container">
-         <i class="fa fa-play"> </i>
-      </span>
-      <div class="videocontent">
-        <video id="campaign_video_player" class="video-js vjs-default-skin" width="350" height="200" poster="" controls="controls"  
-        data-setup="{}">
-        <source src="" type="video/mp4"/>
-      </video>
-    </div> 
-  </div>   
   </div>
 </div>
 
+ 
+
 <!-- ++++++++++++++++++++++++++++++++++ CAMAPIGN VIDEO GALLERY ++++++++++++++++++++++++++++++++++++++++++++++ -->
-<div class="row tbs-row">
+<!-- <div class="row tbs-row gallery-row">
   <div id="gallery-container">
 
   </div>
 
-</div>
+</div> -->
 
 <!-- ++++++++++++++++++++++++++++++++++ MINISITE FOOTER ++++++++++++++++++++++++++++++++++++++++++++++ -->
 <div class="row footer tbs-row hidden-xs">
@@ -429,6 +450,7 @@
   var currentRemake = {};
   var all_remakes = [];
   var currentlyLoadingImgs = false;
+  var firstGalleryLoad = true;
   var campaign_id = '<%= @campaign["_id"].to_s %>'
   var share_link_prefix = '<%= @config["share_link_prefix"] %>'
   var view_pct_threshold = '<%= @config["significant_view_pct_threshold"] %>'
@@ -456,6 +478,14 @@
   TrendingQuery = 3
 
   
+  window_height = $(window).height();
+  filter_height = parseInt($('.filters').css('height'));
+  footer_height = parseInt($('.footer').css('height'));
+  header_height = parseInt($('#hmg-nav-bar').css('height'));
+
+  gallery_height = window_height - filter_height - footer_height - header_height;
+  $('.gallery-row').css('height' , gallery_height + 'px');
+
   // REMAKE GALLERY
 
   function fetch_remakes(query_type)
@@ -534,8 +564,16 @@
     });
   }
 
-  $(window).scroll(function() {
-      if  ($(window).scrollTop() == $(document).height() - $(window).height()) {
+  function elementScrolledToEnd(jq_element) {
+    if(jq_element.scrollTop() + jq_element.innerHeight() >= jq_element[0].scrollHeight) {
+      return true;
+    }
+    return false; 
+  }
+
+
+  $('.scrolable-gallery').scroll(function() {
+      if (elementScrolledToEnd($('.scrolable-gallery'))) {
         if (!currentlyLoadingImgs) { 
           fetch_remakes(current_query_type);
         }
@@ -543,6 +581,7 @@
   }); 
 
   function cleanGallery() {
+    firstGalleryLoad = true;
     $('#gallery-container').empty();
       gallery = null;
       skip = 0;
@@ -551,13 +590,20 @@
 
   $('body').on("finished_loading_images", function() {
     currentlyLoadingImgs = false;
-    if  ($(window).scrollTop() == $(document).height() - $(window).height()) {
+
+    if (firstGalleryLoad) {
+      firstGalleryLoad = false;
+      $('.loading-gallery').css('visibility','hidden');
+      $('.scrolable-gallery').css('visibility','visible');
+    }
+
+    if (elementScrolledToEnd($('scrolable-gallery'))) {
             fetch_remakes(current_query_type);
     }
   });
 
   $('body').on("gallery_resized" , function() {
-    gallery_left_margin = $(".galereya-grid").css('margin-left')
+    gallery_left_margin = $(".galereya-grid").css('margin-left')  
     gallery_right_margin = $(".galereya-grid").css('margin-right')
     $(".campaign-video-container").css('margin-left',gallery_left_margin)
     $(".campaign-info").css('margin-right',gallery_right_margin);
