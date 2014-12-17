@@ -1085,6 +1085,8 @@ post '/remake' do
 	# adding the user name if exists
 	username = user_name(user)
 	remake["user_fullname"] = username if username
+	# adding is public
+	remake["is_public"] = user["is_public"] if user["is_public"] != nil
 
 	# Creating the footages place holder based on the scenes of the story
 	scenes = story["scenes"]

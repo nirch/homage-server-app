@@ -34,6 +34,13 @@ class UserTest < MiniTest::Unit::TestCase
                     :facebook => { :id => "929292929299", :name => "Bla Bla", :first_name => "Nir" }
                   }
 
+    PUBLIC_USER = {  :is_public => "YES", 
+                   :device => {:identifier_for_vendor => "3DACF253-C0B7-4F4C-843E-435A43699715", :name => "Nir's iPhone", :system_name => "iPhone", :system_version => "7.1", :model => "5s" } 
+                }
+
+    PRIVATE_USER = {  :is_public => "NO", 
+                   :device => {:identifier_for_vendor => "3DACF253-C0B7-4F4C-843E-435A43699715", :name => "Nir's iPhone", :system_name => "iPhone", :system_version => "7.1", :model => "5s" } 
+                }
 
 
 	def app
@@ -1287,7 +1294,50 @@ class UserTest < MiniTest::Unit::TestCase
     assert_equal("Nir", name)
   end
 
+  def test_remake_is_public_true
+    post '/user', PUBLIC_USER
 
+    json_response = JSON.parse(last_response.body)
+    assert json_response["_id"]["$oid"]
+    public_user_id = BSON::ObjectId.from_string(json_response["_id"]["$oid"])
+
+    # Creating a remake for the testing (deleting him in the teardown)
+    post '/remake', {:story_id => "52de83db8bc427751c000305", :user_id => public_user_id.to_s}
+    json_response = JSON.parse(last_response.body)
+    assert json_response["_id"]["$oid"]
+    remake_id = BSON::ObjectId.from_string(json_response["_id"]["$oid"])
+    remake = REMAKES.find_one(remake_id)
+    assert remake
+    assert_equal true, remake["is_public"]
+
+    # deleting the user
+    USERS.remove({_id: public_user_id})
+    user = USERS.find_one(public_user_id)
+    assert_nil user    
+  end
+
+
+def test_remake_is_public_false
+    post '/user', PRIVATE_USER
+
+    json_response = JSON.parse(last_response.body)
+    assert json_response["_id"]["$oid"]
+    private_user_id = BSON::ObjectId.from_string(json_response["_id"]["$oid"])
+
+    # Creating a remake for the testing (deleting him in the teardown)
+    post '/remake', {:story_id => "52de83db8bc427751c000305", :user_id => private_user_id.to_s}
+    json_response = JSON.parse(last_response.body)
+    assert json_response["_id"]["$oid"]
+    remake_id = BSON::ObjectId.from_string(json_response["_id"]["$oid"])
+    remake = REMAKES.find_one(remake_id)
+    assert remake
+    assert_equal false, remake["is_public"]
+
+    # deleting the user
+    USERS.remove({_id: private_user_id})
+    user = USERS.find_one(private_user_id)
+    assert_nil user    
+  end
 
 
 
