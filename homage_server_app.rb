@@ -707,6 +707,7 @@ def handle_facebook_login(user)
 				users.update({_id: update_user_id}, {"$set" => {facebook: user["facebook"]}})
 				updated_user = users.find_one(update_user_id)
 				update_user_name_in_remakes(updated_user)
+				update_user_privacy(updated_user, user["is_public"])
 				return update_user_id, nil, false
 			end
 		end
@@ -864,6 +865,20 @@ def update_user_name_in_remakes(user)
 	end
 end
 
+# Updating the user and all his remakes with the new privacy
+def update_user_privacy(user, is_public)
+	return if is_public == nil
+	return if user == nil
+	return if user["is_public"] == is_public
+
+	users = settings.db.collection("Users")
+	remakes = settings.db.collection("Remakes")
+
+	remakes.update({user_id:user["_id"]}, {"$set" => {is_public: is_public}}, {multi:true})
+	users.update({_id: user["_id"]}, {"$set" => {is_public: is_public}})
+end
+
+
 # Merging user a into user b and deleting user a
 def merge_users(user_a, user_b)
 	users = settings.db.collection("Users")
@@ -906,7 +921,7 @@ put '/user' do
 	if update_user_type == UserType::GuestUser or existing_user_type == update_user_type then
 		# if it is the same type of user, or the updates user looks like guest, then this is a simple update of user data
 		logger.info "updating data for user " + update_user_id.to_s
-		users.update({_id: update_user_id}, {"$set" => {is_public: params[:is_public]}})
+		update_user_privacy existing_user, params[:is_public]
 	elsif existing_user_type == UserType::GuestUser and update_user_type == UserType::FacebookUser
 		# Guest to Facebook user
 
@@ -918,9 +933,10 @@ put '/user' do
 			update_user_id = facebook_user_exists["_id"]
 		else
 			logger.info "updating Guest to Facebook for user " + update_user_id.to_s
-			users.update({_id: update_user_id}, {"$set" => {facebook: params[:facebook], email: params[:email], is_public: params[:is_public]}})
+			users.update({_id: update_user_id}, {"$set" => {facebook: params[:facebook], email: params[:email]}})
 			updated_user = users.find_one(update_user_id)
 			update_user_name_in_remakes(updated_user)
+			update_user_privacy updated_user, params[:is_public]			
 		end
 	elsif existing_user_type == UserType::GuestUser and update_user_type == UserType::EmailUser
 		# Guest to Email user
@@ -949,9 +965,10 @@ put '/user' do
 		else
 			logger.info "updating Guest to Email for user " + update_user_id.to_s
 			password_hash = Sinatra::Security::Password::Hashing.encrypt(params["password"])
-			users.update({_id: update_user_id}, {"$set" => {email: params[:email], password_hash: password_hash, is_public: params[:is_public]}})
+			users.update({_id: update_user_id}, {"$set" => {email: params[:email], password_hash: password_hash}})
 			updated_user = users.find_one(update_user_id)
 			update_user_name_in_remakes(updated_user)
+			update_user_privacy updated_user, params[:is_public]			
 		end
 	elsif existing_user_type == UserType::FacebookUser and update_user_type == UserType::EmailUser
 		# Error - Facebook to Email user
