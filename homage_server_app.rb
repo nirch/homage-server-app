@@ -288,19 +288,11 @@ get '/remakes' do
 			story_names["story_id"] = story["name"]
 		end
 
-		# Getting all the public users
-		public_users_cursor = settings.db.collection("Users").find({is_public:true})
-		public_users = Array.new
-
-		for user in public_users_cursor do
-			public_users.push(user["_id"])
-		end
-
 		# build mongodb aggregation pipeline accroding to query type from client
 		######################################################################################
 		aggregation_pipeline = []
 		
-		find_condition = {status: RemakeStatus::Done, user_id:{"$in" => public_users}, grade:{"$ne" => -1}}
+		find_condition = {status: RemakeStatus::Done, is_public: true, grade:{"$ne" => -1}}
 		if story_id_array.length != 0 then
 			find_condition["story_id"] = {"$in"=> story_id_array}
 		end
@@ -1300,14 +1292,6 @@ get '/remakes/story/:story_id' do
 
 	logger.info "Getting remakes for story " + story_id.to_s
 
-	# Getting all the public users
-	public_users_cursor = settings.db.collection("Users").find({is_public:true})
-	public_users = Array.new
-
-	for user in public_users_cursor do
-		public_users.push(user["_id"])
-	end
-
 	story_ids = Array.new
 	story_ids.push(story_id)
 
@@ -1317,7 +1301,7 @@ get '/remakes/story/:story_id' do
 	end
 
 	# Getting all the completed remakes of the public users
-	remakes_docs = settings.db.collection("Remakes").find({story_id:{"$in" => story_ids}, status: RemakeStatus::Done, user_id:{"$in" => public_users}, grade:{"$ne" => -1}}).sort(grade:-1);
+	remakes_docs = settings.db.collection("Remakes").find({story_id:{"$in" => story_ids}, status: RemakeStatus::Done, is_public: true, grade:{"$ne" => -1}}).sort(grade:-1);
 	remakes_docs = remakes_docs.skip(skip) if skip
 	remakes_docs = remakes_docs.limit(limit) if limit
 
