@@ -225,6 +225,12 @@ module RemakesQueryType
   	TrendingQuery = 3
 end
 
+module RemakesSaveToDevice
+	Disabled = 0
+	Enabled  = 1
+	Premium  = 2
+end
+
 # helpers do
 #   def protected!
 #     return if authorized?
@@ -257,7 +263,6 @@ get '/remakes' do
 		limit = params[:limit].to_i if params[:limit] # Optional
 		campaign_id = BSON::ObjectId.from_string(params[:campaign_id]) if params[:campaign_id] #optional
 		query_type = params[:query_type].to_i if params[:query_type]
-
 		
 		story_names = params["stories"] if params["stories"];
 		story_id_array = Array.new
@@ -1641,6 +1646,17 @@ def getConfigDictionary()
 	config["share_link_prefix"] = settings.share_link_prefix;
 	config["significant_view_pct_threshold"] = 0.5
 	config["mirror_selfie_silhouette"] = true
+
+	campaign_id = request.env["HTTP_CAMPAIGN_ID"] if request.env["HTTP_CAMPAIGN_ID"].to_s
+	# campaign_id = "54919516454c61f4080000e5"
+	if campaign_id then
+		campaign_bson_id = BSON::ObjectId.from_string(campaign_id)
+		campaign = settings.db.collection("Campaigns").find_one({_id:campaign_bson_id})
+		config["remakes_save_to_device"] = campaign["remakes_save_to_device"]
+		if campaign["remakes_save_to_device"] == RemakesSaveToDevice::Premium then
+			config["remakes_save_to_device_premium_id"] = campaign["remakes_save_to_device_premium_id"]
+		end
+	end
 	return config
 end
 
@@ -2360,6 +2376,14 @@ get '/test/gallery/v1/:campaign_name' do
 	@stories = settings.db.collection("Stories").find({active:true, campaign_id: campaign_id})
 	erb :minisiteV1
 end
+
+get '/test/masonryGallery/:campaign_name' do
+	@campaign = settings.db.collection("Campaigns").find_one({name: params[:campaign_name]})
+	campaign_id = @campaign["_id"]
+	erb :masonryGalleryTest
+end
+
+
 
 get '/test/:entity_id' do
 	remakes = settings.db.collection("Remakes")
