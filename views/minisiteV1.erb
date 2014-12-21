@@ -32,8 +32,9 @@
     <script src="http://vjs.zencdn.net/4.8/video.js"></script>
 
     <!-- REMAKE GALLERY -->
-    <link href="/css/jquery.galereya.css" rel="stylesheet"/>
-    <script src="/js/jquery.galereya.js"></script>
+    <!-- <link href="/css/jquery.galereya.css" rel="stylesheet"/> -->
+    <!-- <script src="/js/jquery.galereya.js"></script> -->
+    <script src="/js/masonry.pkgd.js"></script>
     
     <!-- LESS -->
     <link rel="stylesheet/less" type="text/css" href="/less/styles.less">
@@ -73,9 +74,9 @@
   
   <!-- ++++++++++++++++++++++++++ MINISITE HEADER++++++++++++++++++++++++++++++++++++ -->
   <nav class="navbar navbar-default" id="hmg-nav-bar" role="navigation">
-  <div class="container-fluid">
+  <div class="container-fluid tbs-container-fluid">
 
-    <div class="row">
+    <div class="tbs-row">
       <!-- Brand and toggle get grouped for better mobile display -->
     <div class="navbar-header">
       <button type="button" class="navbar-toggle collapsed" id="hmg-navbar-toggle-menu" data-toggle="collapse" data-target="#hmg-nav-bar-collapse">
@@ -155,13 +156,7 @@
 
 
 <!-- ++++++++++++++++++++++ CAMAPIGN VIDEO GALLERY  ++++++++++++++++++++++++++++++++++++++ -->
-<div class="row gallery-row">
-  <div class="loading-gallery">
-    <div class="spinner">
-      <i class="fa fa-refresh fa-spin"></i>
-    </div>
-  </div>
-
+<div class="row gallery-row tbs-row">
   <div class="container-fluid tbs-container-fluid scrolable-gallery">
     <div class="row tbs-row banner">
       <div class="col-sm-6 col-xs-12 col-sm-push-6 tbs-col">
@@ -182,7 +177,7 @@
            <i class="fa fa-play"> </i>
           </span>
           <div class="videocontent">
-              <video id="campaign_video_player" class="video-js vjs-default-skin" width="350" height="200" poster="" controls="controls"  
+              <video id="campaign_video_player" class="video-js vjs-default-skin" width="400" height="225" poster="" controls="controls"  
               data-setup="{}">
               <source src="" type="video/mp4"/>
             </video>
@@ -191,13 +186,8 @@
       </div>
     </div>
     <div class="row tbs-row gallery">
-      <div id="gallery-container">
+      <div id="masonry-gallery-container">
 
-      </div>
-
-      <div class="loading-images">
-        <div class="spinner">
-        <i class="fa fa-refresh fa-spin"></i>
       </div>
   </div>
     </div>
@@ -218,7 +208,7 @@
 <div class="row footer tbs-row hidden-xs">
   <div class="col-xs-9 tbs-col">
     <ul class="footer-left">
-        <li class="footer-label"><a class="clickable-link" href="#">Powered By Homage</a></li>
+        <li class="footer-label"><a class="clickable-link hmg-footer-logo" href="#">Powered By Homage</a></li>
         <li class="footer-label"><a class="homage-footer-logo">
           <img id="hmg-footer-logo"/>
         </a>
@@ -253,18 +243,18 @@
 
 <!-- ++++++++++++++++++++++++++++++++++ SINGLE REMAKE VIDEO OVERLAY ++++++++++++++++++++++++++++++++++++++++ -->
 <div class="container-fluid video-overlay tbs-container-fluid">
-  <div class="row hidden-xs">
+  <div class="row tbs-row hidden-xs">
     <div class="close-button"></div>
   </div>
   
-  <div class="row">
+  <div class="row tbs-row">
 
     <div class="col-sm-2 hidden-xs">
 
     </div> 
 
-    <div class="col-sm-8">
-      <div class="container-fluid tbs-container-fluid">
+    <div class="col-sm-8 ">
+      <div class="container-fluid tbs-container-fluid remake-container">
         
         <div class="row remake-header">  
             <div class="col-sm-6 col-xs-12 user-container">
@@ -458,6 +448,7 @@
   var currently_selected_story = null;
   var current_query_type = null;
   var origin_id  = '<%= @originating_share_id.to_s %>'
+  var msnry = null;
  
 
   // share method ENUM
@@ -488,126 +479,174 @@
 
   // REMAKE GALLERY
 
-  function fetch_remakes(query_type)
-  {
-    var single_batch_remakes = [];
-    currentlyLoadingImgs = true;
-    current_query_type = query_type;
+  function fetch_remakes(query_type) {
+       
+        var single_batch_remakes = [];
+        currentlyLoadingImgs = true;
+        current_query_type = query_type;
 
-    remakes_cond = {};
-    remakes_cond["campaign_id"] = campaign_id;
-    remakes_cond["skip"] = skip;
-    remakes_cond["limit"] = limit;
-    remakes_cond["query_type"] = query_type;
-    
-    if (query_type == AllQuery) {
+        remakes_cond = {};
+        remakes_cond["campaign_id"] = campaign_id;
+        remakes_cond["skip"] = skip;
+        remakes_cond["limit"] = limit;
+        remakes_cond["query_type"] = query_type;
+        
+        if (query_type == AllQuery) {
 
-    } else if (query_type == StoryQuery) {
-      stories = [];
-      stories.push(currently_selected_story);
-      remakes_cond["stories"] = stories;
-    } else if (query_type == TrendingQuery) {
+        } else if (query_type == StoryQuery) {
+          stories = [];
+          stories.push(currently_selected_story);
+          remakes_cond["stories"] = stories;
+        } else if (query_type == TrendingQuery) {
 
-    } else if (query_type == MyTakesQuery) {
-      if (current_user != null) {
-        remakes_cond["user_id"] = current_user;
-      }
-    }
-
-    $.get('/remakes', remakes_cond , function(data, status, xhr){
-      json_data = $.parseJSON(data)
-
-      for (var i=0;i<json_data.length;i++) {
-        remake = json_data[i];
-
-        lowsrc      = remake["thumbnail"];
-        fullsrc     = remake["thumbnail"];
-        description = i+skip + ": " + remake["_id"]["$oid"];
-        category    = remake["story_name"];
-        remake_id   = remake["_id"]["$oid"];
-
-        like_count = remake["like_count"] ? remake["like_count"] : 0;
-        view_count = remake["views"] ? remake["views"] : 0;
-        share_count = remake["share_count"] ? remake["share_count"] : 0;
-
-        info = {lowsrc: lowsrc, fullsrc: fullsrc, description: description, category: category, _id: remake_id, like_count: like_count, view_count: view_count, share_count: share_count}
-        info["user_name"] = remake["user_fullname"] ? remake["user_fullname"] : "Guest";
-                
-        single_batch_remakes.push(info)
-        all_remakes.push(info);
-      }
-
-      if (!gallery) {
-        gallery = $('#gallery-container').galereya({
-          spacing: 30,
-          wave: false,
-          noCategoryName: 'all stories',
-          disableSliderOnClick: true,
-          onCellClick: function(e) {
-            var selectedCellIndex = gallery.getSelectedCell();
-            remake = all_remakes[selectedCellIndex];
-            remake_id = remake["_id"]
-            showVideoPlayer(remake_id);
-          },
-          load: function(next) {
-            var data = single_batch_remakes;
-            next(data);
-          },
-        });
-      } else {
-        var data = single_batch_remakes;
-        gallery.loadMore(data);
-      }
-
-      skip += limit;
-      
-    });
-  }
-
-  function elementScrolledToEnd(jq_element) {
-    if(jq_element.scrollTop() + jq_element.innerHeight() >= jq_element[0].scrollHeight) {
-      return true;
-    }
-    return false; 
-  }
-
-
-  $('.scrolable-gallery').scroll(function() {
-      if (elementScrolledToEnd($('.scrolable-gallery'))) {
-        if (!currentlyLoadingImgs) { 
-          fetch_remakes(current_query_type);
+        } else if (query_type == MyTakesQuery) {
+            if (current_user != null) {
+                remakes_cond["user_id"] = current_user;
+            }
         }
-      }
-  }); 
+
+        var container = document.querySelector('#masonry-gallery-container');
+
+        if (!msnry) {
+            msnry = new Masonry( container, {
+              // options
+              columnWidth: parseInt($('.hmg-gallery-cell').css('width')),
+              itemSelector: '.hmg-gallery-cell',
+              isFitWidth: true,
+              gutter: 30
+            });
+
+            msnry.on( 'layoutComplete', function() {
+              gallery_left_margin = parseInt($("#masonry-gallery-container").css('margin-left'))
+              gallery_right_margin = parseInt($("#masonry-gallery-container").css('margin-right'))
+
+              gallery_right_margin += 60;
+              $(".campaign-video-container").css('margin-left',gallery_left_margin + 'px')
+              $(".campaign-info").css('margin-right',gallery_right_margin + 'px');
+              console.log('layout done, just this one time');
+            });
+        }
+
+        $.get('/remakes', remakes_cond , function(data, status, xhr){
+          json_data = $.parseJSON(data)
+          removeSpinnerCell();
+          
+          for (var i=0;i<json_data.length;i++) {
+            remake = json_data[i];
+            currentlyLoadingImgs = false;
+            index = skip + i;
+
+            $('#masonry-gallery-container').append('<div class="hmg-gallery-cell" data-index="' + index + '"></div>')
+
+            jq_selector = ".hmg-gallery-cell[data-index=" + index + "]"
+            current_cell = $(jq_selector);
+
+            src = remake["thumbnail"];
+            var $img = $(document.createElement('img')).attr('src', src);
+            $img.addClass('galereya-cell-img');
+            current_cell.append($img);
+
+            user_name = remake["user_fullname"] ? remake["user_fullname"] : "Guest";
+            like_count = remake["like_count"] ? remake["like_count"] : 0;
+            view_count = remake["views"] ? remake["views"] : 0;
+            share_count = remake["share_count"] ? remake["share_count"] : 0;
+
+            current_cell.append('<div class="galereya-cell-play-button-container">\
+                                    <span class="main-font-label social_count_label play">\
+                                        <i class="fa fa-play"> </i>\
+                                    </span>\
+                                </div>')
+            .append('<div class="galereya-cell-desc">\
+                        <div class="galereya-cell-desc-title">\
+                            <span class="user-thumbnail-container">\
+                                <img class="circular-usr-thumbnail">\
+                            </span>\
+                            <span class="main-font-label user-name">' + user_name + '</span>\
+                            <span class="main-font-label social_count_label like">\
+                              <i class="fa fa-heart-o"> </i>\
+                              <span>' + like_count + '</span>\
+                            </span>\
+                            <span class="main-font-label social_count_label view">\
+                              <i class="fa fa-eye"> </i>\
+                              <span>' + view_count + '</span>\
+                            </span>\
+                            <span class="main-font-label social_count_label share">\
+                              <i class="fa fa-share-alt"> </i>\
+                              <span>' + share_count + '</span>\
+                            </span>\
+                        </div>\
+                        <div class="galereya-cell-desc-text">\
+                            <span class="main-font-label social_count_label like">\
+                              <i class="fa fa-heart-o"> </i>\
+                              <span> Like</span>\
+                            </span>\
+                            <span class="main-font-label social_count_label play">\
+                              <i class="fa fa-play"> </i>\
+                            </span>\
+                            <span class="main-font-label social_count_label flag">\
+                              <i class="fa fa-flag"> </i>\
+                              <span> Flag</span>\
+                            </span>\
+                        </div>\
+                    </div>')
+            .append('<div class="galereya-cell-overlay" />');
+            msnry.appended(current_cell);
+
+            info = {_id: remake["_id"], like_count: like_count, view_count: view_count, share_count: share_count}
+       
+            single_batch_remakes.push(info)
+            all_remakes.push(info);
+        }
+
+        skip += limit;
+        msnry.layout();
+        $('.hmg-gallery-cell').on('click' , function() {
+          remake_index = $(this).attr("data-index");
+          remake = all_remakes[remake_index];
+          if (remake["_id"])
+          {
+            remake_id = remake["_id"]["$oid"]
+            showVideoPlayer(remake_id)
+          }
+        })
+
+        });      
+    }
+
+    // $('.wrapper').css('height' , $(window).height() + 'px');
+
+    function elementScrolledToEnd(jq_element) {
+        if(jq_element.scrollTop() + jq_element.innerHeight() >= jq_element[0].scrollHeight) {
+          return true;
+        }
+        return false; 
+    }
+
+    function addSpinnerCell() {
+        $('#masonry-gallery-container').append('<div class="hmg-gallery-cell spinner-cell"></div>')
+        spinner = $('.spinner-cell').append('<i class="fa fa-refresh fa-spin"></i>');
+        msnry.appended(spinner);
+    }
+
+    function removeSpinnerCell() {
+        msnry.remove($('.spinner-cell'))
+    }
+
+    
+    $('.scrolable-gallery').scroll(function() {
+          if (elementScrolledToEnd($('.scrolable-gallery'))) {
+            if (!currentlyLoadingImgs) { 
+              addSpinnerCell();
+              fetch_remakes(current_query_type);
+            }
+          }
+    });
 
   function cleanGallery() {
-    firstGalleryLoad = true;
-    $('#gallery-container').empty();
-      gallery = null;
-      skip = 0;
-      all_remakes = [];
+    msnry.remove($('.hmg-gallery-cell')) 
+    skip = 0;
+    all_remakes = [];
   }
-
-  $('body').on("finished_loading_images", function() {
-    currentlyLoadingImgs = false;
-
-    if (firstGalleryLoad) {
-      firstGalleryLoad = false;
-      $('.loading-gallery').css('visibility','hidden');
-      $('.scrolable-gallery').css('visibility','visible');
-    }
-
-    if (elementScrolledToEnd($('scrolable-gallery'))) {
-            fetch_remakes(current_query_type);
-    }
-  });
-
-  $('body').on("gallery_resized" , function() {
-    gallery_left_margin = $(".galereya-grid").css('margin-left')  
-    gallery_right_margin = $(".galereya-grid").css('margin-right')
-    $(".campaign-video-container").css('margin-left',gallery_left_margin)
-    $(".campaign-info").css('margin-right',gallery_right_margin);
-  });
 
   // STORIES DROPDOWN HANDLERS
 

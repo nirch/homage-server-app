@@ -11,6 +11,7 @@
 @bold-font: "bryant-web-compressed";
 @main-font: "proxima-nova";
 
+
 @font-face {
 	font-family: @bold-font;
 	src: url("/resources/Bryant-MediumCompressed.otf") format("opentype");
@@ -21,11 +22,18 @@
 	src: url("/resources/ProximaNova-Light.otf") format("opentype");
 }
 
+html
+{
+	overflow-y: hidden;
+}
+
+
 // tbs general
 .tbs-container-fluid
 {
 	height:100%;
-	// padding:0px;
+	padding-left:0px;
+	padding-right: 0px;
 }
 
 .tbs-row
@@ -38,8 +46,8 @@
 
 .tbs-col
 {
-	// padding-right: 0px;
-	// padding-left: 0px;
+	padding-right: 0px;
+	padding-left: 0px;
 	height:100%;
 }
 
@@ -70,8 +78,6 @@
 	height: 100%;
 	display: inline-block;
 	padding-top: 20px;
-	padding-left: 10px;
-	padding-right: 10px;
 	padding-bottom: 20px;
 }
 
@@ -103,6 +109,11 @@
 	border:none;
 	border-radius: 0px;
 	margin-bottom: 0px;
+	.tbs-row
+	{
+		padding-right:30px;
+		padding-left: 30px;
+	}
 }
 
 #hmg-nav-bar-collapse
@@ -120,7 +131,8 @@
 #hmg-header-logo
 {
 	height: 68px;
-	margin-left: 5px;
+	margin-left: 0px;
+	padding-left:0px;
 }
 
 #hmg-logo-mobile
@@ -157,6 +169,7 @@
 {
 	background:url("/resources/minisite/ShareRegular.png") no-repeat left center;
 	padding-left: 22px !important;
+	padding-right: 0px;
 }
 
 #hmg-header-share:hover
@@ -215,6 +228,15 @@
 	background-color: @dark-grey-color;
 	margin-left:0px;
 	margin-right: 0px;
+	.tbs-col
+	{
+		// padding-left: 30px;
+	}
+	.a
+	{
+		padding-left: 0px;
+		padding-right: 0px;
+	}
 }
 
 .filter-left 
@@ -223,10 +245,17 @@
 	height: 100%;
 	padding: 0px;
 	margin-bottom: 0px;
+	padding-left: 30px;
 
 	li
 	{
 		border-bottom: 2px solid @dark-grey-color;
+		min-width: 100px;
+		text-align: center;
+		.a
+		{
+			width:100%;
+		}
 	}
 
 	li:hover,
@@ -242,6 +271,20 @@
 	text-align: right;
 	list-style-type: none;
 	margin-bottom: 0px;
+	.dropdown
+	{
+		min-width: 250px;
+		padding-right: 30px;
+		.dropdown-menu
+		{
+			background-color: @medium-grey-color;
+			border: none;
+			width: 100%;
+			margin: 0px;
+			border-radius: 0px;
+			overflow-y: auto;
+		}
+	}
 }
 
 .filter-label
@@ -259,17 +302,6 @@
 	color: @main-theme-color;
 }
 
-.filter-right > .dropdown
-{
-	min-width: 250px;
-}
-
-.filter-right > .dropdown > .dropdown-menu {
-	background-color: #363636;
-	border: none;
-	width: 100%;
-	margin: 0px;
-}
 
 .filter-right > .dropdown > .dropdown-menu > li > a {
 	background-color: transparent;
@@ -302,11 +334,16 @@
 	.filter-left 
 	{
 		text-align: center;
+		padding-left: 0px;
 	}
 
 	.filter-right
 	{
-		background-color: @medium-grey-color
+		background-color: @medium-grey-color;
+		.dropdown
+		{
+			padding-right: 0px;
+		}
 	}
 }
 
@@ -323,7 +360,7 @@
 	.tbs-container-fluid
 	{
 		overflow-y: auto;
-		visibility: hidden;
+		//visibility: hidden;
 	}
 	.loading-gallery
 	{
@@ -530,10 +567,161 @@
 	}
 }
 
-// MASONRY GALLERY 
+// MASONRY GALLERY
+
+.wrapper
+{
+	overflow-y: auto;
+	//height: 500px;
+} 
+
+ .wrapper 
+ {
+ 	.header
+ 	{
+ 		background-color: black;
+	 	width:100%;
+	 	height:70px;
+	 	font-size: 20px;
+	 	text-align: center;
+ 	}
+ 	
+ }
+
+
+#masonry-gallery-container
+{
+	margin: 0 auto;
+}
+
 .hmg-gallery-cell
 {
-	color: red;
+	position: relative;
+	width: 400px;
+	height: 225px;
+	margin-bottom: 30px;
+	span
+	{
+		font-size: 14px;
+	}
+
+	.circular-usr-thumbnail
+	{
+		height: 35px;
+		width: 35px;
+	}
+
+	.user-name
+	{
+		float:left;
+		padding-left:6px;
+		padding-top:7px;
+	}
+
+	.galereya-cell-desc
+	{
+		
+	}
+	.galereya-cell-img
+	{
+		width:100%;
+	}
+	
+	.fa-spin
+	{
+		color: @main-theme-color;
+		font-size: 40px;
+		position: absolute;
+		top:43%;
+		left:45%;
+	}
+
+	.galereya-cell-play-button-container {
+		position: absolute;
+		bottom: 0;
+		left: 0;
+		min-height: 20px;
+		width: 100%;
+		padding-bottom: 10px;
+		padding-left: 5px;
+		padding-right: 5px;
+		text-align: center;
+	}
+	.galereya-cell-desc {
+		font-size: 10pt;
+		position: absolute;
+		left: 0;
+		top: 0;
+		height: 100%;
+		width:100%;
+		// display: none;
+		-webkit-box-sizing: border-box;
+		-moz-box-sizing: border-box;
+		box-sizing: border-box;
+		padding: 20px 10px;
+		text-align: center;
+		color: #fff;
+		background: rgba(0, 0, 0, 0.65);
+		opacity: 0;
+		-webkit-transition: all 0.5s ease-out;
+	    -moz-transition: all 0.5s ease-out;
+	    -o-transition: all 0.5s ease-out;
+	    transition: all 0.5s ease-out;
+
+		.galereya-cell-desc-title 
+		{
+			font-weight: bold;
+			position: absolute;
+			top: 0;
+			left: 0;
+			min-height: 50px;
+			width: 100%;
+			padding-top: 5px;
+			padding-left: 10px;
+			padding-right: 5px;
+			.like, .view, .share
+			{
+				float: right;
+				padding-left:5px;
+				margin-top: 7px;
+			}
+		}
+		.galereya-cell-desc-text
+		{
+			font-weight: bold;
+			position: absolute;
+			bottom: 0;
+			left: 0;
+			min-height: 20px;
+			width: 100%;
+			padding-bottom: 10px;
+			padding-left: 5px;
+			padding-right: 5px;
+			.like 
+			{
+				float: left;
+			}
+
+			.flag 
+			{
+				float: right;
+			}
+		}
+	}
+}
+
+.spinner-cell
+{
+	border: 2px solid @medium-grey-color;
+	border-radius: 10px;
+}
+
+.hmg-gallery-cell:hover 
+{
+	.galereya-cell-desc
+	{
+		opacity: 100;
+	}
 }
 
 // +++++++++++++++++++++++++++++++++++++ FOOTER +++++++++++++++++++++++++++++++++++++++++++++
@@ -557,12 +745,31 @@
 	text-align: right;
 	padding-top: 20px;
 	padding-bottom: 20px;
+	padding-right: 30px;
+	.hmg-social-link
+	{
+		margin-left: 15px;
+		// border: 1px solid @main-text-color;
+		// border-radius: 50%;
+		// height:20px;
+		// width:20px;
+		// text-align: center;
+	}
 }
 
 .footer-left
 {
 	text-align: left;
 	padding-bottom: 0px;
+	padding-left: 30px;
+	.hmg-footer-logo
+	{
+		color: @main-theme-color;
+	}
+	.footer-label
+	{
+		margin-right: 10px;
+	}
 }
 
 #hmg-footer-logo
@@ -570,10 +777,6 @@
 	content: url('/resources/minisite/HomageLogoFooter.png')
 }
 
-.hmg-social-link
-{
-	margin-right: 15px;
-}
 
 .footer-label
 {
@@ -585,6 +788,30 @@
 // ++++++++++++++++++ FOOTER END ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 // +++++++++++++++++++SINGLE REMAKE VIDEO OVERLAY +++++++++++++++++++++++++++++++++++++++
+
+.remake-container
+{
+	margin: 0 auto;
+	@media(min-width:767px){
+		width:640px;
+	}
+	.row
+	{
+		width:100%;
+	}
+
+	.overlay-video-row
+	{
+		.col-xs-12
+		{
+			@media(min-width:767px){
+				padding-left: 0px;
+				padding-right: 0px;
+
+			}
+		}
+	}
+}
 
 .general-purpose-overlay-container
 {
@@ -610,6 +837,14 @@
 // remake header
 .remake-header {
   height: 60px;
+  .col-sm-6
+  {
+  	@media(min-width:767px)
+  	{
+  		padding-left: 0px;
+  		padding-right: 0px;
+  	}
+  }
 }
 
 
@@ -753,6 +988,7 @@
 		}
 	}
 }
+
 
 .videocontent
 {
