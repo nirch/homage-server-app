@@ -555,6 +555,7 @@ html {
 @media (min-width: 767px) {
   .remake-container {
     width: 640px;
+    padding-top: 8%;
   }
 }
 .remake-container .row {
