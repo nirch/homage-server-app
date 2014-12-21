@@ -31,8 +31,10 @@ APN.certificate = File.read("../certificates/homage_push_notification_dev.pem")
 # Nir (Tomer)
 #token = "<3613e36f b419bfca 0063ddd4 fcdf3374 20491e54 8545779d 793cf71b 4a003b8a>"
 
+# Aviv iPhone 6 Plus
+token = "<452d30f7 c6d1964e c5a1cda7 78be8517 b1136b42 ae154783 7fb61e3e 43dc7795>"
 # Aviv iPhone 5
-token = "<ec0ad57f 4fcea35f 03e4fab9 1572a145 a2facdef b58a8203 4acdc1d8 186cac0b>"
+#token = "<ec0ad57f 4fcea35f 03e4fab9 1572a145 a2facdef b58a8203 4acdc1d8 186cac0b>"
 #token = "<0a7b7b15 3f0fb335 0e252182 38675505 e739547b 47dd8ab2 60e39582 85fbe150>"
 #iPhone 4
 #token = "<d4d84b6b 923afc59 eb4767ab 73497e0f 3549d836 2028feab a3ac16d8 7927f090>"
