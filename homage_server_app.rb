@@ -225,6 +225,12 @@ module RemakesQueryType
   	TrendingQuery = 3
 end
 
+module RemakesSaveToDevice
+	Disabled = 0
+	Enabled  = 1
+	Premium  = 2
+end
+
 # helpers do
 #   def protected!
 #     return if authorized?
@@ -257,7 +263,6 @@ get '/remakes' do
 		limit = params[:limit].to_i if params[:limit] # Optional
 		campaign_id = BSON::ObjectId.from_string(params[:campaign_id]) if params[:campaign_id] #optional
 		query_type = params[:query_type].to_i if params[:query_type]
-
 		
 		story_names = params["stories"] if params["stories"];
 		story_id_array = Array.new
@@ -283,19 +288,11 @@ get '/remakes' do
 			story_names["story_id"] = story["name"]
 		end
 
-		# Getting all the public users
-		public_users_cursor = settings.db.collection("Users").find({is_public:true})
-		public_users = Array.new
-
-		for user in public_users_cursor do
-			public_users.push(user["_id"])
-		end
-
 		# build mongodb aggregation pipeline accroding to query type from client
 		######################################################################################
 		aggregation_pipeline = []
 		
-		find_condition = {status: RemakeStatus::Done, user_id:{"$in" => public_users}, grade:{"$ne" => -1}}
+		find_condition = {status: RemakeStatus::Done, is_public: true, grade:{"$ne" => -1}}
 		if story_id_array.length != 0 then
 			find_condition["story_id"] = {"$in"=> story_id_array}
 		end
@@ -1295,14 +1292,6 @@ get '/remakes/story/:story_id' do
 
 	logger.info "Getting remakes for story " + story_id.to_s
 
-	# Getting all the public users
-	public_users_cursor = settings.db.collection("Users").find({is_public:true})
-	public_users = Array.new
-
-	for user in public_users_cursor do
-		public_users.push(user["_id"])
-	end
-
 	story_ids = Array.new
 	story_ids.push(story_id)
 
@@ -1312,7 +1301,7 @@ get '/remakes/story/:story_id' do
 	end
 
 	# Getting all the completed remakes of the public users
-	remakes_docs = settings.db.collection("Remakes").find({story_id:{"$in" => story_ids}, status: RemakeStatus::Done, user_id:{"$in" => public_users}, grade:{"$ne" => -1}}).sort(grade:-1);
+	remakes_docs = settings.db.collection("Remakes").find({story_id:{"$in" => story_ids}, status: RemakeStatus::Done, is_public: true, grade:{"$ne" => -1}}).sort(grade:-1);
 	remakes_docs = remakes_docs.skip(skip) if skip
 	remakes_docs = remakes_docs.limit(limit) if limit
 
@@ -1658,6 +1647,17 @@ def getConfigDictionary()
 	config["share_link_prefix"] = settings.share_link_prefix;
 	config["significant_view_pct_threshold"] = 0.5
 	config["mirror_selfie_silhouette"] = true
+
+	campaign_id = request.env["HTTP_CAMPAIGN_ID"] if request.env["HTTP_CAMPAIGN_ID"].to_s
+	# campaign_id = "54919516454c61f4080000e5"
+	if campaign_id then
+		campaign_bson_id = BSON::ObjectId.from_string(campaign_id)
+		campaign = settings.db.collection("Campaigns").find_one({_id:campaign_bson_id})
+		config["remakes_save_to_device"] = campaign["remakes_save_to_device"]
+		if campaign["remakes_save_to_device"] == RemakesSaveToDevice::Premium then
+			config["remakes_save_to_device_premium_id"] = campaign["remakes_save_to_device_premium_id"]
+		end
+	end
 	return config
 end
 
@@ -2377,6 +2377,14 @@ get '/test/gallery/v1/:campaign_name' do
 	@stories = settings.db.collection("Stories").find({active:true, campaign_id: campaign_id})
 	erb :minisiteV1
 end
+
+get '/test/masonryGallery/:campaign_name' do
+	@campaign = settings.db.collection("Campaigns").find_one({name: params[:campaign_name]})
+	campaign_id = @campaign["_id"]
+	erb :masonryGalleryTest
+end
+
+
 
 get '/test/:entity_id' do
 	remakes = settings.db.collection("Remakes")

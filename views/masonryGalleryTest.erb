@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Masonry </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimum-scale=1.0, maximum-scale=1.0">
+
+    <!-- BOOTSTRAP AND JQUERY -->
+    <link rel="stylesheet" type="text/css" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">  
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script type="text/javascript" src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+    
+    <!-- LESS -->
+    <link rel="stylesheet/less" type="text/css" href="/less/styles.less">
+    <script src="/js/less.js" type="text/javascript"></script>
+    <script type="text/javascript">
+    less.watch();
+    </script>
+
+    <!-- UNTIL MORE ROBUST SOLUTION - NEED TO COMPILE MANUALLY B4 GOING TO PRODUCTION  -->
+    <!-- <link href="/css/styles.css" rel="stylesheet"/> -->
+
+    <!-- MASONRY -->
+    <script src="/js/masonry.pkgd.js"></script>
+
+    <!-- UTILS -->
+    <script src="/js/Objectid.js"></script>
+    <script src="/js/jquery.cookie.js"></script>
+    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+</head>
+<body>
+
+    <div id="masonry-gallery-container">
+
+    </div>
+    <script>
+
+    // remake query type ENUM
+    AllQuery      = 0
+    StoryQuery    = 1
+    MyTakesQuery  = 2
+    TrendingQuery = 3
+
+    var campaign_id = '<%= @campaign["_id"].to_s %>'
+    var skip = 0;
+    var limit = 30;
+    var all_remakes = [];
+
+    function fetch_remakes(query_type) {
+    var single_batch_remakes = [];
+    // currentlyLoadingImgs = true;
+    current_query_type = AllQuery;
+
+    remakes_cond = {};
+    remakes_cond["campaign_id"] = campaign_id;
+    remakes_cond["skip"] = skip;
+    remakes_cond["limit"] = limit;
+    remakes_cond["query_type"] = query_type;
+    
+    // if (query_type == AllQuery) {
+
+    // } else if (query_type == StoryQuery) {
+    //   stories = [];
+    //   stories.push(currently_selected_story);
+    //   remakes_cond["stories"] = stories;
+    // } else if (query_type == TrendingQuery) {
+
+    // } else if (query_type == MyTakesQuery) {
+    //     if (current_user != null) {
+    //         remakes_cond["user_id"] = current_user;
+    //     }
+    // }
+
+    var container = document.querySelector('#masonry-gallery-container');
+    var msnry = new Masonry( container, {
+      // options
+      columnWidth: 200,
+      itemSelector: '.hmg-gallery-cell'
+    });
+
+    $.get('/remakes', remakes_cond , function(data, status, xhr){
+      json_data = $.parseJSON(data)
+
+      for (var i=0;i<json_data.length;i++) {
+        remake = json_data[i];
+
+        $('#masonry-gallery-container').append('<div class="hmg-gallery-cell" data-index="' + i + '"></div>')
+
+        jq_selector = ".hmg-gallery-cell[data-index=" + i + "]"
+        current_cell = $(jq_selector);
+
+        src = remake["thumbnail"];
+        var $img = $(document.createElement('img')).attr('src', src);
+        $img.addClass('galereya-cell-img');
+        current_cell.append($img);
+
+        user_name = remake["user_fullname"] ? remake["user_fullname"] : "Guest";
+        like_count = remake["like_count"] ? remake["like_count"] : 0;
+        view_count = remake["views"] ? remake["views"] : 0;
+        share_count = remake["share_count"] ? remake["share_count"] : 0;
+
+        current_cell.append('<div class="galereya-cell-play-button-container">\
+                                <span class="main-font-label social_count_label play">\
+                                    <i class="fa fa-play"> </i>\
+                                </span>\
+                            </div>')
+        .append('<div class="galereya-cell-desc">\
+                    <div class="galereya-cell-desc-title">\
+                        <span class="user-thumbnail-container">\
+                            <img class="circular-usr-thumbnail">\
+                        </span>\
+                        <span class="main-font-label user-name">' + user_name + '</span>\
+                        <span class="main-font-label social_count_label like">\
+                          <i class="fa fa-heart-o"> </i>\
+                          <span>' + like_count + '</span>\
+                        </span>\
+                        <span class="main-font-label social_count_label view">\
+                          <i class="fa fa-eye"> </i>\
+                          <span>' + view_count + '</span>\
+                        </span>\
+                        <span class="main-font-label social_count_label share">\
+                          <i class="fa fa-share-alt"> </i>\
+                          <span>' + share_count + '</span>\
+                        </span>\
+                    </div>\
+                    <div class="galereya-cell-desc-text">\
+                        <span class="main-font-label social_count_label like">\
+                          <i class="fa fa-heart-o"> </i>\
+                          <span> Like</span>\
+                        </span>\
+                        <span class="main-font-label social_count_label play">\
+                          <i class="fa fa-play"> </i>\
+                        </span>\
+                        <span class="main-font-label social_count_label flag">\
+                          <i class="fa fa-flag"> </i>\
+                          <span> Flag</span>\
+                        </span>\
+                    </div>\
+                </div>')
+        .append('<div class="galereya-cell-overlay" />');
+
+        // lowsrc      = remake["thumbnail"];
+        // fullsrc     = remake["thumbnail"];
+        // description = i+skip + ": " + remake["_id"]["$oid"];
+        // category    = remake["story_name"];
+        // remake_id   = remake["_id"]["$oid"];
+
+        // like_count = remake["like_count"] ? remake["like_count"] : 0;
+        // view_count = remake["views"] ? remake["views"] : 0;
+        // share_count = remake["share_count"] ? remake["share_count"] : 0;
+
+        // info = {lowsrc: lowsrc, fullsrc: fullsrc, description: description, category: category, _id: remake_id, like_count: like_count, view_count: view_count, share_count: share_count}
+        // info["user_name"] = remake["user_fullname"] ? remake["user_fullname"] : "Guest";
+
+        // single_batch_remakes.push(info)
+        // all_remakes.push(info);
+    }
+
+
+
+    skip += limit;
+
+    });
+    }
+
+    // MAIN
+    fetch_remakes(AllQuery)
+
+</script>
+
+
+</body>
