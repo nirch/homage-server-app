@@ -1180,12 +1180,6 @@ delete '/remake/:remake_id' do
 
 	remake = remakes.find_one(remake_id)
 
-	
-	# Updating the number of remakes for the story in another thread
-	Thread.new{
-		update_story_remakes_count(remake["story_id"])
-	}
-
 	# Returning the updated remake
 	result = remake.to_json
 end
@@ -1315,30 +1309,6 @@ get '/remakes/story/:story_id' do
 	logger.info "Returning " + remakes_json_array.count.to_s + " remakes for story " + story_id.to_s
 	remakes = "[" + remakes_json_array.join(",") + "]"
 end
-
-def update_story_remakes_count(story_id)
-	remakes = settings.db.collection("Remakes")
-	stories = settings.db.collection("Stories")
-
-	story = stories.find_one(story_id)
-
-	# Getting the number of remakes for this story
-	story_remakes = remakes.count({query: {story_id: story_id, status: RemakeStatus::Done}})
-	if story["story_480"] then
-		story_480_remakes = remakes.count({query: {story_id: story["story_480"], status: RemakeStatus::Done}})
-		story_remakes += story_480_remakes
-	end
-
-	stories.update({_id: story_id}, {"$set" => {"remakes_num" => story_remakes}})
-	logger.info "Updated story id <" + story_id.to_s + "> number of remakes to " + story_remakes.to_s
-end
-
-get '/test/update/remakes/:story_id' do
-	story_id = BSON::ObjectId.from_string(params[:story_id])
-
-	update_story_remakes_count story_id
-end
-
 
 get '/test/text' do
 	form = '<form action="/text" method="post" enctype="multipart/form-data"> Remake ID: <input type="text" name="remake_id"> Text ID: <input type="text" name="text_id"> Text: <input type="text" name="text"> <input type="submit" value="Text!"> </form>'

@@ -27,11 +27,19 @@
     <script src="/js/jquery.cookie.js"></script>
     <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
 </head>
-<body>
+<body class="">
 
-    <div id="masonry-gallery-container">
+    <div class="wrapper">
 
+      <div class="header">RAFI?
+
+      </div>  
+
+      <div id="masonry-gallery-container">
+
+      </div>
     </div>
+    
     <script>
 
     // remake query type ENUM
@@ -44,126 +52,187 @@
     var skip = 0;
     var limit = 30;
     var all_remakes = [];
+    var current_query_type;
+    var currentlyLoadingImgs = false;
+    var msnry = null;
+
+    $( document ).ready(function() {
 
     function fetch_remakes(query_type) {
-    var single_batch_remakes = [];
-    // currentlyLoadingImgs = true;
-    current_query_type = AllQuery;
+       
+        var single_batch_remakes = [];
+        currentlyLoadingImgs = true;
+        current_query_type = query_type;
 
-    remakes_cond = {};
-    remakes_cond["campaign_id"] = campaign_id;
-    remakes_cond["skip"] = skip;
-    remakes_cond["limit"] = limit;
-    remakes_cond["query_type"] = query_type;
+        remakes_cond = {};
+        remakes_cond["campaign_id"] = campaign_id;
+        remakes_cond["skip"] = skip;
+        remakes_cond["limit"] = limit;
+        remakes_cond["query_type"] = query_type;
+        
+        if (query_type == AllQuery) {
+
+        } else if (query_type == StoryQuery) {
+          stories = [];
+          stories.push(currently_selected_story);
+          remakes_cond["stories"] = stories;
+        } else if (query_type == TrendingQuery) {
+
+        } else if (query_type == MyTakesQuery) {
+            if (current_user != null) {
+                remakes_cond["user_id"] = current_user;
+            }
+        }
+
+        var container = document.querySelector('#masonry-gallery-container');
+
+        if (!msnry) {
+            msnry = new Masonry( container, {
+              // options
+              columnWidth: parseInt($('.hmg-gallery-cell').css('width')),
+              itemSelector: '.hmg-gallery-cell',
+              isFitWidth: true,
+              gutter: 30
+            });
+        }
+
+        $.get('/remakes', remakes_cond , function(data, status, xhr){
+          json_data = $.parseJSON(data)
+          removeSpinnerCell();
+          
+          for (var i=0;i<json_data.length;i++) {
+            remake = json_data[i];
+            currentlyLoadingImgs = false;
+            index = skip + i;
+
+            $('#masonry-gallery-container').append('<div class="hmg-gallery-cell" data-index="' + index + '"></div>')
+
+            jq_selector = ".hmg-gallery-cell[data-index=" + index + "]"
+            current_cell = $(jq_selector);
+
+            src = remake["thumbnail"];
+            var $img = $(document.createElement('img')).attr('src', src);
+            $img.addClass('galereya-cell-img');
+            current_cell.append($img);
+
+            user_name = remake["user_fullname"] ? remake["user_fullname"] : "Guest";
+            like_count = remake["like_count"] ? remake["like_count"] : 0;
+            view_count = remake["views"] ? remake["views"] : 0;
+            share_count = remake["share_count"] ? remake["share_count"] : 0;
+
+            current_cell.append('<div class="galereya-cell-play-button-container">\
+                                    <span class="main-font-label social_count_label play">\
+                                        <i class="fa fa-play"> </i>\
+                                    </span>\
+                                </div>')
+            .append('<div class="galereya-cell-desc">\
+                        <div class="galereya-cell-desc-title">\
+                            <span class="user-thumbnail-container">\
+                                <img class="circular-usr-thumbnail">\
+                            </span>\
+                            <span class="main-font-label user-name">' + user_name + '</span>\
+                            <span class="main-font-label social_count_label like">\
+                              <i class="fa fa-heart-o"> </i>\
+                              <span>' + like_count + '</span>\
+                            </span>\
+                            <span class="main-font-label social_count_label view">\
+                              <i class="fa fa-eye"> </i>\
+                              <span>' + view_count + '</span>\
+                            </span>\
+                            <span class="main-font-label social_count_label share">\
+                              <i class="fa fa-share-alt"> </i>\
+                              <span>' + share_count + '</span>\
+                            </span>\
+                        </div>\
+                        <div class="galereya-cell-desc-text">\
+                            <span class="main-font-label social_count_label like">\
+                              <i class="fa fa-heart-o"> </i>\
+                              <span> Like</span>\
+                            </span>\
+                            <span class="main-font-label social_count_label play">\
+                              <i class="fa fa-play"> </i>\
+                            </span>\
+                            <span class="main-font-label social_count_label flag">\
+                              <i class="fa fa-flag"> </i>\
+                              <span> Flag</span>\
+                            </span>\
+                        </div>\
+                    </div>')
+            .append('<div class="galereya-cell-overlay" />');
+            msnry.appended(current_cell);
+            
+            // single_batch_remakes.push(info)
+            // all_remakes.push(info);
+        }
+
+        skip += limit;
+        msnry.layout();
+        });
+        
+    }
+
+    $('.wrapper').css('height' , $(window).height() + 'px');
+
+    console.log("RRRRRRRAAAFIFIFFI")
+    function elementScrolledToEnd(jq_element) {
+        if(jq_element.scrollTop() + jq_element.innerHeight() >= jq_element[0].scrollHeight) {
+          return true;
+        }
+        return false; 
+    }
+
+    function addSpinnerCell() {
+        $('#masonry-gallery-container').append('<div class="hmg-gallery-cell spinner-cell"></div>')
+        spinner = $('.spinner-cell').append('<i class="fa fa-refresh fa-spin"></i>');
+        msnry.appended(spinner);
+    }
+
+    function removeSpinnerCell() {
+        msnry.remove($('.spinner-cell'))
+    }
+
     
-    // if (query_type == AllQuery) {
-
-    // } else if (query_type == StoryQuery) {
-    //   stories = [];
-    //   stories.push(currently_selected_story);
-    //   remakes_cond["stories"] = stories;
-    // } else if (query_type == TrendingQuery) {
-
-    // } else if (query_type == MyTakesQuery) {
-    //     if (current_user != null) {
-    //         remakes_cond["user_id"] = current_user;
-    //     }
-    // }
-
-    var container = document.querySelector('#masonry-gallery-container');
-    var msnry = new Masonry( container, {
-      // options
-      columnWidth: 200,
-      itemSelector: '.hmg-gallery-cell'
+    $('.wrapper').scroll(function() {
+          if (elementScrolledToEnd($('.wrapper'))) {
+            if (!currentlyLoadingImgs) { 
+              addSpinnerCell();
+              fetch_remakes(current_query_type);
+            }
+          }
     });
 
-    $.get('/remakes', remakes_cond , function(data, status, xhr){
-      json_data = $.parseJSON(data)
+  // $(document).on('scroll', '.wrapper', function(){ 
+  //   console.log('scroll happened in wrapper');
+  // });   
 
-      for (var i=0;i<json_data.length;i++) {
-        remake = json_data[i];
-
-        $('#masonry-gallery-container').append('<div class="hmg-gallery-cell" data-index="' + i + '"></div>')
-
-        jq_selector = ".hmg-gallery-cell[data-index=" + i + "]"
-        current_cell = $(jq_selector);
-
-        src = remake["thumbnail"];
-        var $img = $(document.createElement('img')).attr('src', src);
-        $img.addClass('galereya-cell-img');
-        current_cell.append($img);
-
-        user_name = remake["user_fullname"] ? remake["user_fullname"] : "Guest";
-        like_count = remake["like_count"] ? remake["like_count"] : 0;
-        view_count = remake["views"] ? remake["views"] : 0;
-        share_count = remake["share_count"] ? remake["share_count"] : 0;
-
-        current_cell.append('<div class="galereya-cell-play-button-container">\
-                                <span class="main-font-label social_count_label play">\
-                                    <i class="fa fa-play"> </i>\
-                                </span>\
-                            </div>')
-        .append('<div class="galereya-cell-desc">\
-                    <div class="galereya-cell-desc-title">\
-                        <span class="user-thumbnail-container">\
-                            <img class="circular-usr-thumbnail">\
-                        </span>\
-                        <span class="main-font-label user-name">' + user_name + '</span>\
-                        <span class="main-font-label social_count_label like">\
-                          <i class="fa fa-heart-o"> </i>\
-                          <span>' + like_count + '</span>\
-                        </span>\
-                        <span class="main-font-label social_count_label view">\
-                          <i class="fa fa-eye"> </i>\
-                          <span>' + view_count + '</span>\
-                        </span>\
-                        <span class="main-font-label social_count_label share">\
-                          <i class="fa fa-share-alt"> </i>\
-                          <span>' + share_count + '</span>\
-                        </span>\
-                    </div>\
-                    <div class="galereya-cell-desc-text">\
-                        <span class="main-font-label social_count_label like">\
-                          <i class="fa fa-heart-o"> </i>\
-                          <span> Like</span>\
-                        </span>\
-                        <span class="main-font-label social_count_label play">\
-                          <i class="fa fa-play"> </i>\
-                        </span>\
-                        <span class="main-font-label social_count_label flag">\
-                          <i class="fa fa-flag"> </i>\
-                          <span> Flag</span>\
-                        </span>\
-                    </div>\
-                </div>')
-        .append('<div class="galereya-cell-overlay" />');
-
-        // lowsrc      = remake["thumbnail"];
-        // fullsrc     = remake["thumbnail"];
-        // description = i+skip + ": " + remake["_id"]["$oid"];
-        // category    = remake["story_name"];
-        // remake_id   = remake["_id"]["$oid"];
-
-        // like_count = remake["like_count"] ? remake["like_count"] : 0;
-        // view_count = remake["views"] ? remake["views"] : 0;
-        // share_count = remake["share_count"] ? remake["share_count"] : 0;
-
-        // info = {lowsrc: lowsrc, fullsrc: fullsrc, description: description, category: category, _id: remake_id, like_count: like_count, view_count: view_count, share_count: share_count}
-        // info["user_name"] = remake["user_fullname"] ? remake["user_fullname"] : "Guest";
-
-        // single_batch_remakes.push(info)
-        // all_remakes.push(info);
-    }
+  // $('.wrapper').on('scroll' , function() {
+  //   console.log('scrolling wrapper...');
+  // });
 
 
+  
+  // $('#masonry-gallery-container').scroll(function() {
+  //   console.log('scrolling masonry...');
+  //     if (elementScrolledToEnd($('#masonry-gallery-container'))) {
+  //       if (!currentlyLoadingImgs) { 
+  //         fetch_remakes(current_query_type);
+  //       }
+  //     }
+  // });
 
-    skip += limit;
+  $('#masonry-gallery-container').click(function() {
+    console.log("clicked gallery")
+  });
 
-    });
-    }
+  $('.wrapper').click(function() {
+    console.log("clicked wrapper")
+  });
+
+  
 
     // MAIN
     fetch_remakes(AllQuery)
+});
 
 </script>
 
