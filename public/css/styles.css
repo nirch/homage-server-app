@@ -239,8 +239,9 @@ html {
 .gallery-row {
   position: relative;
 }
-.gallery-row .tbs-container-fluid {
+.gallery-row .scrolable-gallery {
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 .gallery-row .loading-gallery {
   position: absolute;
