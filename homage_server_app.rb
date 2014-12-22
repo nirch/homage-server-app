@@ -1617,6 +1617,9 @@ def getConfigDictionary()
 	config["share_link_prefix"] = settings.share_link_prefix;
 	config["significant_view_pct_threshold"] = 0.5
 	config["mirror_selfie_silhouette"] = true
+	if settings.respond_to?(:mixpanel) then
+		config["mixpanel_token"] = "7d575048f24cb2424cd5c9799bbb49b1"
+	end
 
 	campaign_id = request.env["HTTP_CAMPAIGN_ID"] if request.env["HTTP_CAMPAIGN_ID"].to_s
 	# campaign_id = "54919516454c61f4080000e5"
