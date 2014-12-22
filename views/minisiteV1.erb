@@ -185,7 +185,7 @@
            <i class="fa fa-play"> </i>
           </span>
           <div class="videocontent">
-              <video id="campaign_video_player" class="video-js vjs-default-skin" width="400" height="225" poster="" controls="controls"  
+              <video id="campaign_video_player" class="video-js vjs-default-skin" width="320" height="180" poster="" controls="controls"  
               data-setup="{}">
               <source src="" type="video/mp4"/>
             </video>
@@ -477,17 +477,27 @@
   TrendingQuery = 3
 
   // SUPER PROPERTIES FOR MIXPANEL
-  mixpanel.register({
-        "campaign_id": campaign_id,
-  });  
+  if (typeof mixpanel != "undefined" ) {
+    mixpanel.register({
+          "campaign_id": campaign_id,
+    });  
+  }
 
-  window_height = $(window).height();
-  filter_height = parseInt($('.filters').css('height'));
-  footer_height = parseInt($('.footer').css('height'));
-  header_height = parseInt($('#hmg-nav-bar').css('height'));
+  function adjustGallerySize() {
+    window_height = $(window).height();
+    filter_height = parseInt($('.filters').css('height'));
+    footer_height = $('.footer').is(":visible") ? parseInt($('.footer').css('height')) : 0 ;
+    header_height = parseInt($('#hmg-nav-bar').css('height'));
+    gallery_height = window_height - filter_height - footer_height - header_height;
+    $('.gallery-row').css('height' , gallery_height + 'px');
+  }
 
-  gallery_height = window_height - filter_height - footer_height - header_height;
-  $('.gallery-row').css('height' , gallery_height + 'px');
+  $(window).resize( function() {
+    adjustGallerySize();
+  });
+  
+
+  
 
   // REMAKE GALLERY
 
@@ -1223,6 +1233,7 @@ videojs('remake_video_player').ready(function() {
 
   // MAIN 
   $(".all-remakes-button .clickable-link").toggleClass("selected")
+  adjustGallerySize();
   fetch_remakes(AllQuery);
 
 </script>
