@@ -74,6 +74,7 @@ html {
 }
 #hmg-nav-bar-collapse {
   border-top: 2px solid #363636;
+  text-align: center;
 }
 #hmg-navbar-toggle-menu {
   background: url('/resources/minisite/MenuLinesHorizMobile.png') no-repeat;
