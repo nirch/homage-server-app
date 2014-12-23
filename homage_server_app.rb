@@ -2357,6 +2357,9 @@ get '/test/masonryGallery/:campaign_name' do
 	erb :masonryGalleryTest
 end
 
+get '/test/videojs/YoutubePOC' do
+	erb :videojsyoutubepoc
+end
 
 
 get '/test/:entity_id' do
