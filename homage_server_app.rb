@@ -1626,7 +1626,7 @@ def getConfigDictionary()
 	if campaign_id then
 		campaign_bson_id = BSON::ObjectId.from_string(campaign_id)
 		campaign = settings.db.collection("Campaigns").find_one({_id:campaign_bson_id})
-		config["remakes_save_to_device"] = campaign["remakes_save_to_device"]
+		config["remakes_save_to_device"] = campaign["remakes_save_to_device"] if campaign["remakes_save_to_device"]
 		if campaign["remakes_save_to_device"] == RemakesSaveToDevice::Premium then
 			config["remakes_save_to_device_premium_id"] = campaign["remakes_save_to_device_premium_id"]
 		end
