@@ -6,7 +6,7 @@ require 'open-uri'
 
 test_db = Mongo::MongoClient.from_uri("mongodb://Homage:homageIt12@paulo.mongohq.com:10008/Homage").db
 prod_db = Mongo::MongoClient.from_uri("mongodb://Homage:homageIt12@troup.mongohq.com:10057/Homage_Prod").db
-db = test_db
+db = prod_db
 
 users_collection = db.collection("Users")
 remakes_collection = db.collection("Remakes")
