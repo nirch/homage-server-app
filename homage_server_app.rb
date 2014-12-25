@@ -1617,13 +1617,16 @@ def getConfigDictionary()
 	config["share_link_prefix"] = settings.share_link_prefix;
 	config["significant_view_pct_threshold"] = 0.5
 	config["mirror_selfie_silhouette"] = true
+	if settings.respond_to?(:mixpanel) then
+		config["mixpanel_token"] = "7d575048f24cb2424cd5c9799bbb49b1"
+	end
 
 	campaign_id = request.env["HTTP_CAMPAIGN_ID"] if request.env["HTTP_CAMPAIGN_ID"].to_s
 	# campaign_id = "54919516454c61f4080000e5"
 	if campaign_id then
 		campaign_bson_id = BSON::ObjectId.from_string(campaign_id)
 		campaign = settings.db.collection("Campaigns").find_one({_id:campaign_bson_id})
-		config["remakes_save_to_device"] = campaign["remakes_save_to_device"]
+		config["remakes_save_to_device"] = campaign["remakes_save_to_device"] if campaign["remakes_save_to_device"]
 		if campaign["remakes_save_to_device"] == RemakesSaveToDevice::Premium then
 			config["remakes_save_to_device_premium_id"] = campaign["remakes_save_to_device_premium_id"]
 		end
@@ -2354,6 +2357,9 @@ get '/test/masonryGallery/:campaign_name' do
 	erb :masonryGalleryTest
 end
 
+get '/test/videojs/YoutubePOC' do
+	erb :videojsyoutubepoc
+end
 
 
 get '/test/:entity_id' do

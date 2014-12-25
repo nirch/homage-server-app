@@ -74,6 +74,7 @@ html {
 }
 #hmg-nav-bar-collapse {
   border-top: 2px solid #363636;
+  text-align: center;
 }
 #hmg-navbar-toggle-menu {
   background: url('/resources/minisite/MenuLinesHorizMobile.png') no-repeat;
@@ -411,8 +412,8 @@ html {
 }
 .hmg-gallery-cell {
   position: relative;
-  width: 400px;
-  height: 225px;
+  width: 320px;
+  height: 180px;
   margin-bottom: 30px;
 }
 .hmg-gallery-cell span {

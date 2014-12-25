@@ -15,6 +15,13 @@
       <meta property="og:image" content='<%= @remake["thumbnail"] %>'/>
       <meta name="twitter:image" content='<%=  @remake["thumbnail"] %>'/>
     <% end %>
+
+    <% if @config["mixpanel_token"] then %>
+      <!-- start Mixpanel -->
+      <script type="text/javascript">(function(f,b){if(!b.__SV){var a,e,i,g;window.mixpanel=b;b._i=[];b.init=function(a,e,d){function f(b,h){var a=h.split(".");2==a.length&&(b=b[a[0]],h=a[1]);b[h]=function(){b.push([h].concat(Array.prototype.slice.call(arguments,0)))}}var c=b;"undefined"!==typeof d?c=b[d]=[]:d="mixpanel";c.people=c.people||[];c.toString=function(b){var a="mixpanel";"mixpanel"!==d&&(a+="."+d);b||(a+=" (stub)");return a};c.people.toString=function(){return c.toString(1)+".people (stub)"};i="disable track track_pageview track_links track_forms register register_once alias unregister identify name_tag set_config people.set people.set_once people.increment people.append people.track_charge people.clear_charges people.delete_user".split(" ");
+      for(g=0;g<i.length;g++)f(c,i[g]);b._i.push([a,e,d])};b.__SV=1.2;a=f.createElement("script");a.type="text/javascript";a.async=!0;a.src="//cdn.mxpnl.com/libs/mixpanel-2-latest.min.js";e=f.getElementsByTagName("script")[0];e.parentNode.insertBefore(a,e)}})(document,window.mixpanel||[]);
+      mixpanel.init('<%= @config["mixpanel_token"] %>');</script><!-- end Mixpanel -->
+    <% end %>
     
     <meta property="og:site_name" content="Homage"/>
     <meta name="twitter:card" content="summary"/>
@@ -30,6 +37,7 @@
     <!-- VIDEO JS -->
     <link href="http://vjs.zencdn.net/4.8/video-js.css" rel="stylesheet">
     <script src="http://vjs.zencdn.net/4.8/video.js"></script>
+    <!--<script src="/js/youtube.js"></script>-->
 
     <!-- REMAKE GALLERY -->
     <!-- <link href="/css/jquery.galereya.css" rel="stylesheet"/> -->
@@ -177,7 +185,7 @@
            <i class="fa fa-play"> </i>
           </span>
           <div class="videocontent">
-              <video id="campaign_video_player" class="video-js vjs-default-skin" width="400" height="225" poster="" controls="controls"  
+              <video id="campaign_video_player" class="video-js vjs-default-skin" width="320" height="180" poster="" controls="controls"  
               data-setup="{}">
               <source src="" type="video/mp4"/>
             </video>
@@ -468,14 +476,28 @@
   MyTakesQuery  = 2
   TrendingQuery = 3
 
-  
-  window_height = $(window).height();
-  filter_height = parseInt($('.filters').css('height'));
-  footer_height = parseInt($('.footer').css('height'));
-  header_height = parseInt($('#hmg-nav-bar').css('height'));
+  // SUPER PROPERTIES FOR MIXPANEL
+  if (typeof mixpanel != "undefined" ) {
+    mixpanel.register({
+          "campaign_id": campaign_id,
+    });  
+  }
 
-  gallery_height = window_height - filter_height - footer_height - header_height;
-  $('.gallery-row').css('height' , gallery_height + 'px');
+  function adjustGallerySize() {
+    window_height = $(window).height();
+    filter_height = parseInt($('.filters').css('height'));
+    footer_height = $('.footer').is(":visible") ? parseInt($('.footer').css('height')) : 0 ;
+    header_height = parseInt($('#hmg-nav-bar').css('height'));
+    gallery_height = window_height - filter_height - footer_height - header_height;
+    $('.gallery-row').css('height' , gallery_height + 'px');
+  }
+
+  $(window).resize( function() {
+    adjustGallerySize();
+  });
+  
+
+  
 
   // REMAKE GALLERY
 
@@ -1211,6 +1233,7 @@ videojs('remake_video_player').ready(function() {
 
   // MAIN 
   $(".all-remakes-button .clickable-link").toggleClass("selected")
+  adjustGallerySize();
   fetch_remakes(AllQuery);
 
 </script>
