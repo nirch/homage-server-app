@@ -374,27 +374,52 @@ subdomain settings.play_subdomain do
 
 	get '/date/:from_date' do
 		from_date = Time.parse(params[:from_date])
+		@date = params[:from_date]
+		# Stories
+		@stories  = settings.db.collection("Stories").find(active:true).sort(created_at:-1)
+		# story_id = params[:story_id]
+		story_ids = []
+		if params[:story_id] == nil
+			for storyidloop in @stories do
+				bson_story = BSON::ObjectId.from_string(storyidloop["_id"].to_s)
+				story_ids.push(bson_story)
+			end
+		else
+			bson_story = BSON::ObjectId.from_string(params[:story_id])
+			story_ids.push(bson_story)
+			@laststory = params[:story_id]
+		end
+		# Raw
 		raw = params[:raw]
+		@lastraw = params[:raw]
+		grade = -1
+		@grade = -1
+		if params[:grade] != nil
+			grade = params[:grade].to_i
+			@lastgrade = params[:grade].to_i
+		end
 		userremakeid = BSON::ObjectId.from_string(params[:remakeid]) if params[:remakeid]
 		badbackgrounds = ["-1","-2","-3","-4","-5","-6","-7","-8","-9","-10","-11"]
+		@raws = ["none","all","-1","-2","-3","-4","-5","-6","-7","-8","-9","-10","-11"]
+		@grades = [-1,0,1,2,3,4,5,6,7,8,9,10]
 		if raw == 'all'
 			@raw = true
-			@remakes = settings.db.collection("Remakes").find(created_at:{"$gte"=>from_date}, status:3).sort(created_at:-1)
+			@remakes = settings.db.collection("Remakes").find(grade:grade, story_id:story_ids[story_ids.count-1], created_at:{"$gte"=>from_date}, status:3).sort(created_at:-1)
 			@heading = @remakes.count.to_s + " Remakes from " + from_date.strftime("%d/%m/%Y")
 			@grade = true
 		elsif raw == 'bad'
 			@raw = true
-			@remakes = settings.db.collection("Remakes").find(created_at:{"$gte"=>from_date}, status:3,"footages.background"=> {"$in"=>badbackgrounds}).sort(created_at:-1)
+			@remakes = settings.db.collection("Remakes").find(grade:grade, story_id:story_ids[story_ids.count-1], created_at:{"$gte"=>from_date}, status:3,"footages.background"=> {"$in"=>badbackgrounds}).sort(created_at:-1)
 			@heading = @remakes.count.to_s + " Remakes from " + from_date.strftime("%d/%m/%Y")
 			@grade = true
 		elsif badbackgrounds.include?(raw)
 			@raw = true
-			@remakes = settings.db.collection("Remakes").find(created_at:{"$gte"=>from_date}, status:3,"footages.background"=> {"$in"=>[raw]}).sort(created_at:-1)
+			@remakes = settings.db.collection("Remakes").find(grade:grade, story_id:story_ids[story_ids.count-1], created_at:{"$gte"=>from_date}, status:3,"footages.background"=> {"$in"=>[raw]}).sort(created_at:-1)
 			@heading = @remakes.count.to_s + " Remakes from " + from_date.strftime("%d/%m/%Y")
 			@grade = true
 		else
 			@raw = false
-			@remakes = settings.db.collection("Remakes").find(created_at:{"$gte"=>from_date}, status:3).sort(created_at:-1)
+			@remakes = settings.db.collection("Remakes").find(grade:grade, story_id:story_ids[story_ids.count-1], created_at:{"$gte"=>from_date}, status:3).sort(created_at:-1)
 			@heading = @remakes.count.to_s + " Remakes from " + from_date.strftime("%d/%m/%Y")
 			@grade = true
 		end
@@ -405,6 +430,9 @@ subdomain settings.play_subdomain do
 			@heading = "Remakes id " + userremakeid.to_s
 			@grade = true
 		end
+
+		@heading = grade
+		@stories  = settings.db.collection("Stories").find(active:true).sort(created_at:-1)
 
 		erb :demoday
 	end
