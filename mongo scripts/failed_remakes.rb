@@ -14,7 +14,7 @@ AWS.config(aws_config)
 s3 = AWS::S3.new
 s3_bucket = s3.buckets['homageapp']
 
-launch_date = Time.parse("20141218Z")
+launch_date = Time.parse("20141223Z")
 
 # Number of failed remakes, remakes that were clicked on create movie but were not done
 total_remakes = prod_remakes.find(created_at:{"$gte"=>launch_date})

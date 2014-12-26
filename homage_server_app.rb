@@ -786,6 +786,11 @@ def handle_user_params(user)
 		user["devices"] = devices
 		user.delete("device")
 	end
+
+	campaign_id = request.env["HTTP_CAMPAIGN_ID"]
+	if campaign_id then
+		user["campaign_id"] = BSON::ObjectId.from_string(campaign_id)
+	end
 end
 
 post '/user' do
