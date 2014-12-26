@@ -187,7 +187,6 @@ module ShareMethod
 	TwitterShareMethod = 6
 	GooglePlusShareMethod = 7
 	PinterestShareMethod = 8
-
 end
 
 module PlaybackEventType
@@ -264,13 +263,13 @@ get '/remakes' do
 		campaign_id = BSON::ObjectId.from_string(params[:campaign_id]) if params[:campaign_id] #optional
 		query_type = params[:query_type].to_i if params[:query_type]
 		
-		story_names = params["stories"] if params["stories"];
+		story_names = params[:stories] if params[:stories];
 		story_id_array = Array.new
 		story_find_condition = {active: true}
 
 		if story_names then
 			for name in story_names do
-				story = settings.db.collection("Stories").find_one({name: name})
+				story = settings.db.collection("Stories").find_one({name: name, active: true})
 				story_id_array.push(story["_id"])
 			end
 			story_find_condition["_id"] = {"$in"=> story_id_array}
@@ -288,6 +287,7 @@ get '/remakes' do
 			story_names["story_id"] = story["name"]
 		end
 
+
 		# build mongodb aggregation pipeline accroding to query type from client
 		######################################################################################
 		aggregation_pipeline = []
@@ -302,6 +302,8 @@ get '/remakes' do
 		end
 
 		remakes_find_condition = {"$match" => find_condition}
+		puts "remake find condition"
+		puts remakes_find_condition
 		aggregation_pipeline.push(remakes_find_condition)
 	    
 		if query_type == RemakesQueryType::TrendingQuery then
@@ -328,8 +330,8 @@ get '/remakes' do
                
 	    remakes = settings.db.collection("Remakes").aggregate(aggregation_pipeline)
 		
-		logger.debug "number of remakes returned:"
-		logger.debug remakes.count
+		logger.info "number of remakes returned:"
+		logger.info remakes.count
 
 		remakes_result = Array.new;
 		for remake in remakes do

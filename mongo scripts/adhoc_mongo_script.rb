@@ -24,6 +24,51 @@ AWS.config(aws_config)
 s3 = AWS::S3.new
 s3_bucket = s3.buckets['homageapp']
 
+msmd_stories = test_stories.find({campaign_id:BSON::ObjectId.from_string("54919516454c61f4080000e5")})
+for story in msmd_stories
+	puts story["name"]
+	puts story["_id"]
+end
+
+# def self.add_days(date,num_of_days)
+#    	#res = date + 86400*num_of_days
+#    	res = date + num_of_days*86400
+#    	return res
+# end
+
+# start_date = Time.parse("20141220Z")
+# end_date = Time.parse("20141220Z")
+
+# date_range = {"$match" => { created_at:{"$gte"=>start_date, "$lt"=>add_days(end_date,1)}}}
+# group = {"$group"=> {"_id" => {"remake_id" => "$remake_id"}}}
+# shared_remakes = prod_shares.aggregate([date_range,group])
+# puts shared_remakes
+# puts start_date
+# puts end_date
+
+# remake_array = Array.new
+# for remake in shared_remakes do
+# 	remake_array.push(remake["_id"]["remake_id"])
+# end
+
+# puts "remake_array"
+# puts remake_array
+
+# remakes = prod_remakes.find(created_at:{"$gte"=>start_date, "$lt"=>add_days(end_date,1)},_id: {"$in" => remake_array})
+# puts "remakes"
+# puts remakes
+
+# for remake in remakes do
+# 	puts "remake"
+# 	puts remake
+# 	remake_shares = prod_shares.find({remake_id: remake["_id"]})
+# 	for share in remake_shares do
+# 		puts share
+# 	end
+# end
+
+
+
 
 
 # # Testing is_public in remakes
