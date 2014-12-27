@@ -11,20 +11,42 @@ require 'houston'
 require 'time'
 require 'chartkick'
 require 'aws-sdk'
-require 'active_support/core_ext'
+require 'active_support'
 require 'user_agent_parser'
 require 'sinatra/subdomain'
 require 'mixpanel-ruby'
 require 'mail'
 require 'zip'
 require File.expand_path '../mongo scripts/Analytics.rb', __FILE__
+# require 'erubis'
 
 current_session_ID = nil
+HTML_ESCAPE	=	{ '&' => '&amp;', '>' => '&gt;', '<' => '&lt;', '"' => '&quot;', "'" => '&#39;' }
+# HACK ALERT! removing Chuku as it not working on facebook open graph scraping
+HTML_ESCAPE	=	{ '&' => '&amp;', '>' => '&gt;', '<' => '&lt;', '"' => '&quot;', "'" => '' }
+HTML_ESCAPE_REGEXP	=	/[&"'><]/
+
+helpers do
+  def h(s)
+    s = s.to_s
+	if s.html_safe?
+	  s 
+	else		
+	  s = s.gsub(HTML_ESCAPE_REGEXP, HTML_ESCAPE)
+	  # puts "after gsub: " + s
+	  s = s.html_safe
+	  # puts "S after html safe: " + s
+	end
+	# puts "S: " + s
+	return s
+  end
+end
 
 configure do
 	# Global configuration (regardless of the environment)
 	aws_config = {access_key_id: "AKIAJTPGKC25LGKJUCTA", secret_access_key: "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"}
 	AWS.config(aws_config)
+	# set :erb, :escape_html => true
 
 	# Using Amazon's SES for mail delivery
 	Mail.defaults do
@@ -104,7 +126,7 @@ configure :test do
 	set :share_link_prefix, "http://play-test.homage.it"
 
 	# enables mixpanel for testing
-	#set :mixpanel, Mixpanel::Tracker.new("7d575048f24cb2424cd5c9799bbb49b1")
+	# set :mixpanel, Mixpanel::Tracker.new("7d575048f24cb2424cd5c9799bbb49b1")
 
 	set :play_subdomain, :'play-test'
 end
@@ -165,7 +187,6 @@ module ShareMethod
 	TwitterShareMethod = 6
 	GooglePlusShareMethod = 7
 	PinterestShareMethod = 8
-
 end
 
 module PlaybackEventType
@@ -203,6 +224,12 @@ module RemakesQueryType
   	TrendingQuery = 3
 end
 
+module RemakesSaveToDevice
+	Disabled = 0
+	Enabled  = 1
+	Premium  = 2
+end
+
 # helpers do
 #   def protected!
 #     return if authorized?
@@ -216,21 +243,33 @@ end
 #   end
 # end
 
+
+get '/test/cgi' do
+	x = "Don't bla bla cgi"
+	y = CGI::escapeHTML(x)
+	puts y
+end
+
+get '/test/rack' do
+	x = "Don't bla bla rack"
+	y = Rack::Utils.escape_html(x)
+	puts y
+end
+
 get '/remakes' do
 		# input
 		skip = params[:skip].to_i if params[:skip] # Optional
 		limit = params[:limit].to_i if params[:limit] # Optional
 		campaign_id = BSON::ObjectId.from_string(params[:campaign_id]) if params[:campaign_id] #optional
 		query_type = params[:query_type].to_i if params[:query_type]
-
 		
-		story_names = params["stories"] if params["stories"];
+		story_names = params[:stories] if params[:stories];
 		story_id_array = Array.new
 		story_find_condition = {active: true}
 
 		if story_names then
 			for name in story_names do
-				story = settings.db.collection("Stories").find_one({name: name})
+				story = settings.db.collection("Stories").find_one({name: name, active: true})
 				story_id_array.push(story["_id"])
 			end
 			story_find_condition["_id"] = {"$in"=> story_id_array}
@@ -248,19 +287,12 @@ get '/remakes' do
 			story_names["story_id"] = story["name"]
 		end
 
-		# Getting all the public users
-		public_users_cursor = settings.db.collection("Users").find({is_public:true})
-		public_users = Array.new
-
-		for user in public_users_cursor do
-			public_users.push(user["_id"])
-		end
 
 		# build mongodb aggregation pipeline accroding to query type from client
 		######################################################################################
 		aggregation_pipeline = []
 		
-		find_condition = {status: RemakeStatus::Done, user_id:{"$in" => public_users}, grade:{"$ne" => -1}}
+		find_condition = {status: RemakeStatus::Done, is_public: true, grade:{"$ne" => -1}}
 		if story_id_array.length != 0 then
 			find_condition["story_id"] = {"$in"=> story_id_array}
 		end
@@ -270,6 +302,8 @@ get '/remakes' do
 		end
 
 		remakes_find_condition = {"$match" => find_condition}
+		puts "remake find condition"
+		puts remakes_find_condition
 		aggregation_pipeline.push(remakes_find_condition)
 	    
 		if query_type == RemakesQueryType::TrendingQuery then
@@ -277,7 +311,7 @@ get '/remakes' do
 			like_weight = 0.4
 			view_weight = 0.1
 
-		    trending_proj={"$project" => {"_id" => 1, "created_at" => 1, "grade" => 1, "share_count" => 1, "share_link" => 1, "significant_views" => 1, "status" => 1, "story_id" => 1, "thumbnail" => 1, "unique_significant_views" => 1, "unique_views" => 1, "unique_web_impressions" => 1, "user_id" => 1, "video" => 1, "views" => 1, "web_impressions" => 1, "like_count" => 1,
+		    trending_proj={"$project" => {"_id" => 1, "created_at" => 1, "grade" => 1, "user_fullname" => 1, "share_count" => 1, "share_link" => 1, "significant_views" => 1, "status" => 1, "story_id" => 1, "thumbnail" => 1, "unique_significant_views" => 1, "unique_views" => 1, "unique_web_impressions" => 1, "user_id" => 1, "video" => 1, "views" => 1, "web_impressions" => 1, "like_count" => 1,
 		    	"trending_score" => {"$add" => [{"$multiply" => ["$like_count",like_weight]},{"$multiply" => ["$share_count",share_weight]},{"$multiply" => ["$views",view_weight]}]}}}
 
 		    sort = {"$sort" => {"trending_score" => -1, "created_at" => -1}}
@@ -285,7 +319,7 @@ get '/remakes' do
 		    aggregation_pipeline.push(trending_proj)
 		    aggregation_pipeline.push(sort)
 		else
-			sort = {"$sort" => {"created_at" => -1, "grade" => -1}}
+			sort = {"$sort" => {"grade" => -1, "created_at" => -1}}
 			aggregation_pipeline.push(sort)
 		end
 
@@ -296,8 +330,8 @@ get '/remakes' do
                
 	    remakes = settings.db.collection("Remakes").aggregate(aggregation_pipeline)
 		
-		logger.debug "number of remakes returned:"
-		logger.debug remakes.count
+		logger.info "number of remakes returned:"
+		logger.info remakes.count
 
 		remakes_result = Array.new;
 		for remake in remakes do
@@ -513,11 +547,15 @@ subdomain settings.play_subdomain do
 		erb :new_minisite
 	end
 
-	get '/gallery/v1/:campaign_name' do
+	get '/campaign/:campaign_name' do
 		@config = getConfigDictionary();
 		@campaign = settings.db.collection("Campaigns").find_one({name: params[:campaign_name]})
 		campaign_id = @campaign["_id"]
 		@stories = settings.db.collection("Stories").find({active:true, campaign_id: campaign_id})
+		info = Hash.new
+		info["reason"] = "campaign_gallery"
+		info["campaign_id"] = campaign_id
+		settings.mixpanel.track("12345", "MinisiteView", info) if settings.respond_to?(:mixpanel)	
 		erb :minisiteV1
 	end
 
@@ -556,8 +594,10 @@ subdomain settings.play_subdomain do
 
 		@story = stories.find_one(@remake["story_id"])
 
-		# erb :new_minisite
-		#erb :HMGVideoPlayer
+		info = Hash.new
+		info["reason"] = "remake_share"
+		info["campaign_id"] = campaign_id
+		settings.mixpanel.track("12345", "MinisiteView", info) if settings.respond_to?(:mixpanel)
 		erb :minisiteV1
 	end
 end
@@ -573,7 +613,10 @@ get '/stories' do
 	limit = params[:limit].to_i if params[:limit] # Optional
 	remakes_num = params[:remakes].to_i if params[:remakes] # Optional
 
-	stories = settings.db.collection("Stories").find({}, {fields: {after_effects: 0}}).sort({order_id: 1})
+	campaign_id = request.env["HTTP_CAMPAIGN_ID"] ? BSON::ObjectId.from_string(request.env["HTTP_CAMPAIGN_ID"].to_s) : settings.db.collection("Campaigns").find_one({name: "HomageApp"})["_id"]
+	logger.debug "getting stories for campaign_id: " + campaign_id.to_s;
+
+	stories = settings.db.collection("Stories").find({campaign_id: campaign_id}, {fields: {after_effects: 0}}).sort({order_id: 1})
 	stories = stories.skip(skip) if skip
 	stories = stories.limit(limit) if limit
 
@@ -689,6 +732,7 @@ def handle_facebook_login(user)
 				users.update({_id: update_user_id}, {"$set" => {facebook: user["facebook"]}})
 				updated_user = users.find_one(update_user_id)
 				update_user_name_in_remakes(updated_user)
+				update_user_privacy(updated_user, user["is_public"])
 				return update_user_id, nil, false
 			end
 		end
@@ -770,6 +814,11 @@ def handle_user_params(user)
 		user["devices"] = devices
 		user.delete("device")
 	end
+
+	campaign_id = request.env["HTTP_CAMPAIGN_ID"]
+	if campaign_id then
+		user["campaign_id"] = BSON::ObjectId.from_string(campaign_id)
+	end
 end
 
 post '/user' do
@@ -846,6 +895,20 @@ def update_user_name_in_remakes(user)
 	end
 end
 
+# Updating the user and all his remakes with the new privacy
+def update_user_privacy(user, is_public)
+	return if is_public == nil
+	return if user == nil
+	return if user["is_public"] == is_public
+
+	users = settings.db.collection("Users")
+	remakes = settings.db.collection("Remakes")
+
+	remakes.update({user_id:user["_id"]}, {"$set" => {is_public: is_public}}, {multi:true})
+	users.update({_id: user["_id"]}, {"$set" => {is_public: is_public}})
+end
+
+
 # Merging user a into user b and deleting user a
 def merge_users(user_a, user_b)
 	users = settings.db.collection("Users")
@@ -888,7 +951,7 @@ put '/user' do
 	if update_user_type == UserType::GuestUser or existing_user_type == update_user_type then
 		# if it is the same type of user, or the updates user looks like guest, then this is a simple update of user data
 		logger.info "updating data for user " + update_user_id.to_s
-		users.update({_id: update_user_id}, {"$set" => {is_public: params[:is_public]}})
+		update_user_privacy existing_user, params[:is_public]
 	elsif existing_user_type == UserType::GuestUser and update_user_type == UserType::FacebookUser
 		# Guest to Facebook user
 
@@ -900,9 +963,10 @@ put '/user' do
 			update_user_id = facebook_user_exists["_id"]
 		else
 			logger.info "updating Guest to Facebook for user " + update_user_id.to_s
-			users.update({_id: update_user_id}, {"$set" => {facebook: params[:facebook], email: params[:email], is_public: params[:is_public]}})
+			users.update({_id: update_user_id}, {"$set" => {facebook: params[:facebook], email: params[:email]}})
 			updated_user = users.find_one(update_user_id)
 			update_user_name_in_remakes(updated_user)
+			update_user_privacy updated_user, params[:is_public]			
 		end
 	elsif existing_user_type == UserType::GuestUser and update_user_type == UserType::EmailUser
 		# Guest to Email user
@@ -931,9 +995,10 @@ put '/user' do
 		else
 			logger.info "updating Guest to Email for user " + update_user_id.to_s
 			password_hash = Sinatra::Security::Password::Hashing.encrypt(params["password"])
-			users.update({_id: update_user_id}, {"$set" => {email: params[:email], password_hash: password_hash, is_public: params[:is_public]}})
+			users.update({_id: update_user_id}, {"$set" => {email: params[:email], password_hash: password_hash}})
 			updated_user = users.find_one(update_user_id)
 			update_user_name_in_remakes(updated_user)
+			update_user_privacy updated_user, params[:is_public]			
 		end
 	elsif existing_user_type == UserType::FacebookUser and update_user_type == UserType::EmailUser
 		# Error - Facebook to Email user
@@ -1067,6 +1132,8 @@ post '/remake' do
 	# adding the user name if exists
 	username = user_name(user)
 	remake["user_fullname"] = username if username
+	# adding is public
+	remake["is_public"] = user["is_public"] if user["is_public"] != nil
 
 	# Creating the footages place holder based on the scenes of the story
 	scenes = story["scenes"]
@@ -1147,12 +1214,6 @@ delete '/remake/:remake_id' do
 	#settings.db.collection("Remakes").remove({_id: remake_id})
 
 	remake = remakes.find_one(remake_id)
-
-	
-	# Updating the number of remakes for the story in another thread
-	Thread.new{
-		update_story_remakes_count(remake["story_id"])
-	}
 
 	# Returning the updated remake
 	result = remake.to_json
@@ -1260,14 +1321,6 @@ get '/remakes/story/:story_id' do
 
 	logger.info "Getting remakes for story " + story_id.to_s
 
-	# Getting all the public users
-	public_users_cursor = settings.db.collection("Users").find({is_public:true})
-	public_users = Array.new
-
-	for user in public_users_cursor do
-		public_users.push(user["_id"])
-	end
-
 	story_ids = Array.new
 	story_ids.push(story_id)
 
@@ -1277,7 +1330,7 @@ get '/remakes/story/:story_id' do
 	end
 
 	# Getting all the completed remakes of the public users
-	remakes_docs = settings.db.collection("Remakes").find({story_id:{"$in" => story_ids}, status: RemakeStatus::Done, user_id:{"$in" => public_users}, grade:{"$ne" => -1}}).sort(grade:-1);
+	remakes_docs = settings.db.collection("Remakes").find({story_id:{"$in" => story_ids}, status: RemakeStatus::Done, is_public: true, grade:{"$ne" => -1}}).sort(grade:-1);
 	remakes_docs = remakes_docs.skip(skip) if skip
 	remakes_docs = remakes_docs.limit(limit) if limit
 
@@ -1291,30 +1344,6 @@ get '/remakes/story/:story_id' do
 	logger.info "Returning " + remakes_json_array.count.to_s + " remakes for story " + story_id.to_s
 	remakes = "[" + remakes_json_array.join(",") + "]"
 end
-
-def update_story_remakes_count(story_id)
-	remakes = settings.db.collection("Remakes")
-	stories = settings.db.collection("Stories")
-
-	story = stories.find_one(story_id)
-
-	# Getting the number of remakes for this story
-	story_remakes = remakes.count({query: {story_id: story_id, status: RemakeStatus::Done}})
-	if story["story_480"] then
-		story_480_remakes = remakes.count({query: {story_id: story["story_480"], status: RemakeStatus::Done}})
-		story_remakes += story_480_remakes
-	end
-
-	stories.update({_id: story_id}, {"$set" => {"remakes_num" => story_remakes}})
-	logger.info "Updated story id <" + story_id.to_s + "> number of remakes to " + story_remakes.to_s
-end
-
-get '/test/update/remakes/:story_id' do
-	story_id = BSON::ObjectId.from_string(params[:story_id])
-
-	update_story_remakes_count story_id
-end
-
 
 get '/test/text' do
 	form = '<form action="/text" method="post" enctype="multipart/form-data"> Remake ID: <input type="text" name="remake_id"> Text ID: <input type="text" name="text_id"> Text: <input type="text" name="text"> <input type="submit" value="Text!"> </form>'
@@ -1623,6 +1652,20 @@ def getConfigDictionary()
 	config["share_link_prefix"] = settings.share_link_prefix;
 	config["significant_view_pct_threshold"] = 0.5
 	config["mirror_selfie_silhouette"] = true
+	if settings.respond_to?(:mixpanel) then
+		config["mixpanel_token"] = "7d575048f24cb2424cd5c9799bbb49b1"
+	end
+
+	campaign_id = request.env["HTTP_CAMPAIGN_ID"] if request.env["HTTP_CAMPAIGN_ID"].to_s
+	# campaign_id = "54919516454c61f4080000e5"
+	if campaign_id then
+		campaign_bson_id = BSON::ObjectId.from_string(campaign_id)
+		campaign = settings.db.collection("Campaigns").find_one({_id:campaign_bson_id})
+		config["remakes_save_to_device"] = campaign["remakes_save_to_device"] if campaign["remakes_save_to_device"]
+		if campaign["remakes_save_to_device"] == RemakesSaveToDevice::Premium then
+			config["remakes_save_to_device_premium_id"] = campaign["remakes_save_to_device_premium_id"]
+		end
+	end
 	return config
 end
 
@@ -1645,7 +1688,7 @@ post '/remake/share' do
 	remake_id = BSON::ObjectId.from_string(params[:remake_id]) 
 	user_id   =  BSON::ObjectId.from_string(params[:user_id]) if params[:user_id]
 	share_method = params[:share_method].to_i if params[:share_method]
-	origin_id  = params[:origin_id].to_s if params[:origin_id]
+	origin_id  = BSON::ObjectId.from_string(params[:origin_id]) if params[:origin_id]
 	share_link = params[:share_link].to_s if params[:share_link]
 	share_status = params[:share_status] if params[:share_status] 
 
@@ -1692,6 +1735,7 @@ post '/campaign_site/share' do
 	info = Hash.new
 	info["share_method"] = params[:share_method].to_i if params[:share_method]
 	info["campaign_id"] = params[:campaign_id] if params[:campaign_id]
+	info["origin_id"] = params[:origin_id].to_s if params[:origin_id]
 	settings.mixpanel.track("12345", "campaign_site_share", info) if settings.respond_to?(:mixpanel)
 end
 
@@ -1901,7 +1945,7 @@ post '/remake/impression' do
 	user_id =  BSON::ObjectId.from_string(params[:user_id]) if params[:user_id]
 	cookie_id = BSON::ObjectId.from_string(params[:cookie_id]) if params[:cookie_id]
 	orig_screen = params[:originating_screen].to_i
-	origin_id  = params[:origin_id].to_s if params[:origin_id]
+	origin_id  = BSON::ObjectId.from_string(params[:origin_id]) if params[:origin_id]
 	view_source = getViewSource(user_os, userAgentStr, orig_screen)
 
 	remake = remakes.find_one(remake_id)
@@ -1939,7 +1983,7 @@ def trackView(entity_type,params, user_os, userAgentStr)
 	
 	#start related props
 	view["originating_screen"] = params[:originating_screen].to_i
-	view["origin_id"]          = params[:origin_id].to_s if params[:origin_id]
+	view["origin_id"]          = BSON::ObjectId.from_string(params[:origin_id]) if params[:origin_id]
 	view["view_source"]        = getViewSource(user_os, userAgentStr,view["originating_screen"])
 
 	# end/update related props
@@ -2342,6 +2386,17 @@ get '/test/gallery/v1/:campaign_name' do
 	erb :minisiteV1
 end
 
+get '/test/masonryGallery/:campaign_name' do
+	@campaign = settings.db.collection("Campaigns").find_one({name: params[:campaign_name]})
+	campaign_id = @campaign["_id"]
+	erb :masonryGalleryTest
+end
+
+get '/test/videojs/YoutubePOC' do
+	erb :videojsyoutubepoc
+end
+
+
 get '/test/:entity_id' do
 	remakes = settings.db.collection("Remakes")
 	users   = settings.db.collection("Users")
@@ -2381,3 +2436,4 @@ get '/test/:entity_id' do
 	#erb :HMGVideoPlayer
 	erb :minisiteV1
 end
+

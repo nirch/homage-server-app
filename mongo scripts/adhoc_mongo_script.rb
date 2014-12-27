@@ -16,6 +16,7 @@ prod_remakes = prod_db.collection("Remakes")
 prod_shares = prod_db.collection("Shares")
 prod_sessions = prod_db.collection("Sessions")
 prod_stories = prod_db.collection("Stories")
+prod_campaigns = prod_db.collection("Campaigns")
 
 # AWS Connection
 aws_config = {access_key_id: "AKIAJTPGKC25LGKJUCTA", secret_access_key: "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"}
@@ -23,14 +24,95 @@ AWS.config(aws_config)
 s3 = AWS::S3.new
 s3_bucket = s3.buckets['homageapp']
 
-
-
-remakes = test_remakes.find({"footages.background"=> {"$in"=>["-10","-11"]}})
-# puts remakes.count
-
-for remake in remakes do
-	puts remake["footages"][0]["background"].to_s
+msmd_stories = test_stories.find({campaign_id:BSON::ObjectId.from_string("54919516454c61f4080000e5")})
+for story in msmd_stories
+	puts story["name"]
+	puts story["_id"]
 end
+
+# def self.add_days(date,num_of_days)
+#    	#res = date + 86400*num_of_days
+#    	res = date + num_of_days*86400
+#    	return res
+# end
+
+# start_date = Time.parse("20141220Z")
+# end_date = Time.parse("20141220Z")
+
+# date_range = {"$match" => { created_at:{"$gte"=>start_date, "$lt"=>add_days(end_date,1)}}}
+# group = {"$group"=> {"_id" => {"remake_id" => "$remake_id"}}}
+# shared_remakes = prod_shares.aggregate([date_range,group])
+# puts shared_remakes
+# puts start_date
+# puts end_date
+
+# remake_array = Array.new
+# for remake in shared_remakes do
+# 	remake_array.push(remake["_id"]["remake_id"])
+# end
+
+# puts "remake_array"
+# puts remake_array
+
+# remakes = prod_remakes.find(created_at:{"$gte"=>start_date, "$lt"=>add_days(end_date,1)},_id: {"$in" => remake_array})
+# puts "remakes"
+# puts remakes
+
+# for remake in remakes do
+# 	puts "remake"
+# 	puts remake
+# 	remake_shares = prod_shares.find({remake_id: remake["_id"]})
+# 	for share in remake_shares do
+# 		puts share
+# 	end
+# end
+
+
+
+
+
+# # Testing is_public in remakes
+
+# date = Time.parse("20140830Z")
+# public_user = test_users.find_one(created_at:{"$gte"=>date}, is_public:true)
+# private_user = test_users.find_one(created_at:{"$gte"=>date}, is_public:false)
+
+# public_remakes = test_remakes.find({user_id:public_user["_id"]})
+# puts "public_remakes"
+# for remake in public_remakes do puts remake end
+
+# private_remakes = test_remakes.find({user_id:private_user["_id"]})
+# puts "private_remakes"
+# for remake in private_remakes do puts remake end
+
+
+# stories = test_stories.find({active:true})
+
+# puts "test"
+# for story in stories do
+# 	puts "campaign id for: " + story["name"].to_s + ": " + story["campaign_id"].to_s
+# end
+
+# puts "prod"
+# stories = prod_stories.find({active:true})
+
+# # for story in stories do
+# # 	campaign_id = BSON::ObjectId.from_string("544ead1e454c610d1600000f")
+# # 	story_id = story["_id"]
+# # 	prod_stories.update({_id:story_id},{"$set" => {campaign_id: campaign_id}})
+# # end
+
+# puts "rafi"
+# for story in stories do
+# 	puts "campaign id for: " + story["name"].to_s + ": " + story["campaign_id"].to_s
+# end
+
+# remakes = test_remakes.find({"footages.background"=> {"$in"=>["-10","-11"]}})
+# # puts remakes.count
+
+# for remake in remakes do
+# 	puts remake["footages"][0]["background"].to_s
+# end
 
 # ######################################
 # # Updating all remakes with user name

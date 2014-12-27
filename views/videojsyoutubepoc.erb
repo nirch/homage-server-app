@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link href="http://vjs.zencdn.net/4.8/video-js.css" rel="stylesheet">
+  <script src="http://vjs.zencdn.net/4.8/video.js"></script>
+  <script src="/js/youtube.js"></script>
+</head>
+<body>
+  <video id="vid1" src="" class="video-js vjs-default-skin" controls ytcontrols="true" preload="auto" width="640" height="360" data-setup=''>
+  </video>
+
+  <script type="text/javascript">
+  videojs('vid1', { "techOrder": ["youtube"], "src": "https://www.youtube.com/watch?v=MPe6TlryKUE" }).ready(
+    function() {
+    this.on('play' , function() {
+      console.log('play')
+    });
+    this.on('ended', function() {
+      console.log('ended')
+    });
+    this.on('timeupdate', function() {
+      console.log('timeupdate')
+    });   
+  });
+
+  </script>
+</body>
+
+</html>
