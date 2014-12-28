@@ -407,66 +407,65 @@ subdomain settings.play_subdomain do
 	end 
 
 	get '/date/:from_date' do
+		remake_hash = Hash.new
 		from_date = Time.parse(params[:from_date])
 		@date = params[:from_date]
-		# Stories
+
+		# STORY
 		@stories  = settings.db.collection("Stories").find(active:true).sort(created_at:-1)
-		# story_id = params[:story_id]
-		story_ids = []
+		
 		if params[:story_id] == nil
+			story_ids = []
 			for storyidloop in @stories do
 				bson_story = BSON::ObjectId.from_string(storyidloop["_id"].to_s)
 				story_ids.push(bson_story)
 			end
+			remake_hash["story_id"] = {"$in"=>story_ids}
+			@stories.rewind!
 		else
 			bson_story = BSON::ObjectId.from_string(params[:story_id])
-			story_ids.push(bson_story)
-			@laststory = params[:story_id]
+			@laststory = settings.db.collection("Stories").find_one(:_id => bson_story)
+			remake_hash["story_id"] = bson_story
 		end
-		# Raw
-		raw = params[:raw]
-		@lastraw = params[:raw]
-		grade = -1
-		@grade = -1
-		if params[:grade] != nil
-			grade = params[:grade].to_i
+
+		# GRADE
+		@grades = ["all","no_grade",-1,0,1,2,3,4,5,6,7,8,9,10]
+
+		if params[:grade] != nil && params[:grade] == 'no_grade'
+			remake_hash["grade"] = {"$exists"=> false}
+			@lastgrade = params[:grade]
+		elsif params[:grade] != nil && params[:grade] != 'all'
+ 			remake_hash["grade"] = {"$in"=>[params[:grade].to_i]}
 			@lastgrade = params[:grade].to_i
 		end
-		userremakeid = BSON::ObjectId.from_string(params[:remakeid]) if params[:remakeid]
+		
+
+		# RAW
 		badbackgrounds = ["-1","-2","-3","-4","-5","-6","-7","-8","-9","-10","-11"]
-		@raws = ["none","all","-1","-2","-3","-4","-5","-6","-7","-8","-9","-10","-11"]
-		@grades = [-1,0,1,2,3,4,5,6,7,8,9,10]
-		if raw == 'all'
-			@raw = true
-			@remakes = settings.db.collection("Remakes").find(grade:grade, story_id:story_ids[story_ids.count-1], created_at:{"$gte"=>from_date}, status:3).sort(created_at:-1)
-			@heading = @remakes.count.to_s + " Remakes from " + from_date.strftime("%d/%m/%Y")
-			@grade = true
-		elsif raw == 'bad'
-			@raw = true
-			@remakes = settings.db.collection("Remakes").find(grade:grade, story_id:story_ids[story_ids.count-1], created_at:{"$gte"=>from_date}, status:3,"footages.background"=> {"$in"=>badbackgrounds}).sort(created_at:-1)
-			@heading = @remakes.count.to_s + " Remakes from " + from_date.strftime("%d/%m/%Y")
-			@grade = true
-		elsif badbackgrounds.include?(raw)
-			@raw = true
-			@remakes = settings.db.collection("Remakes").find(grade:grade, story_id:story_ids[story_ids.count-1], created_at:{"$gte"=>from_date}, status:3,"footages.background"=> {"$in"=>[raw]}).sort(created_at:-1)
-			@heading = @remakes.count.to_s + " Remakes from " + from_date.strftime("%d/%m/%Y")
-			@grade = true
+		goodbackgrounds = ["1","0"]
+		@raws = ["all","bad","1","0","-1","-2","-3","-4","-5","-6","-7","-8","-9","-10","-11"]
+		if badbackgrounds.include?(params[:raw]) || params[:raw] == 'all' || goodbackgrounds.include?(params[:raw]) || params[:raw] == 'bad'
+			if badbackgrounds.include?(params[:raw]) || goodbackgrounds.include?(params[:raw])
+				remake_hash["footages.background"] = {"$in"=>[params[:raw]]}
+			elsif params[:raw] == 'bad'
+				remake_hash["footages.background"] = {"$in"=>badbackgrounds}
+			end
+			@lastraw = params[:raw]
+			@showraw = true
 		else
-			@raw = false
-			@remakes = settings.db.collection("Remakes").find(grade:grade, story_id:story_ids[story_ids.count-1], created_at:{"$gte"=>from_date}, status:3).sort(created_at:-1)
-			@heading = @remakes.count.to_s + " Remakes from " + from_date.strftime("%d/%m/%Y")
-			@grade = true
+			@showraw = false
+			@lastraw = nil
 		end
 
-		if userremakeid != nil
-			@raw = true
-			@remakes = settings.db.collection("Remakes").find(_id:userremakeid)
-			@heading = "Remakes id " + userremakeid.to_s
-			@grade = true
-		end
+		# REMAKES
+		remake_hash["status"] = 3
+		remake_hash["created_at"] = {"$gte"=>from_date}
+		@remakes = settings.db.collection("Remakes").find(remake_hash).sort(created_at:-1)
+		@heading = @remakes.count.to_s + " Remakes from " + from_date.strftime("%d/%m/%Y")
+		@grade = true
 
-		@heading = grade
-		@stories  = settings.db.collection("Stories").find(active:true).sort(created_at:-1)
+		# @heading = remake_hash
+		
 
 		erb :demoday
 	end

@@ -99,53 +99,69 @@
 		        </div>
 		    </div>
 		</div>
-		<!-- Stroy Selector -->
-		<div class="container"> 
-		Select a Story
-		<select onchange="location = this.options[this.selectedIndex].value;">
-		  <option value=""></option>
-		  <% for story in @stories do %>
-		  	<% if @raw then %>
-		  		<option value="<%= "/date/" + @date + "?story_id=" + story["_id"].to_s + "&raw=" + @raw.to_s %>"><%= story["name"] %></option>
-	  		<% else %>
-	  			<option value="<%= "/date/" + @date + "?story_id=" + story["_id"].to_s %>"><%= story["name"] %></option>
-	  		<% end %>
-		  <% end %>
-		</select>
+	<div class="container-fluid">
+		<div class="row">
+			<!-- Stroy Selector -->
+			<div class="container col-xs-4"> 
+			Select a Story
+			<select onchange="location = this.options[this.selectedIndex].value;">
+			<% if @laststory %>
+		  		<option value="<%= @laststory["_id"] %>"><%= @laststory["name"].to_s %></option>
+  			<% end %>
+  			<option value="<%= "/date/" + @date %>">Choose</option>
+			  <% for story in @stories do %>
+			  	<% if story != @laststory %> 
+				  	<% if @showraw && @lastraw then %>
+				  		<option value="<%= "/date/" + @date + "?story_id=" + story["_id"].to_s + "&raw=" + @lastraw.to_s %>"><%= story["name"] %></option>
+			  		<% else %>
+			  			<option value="<%= "/date/" + @date + "?story_id=" + story["_id"].to_s %>"><%= story["name"] %></option>
+			  		<% end %>
+		  		<% end %>
+			  <% end %>
+			</select>
+			</div>
+			<!-- Raw Selector -->
+			<div class="container col-xs-4"> 
+			Select Raw
+			<select onchange="location = this.options[this.selectedIndex].value;">
+				<% if @lastraw %>
+			  		<option value="<%= @lastraw %>"><%= @lastraw.to_s %></option>
+	  			<% end %>
+	  			<option value="<%= "/date/" + @date %>">None</option>
+			  <% for rawd in @raws do %>
+			  	<% if @laststory then %>
+			  		<option value="<%= "/date/" + @date + "?story_id=" + @laststory["_id"].to_s + "&raw=" + rawd.to_s %>"><%= rawd.to_s %></option>
+		  		<% else %>
+		  			<option value="<%= "/date/" + @date + "?raw=" + rawd.to_s %>"><%= rawd.to_s %></option>
+		  		<% end %>
+			  <% end %>
+			</select>
+			</div>
 		</div>
-		<!-- Raw Selector -->
-		<div class="container"> 
-		Select a Raw Degree
-		<select onchange="location = this.options[this.selectedIndex].value;">
-		  <option value=""></option>
-		  <% for rawd in @raws do %>
-		  	<% if @laststory then %>
-		  		<option value="<%= "/date/" + @date + "?story_id=" + @laststory.to_s + "&raw=" + rawd.to_s %>"><%= rawd.to_s %></option>
-	  		<% else %>
-	  			<option value="<%= "/date/" + @date + "?raw=" + rawd.to_s %>"><%= rawd.to_s %></option>
-	  		<% end %>
-		  <% end %>
-		</select>
+			<!-- Grade Selector -->
+			<div class="container col-xs-4"> 
+			Select a Grade
+			<select onchange="location = this.options[this.selectedIndex].value;" selected>
+				<% if @lastgrade %>
+			  		<option value="<%= @lastgrade %>"><%= @lastgrade.to_s %></option>
+	  			<% end %>
+	  			<!-- <option value="<%= "/date/" + @date %>">Choose</option> -->
+			  <% for graded in @grades do %>
+			  	<% if @laststory then %>
+			  		<option value="<%= "/date/" + @date + "?story_id=" + @laststory["_id"].to_s + "&grade=" + graded.to_s %>"><%= graded.to_s %></option>
+		  		<% else %>
+		  			<option value="<%= "/date/" + @date + "?grade=" + graded.to_s %>"><%= graded.to_s %></option>
+		  		<% end %>
+			  <% end %>
+			</select>
+			</div>
 		</div>
-		<!-- Grade Selector -->
-		<div class="container"> 
-		Select a Grade
-		<select onchange="location = this.options[this.selectedIndex].value;">
-		  <option value=""></option>
-		  <% for graded in @grades do %>
-		  	<% if @laststory then %>
-		  		<option value="<%= "/date/" + @date + "?story_id=" + @laststory.to_s + "&grade=" + graded.to_s %>"><%= graded.to_s %></option>
-	  		<% else %>
-	  			<option value="<%= "/date/" + @date + "?grade=" + graded.to_s %>"><%= graded.to_s %></option>
-	  		<% end %>
-		  <% end %>
-		</select>
-		</div>
+	</div>
 		<!-- Remakes -->
 		<div id="remakes">
 			<% for remake in @remakes do %>	
 			<div id="video" class="video">
-				<% if @raw then %>
+				<% if @showraw then %>
 			    	<a href=<%= remake["video"] %> title="<%= remake["_id"].to_s %>" type="video/mp4" data-poster=<%= remake["thumbnail"] %> data-gallery>
 			        <img src=<%= File.dirname(remake["thumbnail"]).to_s + "/" + remake["_id"].to_s + "_raw1.jpg" %> width=320 height=180 alt="<%= remake["title"] %>">
 		        <% else %>
