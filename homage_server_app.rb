@@ -90,6 +90,10 @@ configure :production do
 	# Setting MixPanel only in prodution
 	set :mixpanel, Mixpanel::Tracker.new("7d575048f24cb2424cd5c9799bbb49b1")
 
+	# AWS S3
+	s3 = AWS::S3.new
+	set :bucket, s3.buckets['homageapp']
+
 	set :logging, Logger::INFO
 
 	set :share_link_prefix, "http://play.homage.it"
@@ -124,6 +128,10 @@ configure :test do
 	set :logging, Logger::DEBUG
 
 	set :share_link_prefix, "http://play-test.homage.it"
+
+	# AWS S3
+	s3 = AWS::S3.new
+	set :bucket, s3.buckets['homagetest']
 
 	# enables mixpanel for testing
 	# set :mixpanel, Mixpanel::Tracker.new("7d575048f24cb2424cd5c9799bbb49b1")
@@ -2257,8 +2265,7 @@ def download_remake_from_s3(remake_id_str, download_folder)
 	end
 	story = stories.find_one(remake["story_id"])
 
-	s3 = AWS::S3.new
-	bucket = s3.buckets['homageapp']
+	bucket = settings.bucket
 	# Getting all the remake's file from S3
 	remake_s3_prefix = "Remakes/" + remake["_id"].to_s
 	remake_s3_objects = bucket.objects.with_prefix(remake_s3_prefix)
@@ -2315,8 +2322,7 @@ def zipfolder(download_folder, input_filenames, remake_id)
 end
 
 def upload_to_s3 (file_path, s3_key, acl, content_type=nil)
-	s3 = AWS::S3.new
-	bucket = s3.buckets['homageapp']
+	bucket = settings.bucket
 	s3_object = bucket.objects[s3_key]
 
 	logger.info 'Uploading the file <' + file_path + '> to S3 path <' + s3_object.key + '>'
