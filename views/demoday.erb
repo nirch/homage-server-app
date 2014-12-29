@@ -102,13 +102,13 @@
 	<div class="container-fluid">
 		<div class="row">
 			<!-- Stroy Selector -->
-			<div class="container col-xs-4"> 
+			<div class="select-container col-xs-4"> 
 			Select a Story
 			<select onchange="location = this.options[this.selectedIndex].value;">
 			<% if @laststory %>
 		  		<option value="<%= @laststory["_id"] %>"><%= @laststory["name"].to_s %></option>
   			<% end %>
-  			<option value="<%= "/date/" + @date %>">Choose</option>
+  			<option value="<%= "/date/" + @date %>">All</option>
 			  <% for story in @stories do %>
 			  	<% if story != @laststory %> 
 				  	<% if @showraw && @lastraw then %>
@@ -121,7 +121,7 @@
 			</select>
 			</div>
 			<!-- Raw Selector -->
-			<div class="container col-xs-4"> 
+			<div class="select-container col-xs-4"> 
 			Select Raw
 			<select onchange="location = this.options[this.selectedIndex].value;">
 				<% if @lastraw %>
@@ -137,9 +137,8 @@
 			  <% end %>
 			</select>
 			</div>
-		</div>
 			<!-- Grade Selector -->
-			<div class="container col-xs-4"> 
+			<div class="select-container col-xs-4"> 
 			Select a Grade
 			<select onchange="location = this.options[this.selectedIndex].value;" selected>
 				<% if @lastgrade %>
