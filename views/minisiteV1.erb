@@ -685,7 +685,8 @@
     });
 
   function cleanGallery() {
-    msnry.remove($('.hmg-gallery-cell')) 
+    msnry.remove($('.hmg-gallery-cell'));
+    msnry.layout(); 
     skip = 0;
     all_remakes = [];
   }
