@@ -67,6 +67,7 @@ html {
   border: none;
   border-radius: 0px;
   margin-bottom: 0px;
+  z-index: 50;
 }
 #hmg-nav-bar .tbs-row {
   padding-right: 30px;
@@ -152,10 +153,21 @@ html {
   background-color: #252525;
   margin-left: 0px;
   margin-right: 0px;
+  display: none;
+  z-index: 50;
+  position: absolute;
+  top: 0;
+  left: 0;
 }
 .filters .a {
   padding-left: 0px;
   padding-right: 0px;
+}
+@media (max-width: 767px) {
+  .filters {
+    position: static;
+    display: block;
+  }
 }
 .filter-left {
   list-style-type: none;
@@ -237,30 +249,34 @@ html {
     padding-right: 0px;
   }
 }
+.gallery-container {
+  position: fixed;
+  width: 100%;
+  top: 0;
+  left: 0;
+  padding-top: 68px;
+}
 .gallery-row {
   position: relative;
 }
 .gallery-row .scrolable-gallery {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  padding-bottom: 100px;
+  padding-top: 80px;
 }
-.gallery-row .loading-gallery {
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 100%;
-  width: 100%;
-  z-index: 20000000000;
-  background-color: transparent;
-}
-.gallery-row .loading-gallery .fa {
-  color: #ff5f45;
-}
-.gallery-row .banner {
-  padding-top: 60px;
+@media (max-width: 767px) {
+  .gallery-row .scrolable-gallery {
+    padding-top: 0px;
+  }
 }
 .gallery-row .gallery {
   padding-top: 150px;
+}
+@media (max-width: 767px) {
+  .gallery-row .gallery {
+    padding-top: 60px;
+  }
 }
 .gallery-row .spinner {
   position: absolute;
@@ -336,10 +352,6 @@ html {
     margin-top: 0px;
     margin-bottom: 30px;
   }
-}
-#gallery-container {
-  padding-top: 30px;
-  padding-bottom: 60px;
 }
 .vjs-fullscreen {
   padding-top: 0px;
@@ -563,11 +575,12 @@ html {
 .remake-container .row {
   width: 100%;
 }
-@media (min-width: 767px) {
-  .remake-container .overlay-video-row .col-xs-12 {
-    padding-left: 0px;
-    padding-right: 0px;
-  }
+.remake-container .overlay-video-row {
+  margin: 0 auto;
+}
+.remake-container .overlay-video-row .col-xs-12 {
+  padding-left: 0px;
+  padding-right: 0px;
 }
 .general-purpose-overlay-container {
   padding-top: 6px;
