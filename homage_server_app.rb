@@ -457,12 +457,22 @@ subdomain settings.play_subdomain do
 			@lastraw = nil
 		end
 
-		# REMAKES
-		remake_hash["status"] = 3
-		remake_hash["created_at"] = {"$gte"=>from_date}
-		@remakes = settings.db.collection("Remakes").find(remake_hash).sort(created_at:-1)
-		@heading = @remakes.count.to_s + " Remakes from " + from_date.strftime("%d/%m/%Y")
-		@grade = true
+		userremakeid = BSON::ObjectId.from_string(params[:remakeid]) if params[:remakeid]
+		
+        if userremakeid != nil
+            @raw = true
+            @remakes = settings.db.collection("Remakes").find(_id:userremakeid)
+            @heading = "Remakes id " + userremakeid.to_s
+            @grade = true
+        else
+        	remake_hash["status"] = 3
+			remake_hash["created_at"] = {"$gte"=>from_date}
+			@remakes = settings.db.collection("Remakes").find(remake_hash).sort(created_at:-1)
+			@heading = @remakes.count.to_s + " Remakes from " + from_date.strftime("%d/%m/%Y")
+			@grade = true
+        end
+
+		
 
 		# @heading = remake_hash
 		
