@@ -80,6 +80,8 @@
 
 <body>  
   
+  <div class="container-fluid tbs-container-fluid header-filter-container">
+
   <!-- ++++++++++++++++++++++++++ MINISITE HEADER++++++++++++++++++++++++++++++++++++ -->
   <nav class="navbar navbar-default" id="hmg-nav-bar" role="navigation">
   <div class="container-fluid tbs-container-fluid">
@@ -136,36 +138,43 @@
     </div>
   </div><!-- /.container-fluid -->
 </nav>
-
-<!-- +++++++++++++++++++++++++++++++++++ MINISITE STORIES FILTERS++++++++++++++++++++++++++++ -->
-<div class="row filters tbs-row">
-  <div class="col-sm-6 tbs-col">
-    <ul class="filter-left">
-      <li class="filter-label all-remakes-button"><a class="clickable-link" href="#">All</a></li>
-      <li class="filter-label my-takes-button"><a class="clickable-link" href="#">My Takes</a></li>
-      <li class="filter-label trending-remakes-button"><a class="clickable-link" href="#">Trending</a></li>
-    </ul>
-  </div>
-
-  <div class="col-sm-6 tbs-col campaign-stories-col">
-    <ul class="filter-right">
-      <li class="dropdown filter-label">
-        <a href="#" class="dropdown-toggle hmg-dropdown-toggle-stories clickable-link" data-toggle="dropdown">Campaign Stories<span class="caret"></span></a>
-        <ul class="dropdown-menu campaign-stories-dropdown" role="menu">
-          <li><a class="all-stories" href="#">All</a></li>
-          <% for story in @stories do %>
-            <li><a class="single-story" href="#"><%= story["name"] %></a></li>
-          <% end %>
-        </ul>
-      </li>
-    </ul>
-  </div>
 </div>
+
+<div class="container-fluid tbs-container-fluid gallery-container">
+<!-- +++++++++++++++++++++++++++++++++++ MINISITE STORIES FILTERS++++++++++++++++++++++++++++ -->
+
+
 
 
 <!-- ++++++++++++++++++++++ CAMAPIGN VIDEO GALLERY  ++++++++++++++++++++++++++++++++++++++ -->
+
+
 <div class="row gallery-row tbs-row">
   <div class="container-fluid tbs-container-fluid scrolable-gallery">
+    <div class="row filters tbs-row">
+      <div class="col-sm-6 tbs-col">
+        <ul class="filter-left">
+          <li class="filter-label all-remakes-button"><a class="clickable-link" href="#">All</a></li>
+          <!-- <li class="filter-label my-takes-button"><a class="clickable-link" href="#">My Takes</a></li> -->
+          <li class="filter-label trending-remakes-button"><a class="clickable-link" href="#">Trending</a></li>
+        </ul>
+      </div>
+
+      <div class="col-sm-6 tbs-col campaign-stories-col">
+        <ul class="filter-right">
+          <li class="dropdown filter-label">
+            <a href="#" class="dropdown-toggle hmg-dropdown-toggle-stories clickable-link" data-toggle="dropdown">Campaign Stories<span class="caret"></span></a>
+            <ul class="dropdown-menu campaign-stories-dropdown" role="menu">
+              <li><a class="all-stories" href="#">All</a></li>
+              <% for story in @stories do %>
+                <li><a class="single-story" href="#"><%= story["name"] %></a></li>
+              <% end %>
+            </ul>
+          </li>
+        </ul>
+      </div>
+    </div>  
+
     <div class="row tbs-row banner">
       <div class="col-sm-6 col-xs-12 col-sm-push-6 tbs-col">
         <div class="campaign-info">
@@ -202,27 +211,19 @@
   </div>
 </div>
 
+
  
-
-<!-- ++++++++++++++++++++++++++++++++++ CAMAPIGN VIDEO GALLERY ++++++++++++++++++++++++++++++++++++++++++++++ -->
-<!-- <div class="row tbs-row gallery-row">
-  <div id="gallery-container">
-
-  </div>
-
-</div> -->
-
 <!-- ++++++++++++++++++++++++++++++++++ MINISITE FOOTER ++++++++++++++++++++++++++++++++++++++++++++++ -->
 <div class="row footer tbs-row hidden-xs">
   <div class="col-xs-9 tbs-col">
     <ul class="footer-left">
-        <li class="footer-label"><a class="clickable-link hmg-footer-logo" href="#">Powered By Homage</a></li>
+        <li class="footer-label"><a class="clickable-link hmg-footer-logo" href="#">Fueled With Homage</a></li>
         <li class="footer-label"><a class="homage-footer-logo">
           <img id="hmg-footer-logo"/>
         </a>
         </li>
-        <li class="footer-label"><a class="clickable-link" href="#">Privacy Policy</a></li>
-        <li class="footer-label"><a class="clickable-link" href="#">Terms Of Service</a></li>
+        <!-- <li class="footer-label"><a class="clickable-link" href="#">Privacy Policy</a></li>
+        <li class="footer-label"><a class="clickable-link" href="#">Terms Of Service</a></li> -->
     </ul>
   </div>
 
@@ -264,14 +265,14 @@
     <div class="col-sm-8 ">
       <div class="container-fluid tbs-container-fluid remake-container">
         
-        <div class="row remake-header">  
+        <div class="row tbs-row remake-header">  
             <div class="col-sm-6 col-xs-12 user-container">
               <div class="user-thumbnail-container">
                  <img class="circular-usr-thumbnail">
               </div>            
               <div class="user-info-container">  
                 <div class="main-font-label user-name-label"></div>
-                <div class="main-font-label hoverable-element visible-xs more-from-button"></div>
+                <!-- <div class="main-font-label hoverable-element visible-xs more-from-button"></div> -->
               </div>     
               <div class="close-button visible-xs"></div>
             </div>
@@ -350,7 +351,7 @@
           </div>  
         </div>
         
-        <div class="row visible-xs mobile-social-counters-row">
+        <div class="row tbs-row visible-xs mobile-social-counters-row">
           <div class="col-xs-12 tbs-col mobile-social-counters-column">
             <span class="general-mobile-overlay-container general-purpose-overlay-container">
                 <span class="main-font-label general-overlay-label like">
@@ -369,19 +370,19 @@
           </div>
         </div>
         
-        <div class="row remake-actions">
+        <div class="row tbs-row remake-actions">
           <div class="col-xs-12 tbs-col">
             <span class="general-mobile-overlay-container general-purpose-overlay-container">
                 <span class="main-font-label hoverable-element general-overlay-label like">
                   <i class="fa"> </i>
                   <span class="like-button"></span>
                 </span>
-                <span class="main-font-label hoverable-element general-overlay-label make-your-own">
+                <!-- <span class="main-font-label hoverable-element general-overlay-label make-your-own">
                   <span class="make-your-own-button">Make your own</span>
                 </span>
                 <span class="main-font-label hoverable-element hidden-xs general-overlay-label more-from">
                   <span class="more-from-button"></span>
-                </span>  
+                </span>   -->
                 <span class="main-font-label hoverable-element general-overlay-label flag">
                   <i class="fa fa-flag"> </i>
                   <span class="flag-button"> Flag</span>
@@ -390,7 +391,7 @@
           </div>
         </div>
 
-        <div class="row remake-social-bar">
+        <div class="row tbs-row remake-social-bar">
           <div class="col-xs-12 tbs-col">
             <span class="social-action-container">
                 <span class="main-font-label share">
@@ -436,7 +437,6 @@
   // SET HOMAGE COOKIE
   cookies = $.cookie();
   if (!cookies["homageCookieID"]) {
-    console.log("no homage cookie");
     var cookie_id = new ObjectId().toString();
     $.cookie('homageCookieID', cookie_id, { expires: 365 });
     // $.cookie('like_state' , false , {expires: 365});
@@ -485,11 +485,11 @@
 
   function adjustGallerySize() {
     window_height = $(window).height();
-    filter_height = parseInt($('.filters').css('height'));
-    footer_height = $('.footer').is(":visible") ? parseInt($('.footer').css('height')) : 0 ;
-    header_height = parseInt($('#hmg-nav-bar').css('height'));
-    gallery_height = window_height - filter_height - footer_height - header_height;
-    $('.gallery-row').css('height' , gallery_height + 'px');
+    // filter_height = parseInt($('.filters').css('height'));
+    // footer_height = $('.footer').is(":visible") ? parseInt($('.footer').css('height')) : 0 ;
+    // header_height = parseInt($('#hmg-nav-bar').css('height'));
+    // gallery_height = window_height - filter_height - footer_height - header_height;
+    $('.scrolable-gallery').css('height' , window_height + 'px');
   }
 
   $(window).resize( function() {
@@ -542,10 +542,9 @@
               gallery_left_margin = parseInt($("#masonry-gallery-container").css('margin-left'))
               gallery_right_margin = parseInt($("#masonry-gallery-container").css('margin-right'))
 
-              gallery_right_margin += 60;
+              gallery_right_margin += 30;
               $(".campaign-video-container").css('margin-left',gallery_left_margin + 'px')
               $(".campaign-info").css('margin-right',gallery_right_margin + 'px');
-              console.log('layout done, just this one time');
             });
         }
 
@@ -644,6 +643,19 @@
         return false; 
     }
 
+    function showHideFilters(jq_element) {
+      if ($(window).width() < 767) {
+        return;
+      }
+      if (jq_element.scrollTop() > 100) { 
+        $('.filters').show();
+        // $('.gallery-container').css('padding-top','170px')
+      } else {
+        $('.filters').hide();
+        // $('.gallery-container').css('padding-top','140px')
+      }
+    }
+
     function addSpinnerCell() {
         $('#masonry-gallery-container').append('<div class="hmg-gallery-cell spinner-cell"></div>')
         spinner = $('.spinner-cell').append('<i class="fa fa-refresh fa-spin"></i>');
@@ -656,12 +668,15 @@
 
     
     $('.scrolable-gallery').scroll(function() {
-          if (elementScrolledToEnd($('.scrolable-gallery'))) {
-            if (!currentlyLoadingImgs) { 
-              addSpinnerCell();
-              fetch_remakes(current_query_type);
-            }
-          }
+      //showHideFilters($('.scrolable-gallery'));
+      if (elementScrolledToEnd($('.scrolable-gallery'))) {
+        if (!currentlyLoadingImgs) { 
+          addSpinnerCell();
+          fetch_remakes(current_query_type);
+        }
+      }
+
+
     });
 
   function cleanGallery() {
@@ -849,7 +864,7 @@ videojs('remake_video_player').ready(function() {
     });
 
     myPlayer.on("resize" , function() {
-      console.log("Resize");
+      //console.log("Resize");
       // height = $('.overlay-video-row .videocontent').height();
       // width  = $('.overlay-video-row .videocontent').width();
       // $('.movie-finished-overlay').height(height);
@@ -1172,8 +1187,6 @@ videojs('remake_video_player').ready(function() {
   }
 
   $('.like-button').on('click', function(e) {
-    console.log("like clicked");
-
     like_params = {}
     like_params["remake_id"] = currentRemake["remake_id"];
     if ($.cookie('homageCookieID')) like_params["cookie_id"] = $.cookie('homageCookieID');
@@ -1212,7 +1225,6 @@ videojs('remake_video_player').ready(function() {
     if (origin_id != "") {
         href = href + "&origin_id=" + origin_id
     }
-    console.log("href " + href)
     $(this).attr('href' , href);
   })
 

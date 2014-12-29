@@ -109,6 +109,7 @@ html
 	border:none;
 	border-radius: 0px;
 	margin-bottom: 0px;
+	z-index: 50;
 	.tbs-row
 	{
 		padding-right:30px;
@@ -229,6 +230,11 @@ html
 	background-color: @dark-grey-color;
 	margin-left:0px;
 	margin-right: 0px;
+	//display: none;
+	z-index: 50;
+	position: absolute;
+	top:0;
+	left: 0;
 	.tbs-col
 	{
 		// padding-left: 30px;
@@ -237,6 +243,10 @@ html
 	{
 		padding-left: 0px;
 		padding-right: 0px;
+	}
+	@media(max-width:767px){
+		position: static;
+		display: block;
 	}
 }
 
@@ -353,7 +363,16 @@ html
 
 // ++++++++++++++++++++++++++++++++++ CAMAPIGN BANNER ++++++++++++++++++++++++++++++++++++++++++++++
 
-
+.gallery-container
+{
+	position: fixed;
+	width:100%;
+	top: 0;
+	left: 0;
+	padding-top: 68px;
+	overflow-x: hidden;
+	overflow-y: hidden;
+}
 
 .gallery-row
 {
@@ -362,29 +381,23 @@ html
 	{
 		overflow-y: auto;
 		-webkit-overflow-scrolling: touch;
-	}
-	.loading-gallery
-	{
-		position: absolute;
-		top: 0;
-		left: 0;
-		height: 100%;
-		width: 100%;
-		z-index: 20000000000;
-		background-color: transparent;
-		.fa
-		{
-			color: @main-theme-color;
+		padding-bottom: 100px;
+		padding-top: 100px;
+		@media(max-width:767px){
+			padding-top: 0px;
 		}
 	}
 
 	.banner 
 	{
-		padding-top: 60px;
+		// padding-top: 60px;
 	}
 	.gallery
 	{
 		padding-top: 150px;
+		@media(max-width:767px){
+			padding-top: 60px;
+		}
 	}
 	.spinner
 	{
@@ -481,13 +494,6 @@ html
 		margin-top: 0px;
 		margin-bottom: 30px;
 	}
-}
-
-
-#gallery-container
-{
-	padding-top: 30px;
-	padding-bottom: 60px;
 }
 
 // +++ hide camapign video player play original button (inserted our own button) ++++++ 
@@ -804,13 +810,11 @@ html
 
 	.overlay-video-row
 	{
+		margin: 0 auto;
 		.col-xs-12
 		{
-			@media(min-width:767px){
-				padding-left: 0px;
-				padding-right: 0px;
-
-			}
+			padding-left:0px;
+			padding-right: 0px;
 		}
 	}
 }
