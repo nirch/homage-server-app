@@ -90,6 +90,10 @@ configure :production do
 	# Setting MixPanel only in prodution
 	set :mixpanel, Mixpanel::Tracker.new("7d575048f24cb2424cd5c9799bbb49b1")
 
+	# AWS S3
+	s3 = AWS::S3.new
+	set :bucket, s3.buckets['homageapp']
+
 	set :logging, Logger::INFO
 
 	set :share_link_prefix, "http://play.homage.it"
@@ -124,6 +128,10 @@ configure :test do
 	set :logging, Logger::DEBUG
 
 	set :share_link_prefix, "http://play-test.homage.it"
+
+	# AWS S3
+	s3 = AWS::S3.new
+	set :bucket, s3.buckets['homagetest']
 
 	# enables mixpanel for testing
 	# set :mixpanel, Mixpanel::Tracker.new("7d575048f24cb2424cd5c9799bbb49b1")
@@ -407,38 +415,75 @@ subdomain settings.play_subdomain do
 	end 
 
 	get '/date/:from_date' do
+		remake_hash = Hash.new
 		from_date = Time.parse(params[:from_date])
-		raw = params[:raw]
-		userremakeid = BSON::ObjectId.from_string(params[:remakeid]) if params[:remakeid]
-		badbackgrounds = ["-1","-2","-3","-4","-5","-6","-7","-8","-9","-10","-11"]
-		if raw == 'all'
-			@raw = true
-			@remakes = settings.db.collection("Remakes").find(created_at:{"$gte"=>from_date}, status:3).sort(created_at:-1)
-			@heading = @remakes.count.to_s + " Remakes from " + from_date.strftime("%d/%m/%Y")
-			@grade = true
-		elsif raw == 'bad'
-			@raw = true
-			@remakes = settings.db.collection("Remakes").find(created_at:{"$gte"=>from_date}, status:3,"footages.background"=> {"$in"=>badbackgrounds}).sort(created_at:-1)
-			@heading = @remakes.count.to_s + " Remakes from " + from_date.strftime("%d/%m/%Y")
-			@grade = true
-		elsif badbackgrounds.include?(raw)
-			@raw = true
-			@remakes = settings.db.collection("Remakes").find(created_at:{"$gte"=>from_date}, status:3,"footages.background"=> {"$in"=>[raw]}).sort(created_at:-1)
-			@heading = @remakes.count.to_s + " Remakes from " + from_date.strftime("%d/%m/%Y")
-			@grade = true
+		@date = params[:from_date]
+
+		# STORY
+		@stories  = settings.db.collection("Stories").find(active:true).sort(created_at:-1)
+		
+		if params[:story_id] == nil
+			story_ids = []
+			for storyidloop in @stories do
+				bson_story = BSON::ObjectId.from_string(storyidloop["_id"].to_s)
+				story_ids.push(bson_story)
+			end
+			remake_hash["story_id"] = {"$in"=>story_ids}
+			@stories.rewind!
 		else
-			@raw = false
-			@remakes = settings.db.collection("Remakes").find(created_at:{"$gte"=>from_date}, status:3).sort(created_at:-1)
-			@heading = @remakes.count.to_s + " Remakes from " + from_date.strftime("%d/%m/%Y")
-			@grade = true
+			bson_story = BSON::ObjectId.from_string(params[:story_id])
+			@laststory = settings.db.collection("Stories").find_one(:_id => bson_story)
+			remake_hash["story_id"] = bson_story
 		end
 
-		if userremakeid != nil
-			@raw = true
-			@remakes = settings.db.collection("Remakes").find(_id:userremakeid)
-			@heading = "Remakes id " + userremakeid.to_s
-			@grade = true
+		# GRADE
+		@grades = ["all","no_grade",-1,0,1,2,3,4,5,6,7,8,9,10]
+
+		if params[:grade] != nil && params[:grade] == 'no_grade'
+			remake_hash["grade"] = {"$exists"=> false}
+			@lastgrade = params[:grade]
+		elsif params[:grade] != nil && params[:grade] != 'all'
+ 			remake_hash["grade"] = {"$in"=>[params[:grade].to_i]}
+			@lastgrade = params[:grade].to_i
 		end
+		
+
+		# RAW
+		badbackgrounds = ["-1","-2","-3","-4","-5","-6","-7","-8","-9","-10","-11"]
+		goodbackgrounds = ["1","0"]
+		@raws = ["all","bad","1","0","-1","-2","-3","-4","-5","-6","-7","-8","-9","-10","-11"]
+		if badbackgrounds.include?(params[:raw]) || params[:raw] == 'all' || goodbackgrounds.include?(params[:raw]) || params[:raw] == 'bad'
+			if badbackgrounds.include?(params[:raw]) || goodbackgrounds.include?(params[:raw])
+				remake_hash["footages.background"] = {"$in"=>[params[:raw]]}
+			elsif params[:raw] == 'bad'
+				remake_hash["footages.background"] = {"$in"=>badbackgrounds}
+			end
+			@lastraw = params[:raw]
+			@showraw = true
+		else
+			@showraw = false
+			@lastraw = nil
+		end
+
+		userremakeid = BSON::ObjectId.from_string(params[:remakeid]) if params[:remakeid]
+		
+        if userremakeid != nil
+            @raw = true
+            @remakes = settings.db.collection("Remakes").find(_id:userremakeid)
+            @heading = "Remakes id " + userremakeid.to_s
+            @grade = true
+        else
+        	remake_hash["status"] = 3
+			remake_hash["created_at"] = {"$gte"=>from_date}
+			@remakes = settings.db.collection("Remakes").find(remake_hash).sort(created_at:-1)
+			@heading = @remakes.count.to_s + " Remakes from " + from_date.strftime("%d/%m/%Y")
+			@grade = true
+        end
+
+		
+
+		# @heading = remake_hash
+		
 
 		erb :demoday
 	end
@@ -2230,8 +2275,7 @@ def download_remake_from_s3(remake_id_str, download_folder)
 	end
 	story = stories.find_one(remake["story_id"])
 
-	s3 = AWS::S3.new
-	bucket = s3.buckets['homageapp']
+	bucket = settings.bucket
 	# Getting all the remake's file from S3
 	remake_s3_prefix = "Remakes/" + remake["_id"].to_s
 	remake_s3_objects = bucket.objects.with_prefix(remake_s3_prefix)
@@ -2288,8 +2332,7 @@ def zipfolder(download_folder, input_filenames, remake_id)
 end
 
 def upload_to_s3 (file_path, s3_key, acl, content_type=nil)
-	s3 = AWS::S3.new
-	bucket = s3.buckets['homageapp']
+	bucket = settings.bucket
 	s3_object = bucket.objects[s3_key]
 
 	logger.info 'Uploading the file <' + file_path + '> to S3 path <' + s3_object.key + '>'

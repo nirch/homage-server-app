@@ -16,15 +16,15 @@
 		nav {
 			background-color: #ff7d5f !important;
 		}
-		#links {
+		#remakes {
 			text-align: center;
 		}
-		#links .video {
+		#remakes .video {
 			display:inline-block;
 			text-decoration:none;
 			color:black;
 		}
-		#links a img {
+		#remakes a img {
 			margin: 3px 1px;
 		}
 		.loading { 
@@ -99,11 +99,69 @@
 		        </div>
 		    </div>
 		</div>
-		<!-- <button id="switchrawbutton" class="btn btn-lg btn-warning" onclick="SwitchRaw()">Raw</button> -->
-		<div id="links">
+	<div class="container-fluid">
+		<div class="row">
+			<!-- Stroy Selector -->
+			<div class="container col-xs-4"> 
+			Select a Story
+			<select onchange="location = this.options[this.selectedIndex].value;">
+			<% if @laststory %>
+		  		<option value="<%= @laststory["_id"] %>"><%= @laststory["name"].to_s %></option>
+  			<% end %>
+  			<option value="<%= "/date/" + @date %>">Choose</option>
+			  <% for story in @stories do %>
+			  	<% if story != @laststory %> 
+				  	<% if @showraw && @lastraw then %>
+				  		<option value="<%= "/date/" + @date + "?story_id=" + story["_id"].to_s + "&raw=" + @lastraw.to_s %>"><%= story["name"] %></option>
+			  		<% else %>
+			  			<option value="<%= "/date/" + @date + "?story_id=" + story["_id"].to_s %>"><%= story["name"] %></option>
+			  		<% end %>
+		  		<% end %>
+			  <% end %>
+			</select>
+			</div>
+			<!-- Raw Selector -->
+			<div class="container col-xs-4"> 
+			Select Raw
+			<select onchange="location = this.options[this.selectedIndex].value;">
+				<% if @lastraw %>
+			  		<option value="<%= @lastraw %>"><%= @lastraw.to_s %></option>
+	  			<% end %>
+	  			<option value="<%= "/date/" + @date %>">None</option>
+			  <% for rawd in @raws do %>
+			  	<% if @laststory then %>
+			  		<option value="<%= "/date/" + @date + "?story_id=" + @laststory["_id"].to_s + "&raw=" + rawd.to_s %>"><%= rawd.to_s %></option>
+		  		<% else %>
+		  			<option value="<%= "/date/" + @date + "?raw=" + rawd.to_s %>"><%= rawd.to_s %></option>
+		  		<% end %>
+			  <% end %>
+			</select>
+			</div>
+		</div>
+			<!-- Grade Selector -->
+			<div class="container col-xs-4"> 
+			Select a Grade
+			<select onchange="location = this.options[this.selectedIndex].value;" selected>
+				<% if @lastgrade %>
+			  		<option value="<%= @lastgrade %>"><%= @lastgrade.to_s %></option>
+	  			<% end %>
+	  			<!-- <option value="<%= "/date/" + @date %>">Choose</option> -->
+			  <% for graded in @grades do %>
+			  	<% if @laststory then %>
+			  		<option value="<%= "/date/" + @date + "?story_id=" + @laststory["_id"].to_s + "&grade=" + graded.to_s %>"><%= graded.to_s %></option>
+		  		<% else %>
+		  			<option value="<%= "/date/" + @date + "?grade=" + graded.to_s %>"><%= graded.to_s %></option>
+		  		<% end %>
+			  <% end %>
+			</select>
+			</div>
+		</div>
+	</div>
+		<!-- Remakes -->
+		<div id="remakes">
 			<% for remake in @remakes do %>	
 			<div id="video" class="video">
-				<% if @raw then %>
+				<% if @showraw then %>
 			    	<a href=<%= remake["video"] %> title="<%= remake["_id"].to_s %>" type="video/mp4" data-poster=<%= remake["thumbnail"] %> data-gallery>
 			        <img src=<%= File.dirname(remake["thumbnail"]).to_s + "/" + remake["_id"].to_s + "_raw1.jpg" %> width=320 height=180 alt="<%= remake["title"] %>">
 		        <% else %>
@@ -125,7 +183,6 @@
 					<!-- <button type="button" onclick="DownloadRemake('<%= remake["_id"].to_s %>')">Download Remake</button> -->
 			</div>
 			<!-- ListObjectsFromS3() -->
-
 			<% end %>
 
 <!-- 		    <a href="http://d293iqusjtyr94.cloudfront.net/Remakes/5300c3dec5c06a0c80000001/Dive%20School_5300c3dec5c06a0c80000001.mp4" title="Nir Channes" type="video/mp4" data-poster="http://d293iqusjtyr94.cloudfront.net/Remakes/5300c3dec5c06a0c80000001/Dive%20School_5300c3dec5c06a0c80000001.jpg" data-gallery>
@@ -188,6 +245,11 @@
 		            }
 		        });
 		    });
+
+			// $( ".container" ).change(function(event) {
+			//   alert(event.target.options[event.target.selectedIndex].value);
+			//   $('#remakes').load(document.URL + ' #remakes');
+			// });
 
 		})
 
