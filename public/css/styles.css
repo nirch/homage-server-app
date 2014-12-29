@@ -255,6 +255,7 @@ html {
   top: 0;
   left: 0;
   padding-top: 68px;
+  overflow-x: hidden;
 }
 .gallery-row {
   position: relative;
