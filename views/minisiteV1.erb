@@ -43,6 +43,7 @@
     <!-- <link href="/css/jquery.galereya.css" rel="stylesheet"/> -->
     <!-- <script src="/js/jquery.galereya.js"></script> -->
     <script src="/js/masonry.pkgd.js"></script>
+    <script src="/js/imagesloaded.pkgd.js"></script>
     
     <!-- LESS -->
     <link rel="stylesheet/less" type="text/css" href="/less/styles.less">
@@ -545,6 +546,10 @@
               gallery_right_margin += 30;
               $(".campaign-video-container").css('margin-left',gallery_left_margin + 'px')
               $(".campaign-info").css('margin-right',gallery_right_margin + 'px');
+            });
+
+            imagesLoaded( container, function() {
+              msnry.layout();
             });
         }
 
