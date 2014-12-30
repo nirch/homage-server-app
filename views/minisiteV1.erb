@@ -707,7 +707,7 @@
 
   $('.all-remakes-button').on('click', function(e) {
     cleanGallery();
-    fetch_remakes(AllQuery);
+    setTimeout(function() {fetch_remakes(AllQuery)} , 3000);
     $('.hmg-dropdown-toggle-stories').html("Campaign Stories" +' <span class="caret"></span>');
   });
 
@@ -720,7 +720,7 @@
 
   $('.trending-remakes-button').on('click', function(e) {
     cleanGallery();
-    fetch_remakes(TrendingQuery);
+    setTimeout(function() {fetch_remakes(TrendingQuery)} , 3000);
     
     $(".all-remakes-button .clickable-link").removeClass("selected");
     $('.hmg-dropdown-toggle-stories').html("Campaign Stories" +' <span class="caret"></span>');
