@@ -531,13 +531,11 @@
         var container = document.querySelector('#masonry-gallery-container');
 
         if (!msnry) {
-            msnry = new Masonry( container, {
-              // options
-              // columnWidth: parseInt($('.hmg-gallery-cell').css('width')),
-              itemSelector: '.hmg-gallery-cell',
+          msnry = $(container).masonry({
+            itemSelector: '.hmg-gallery-cell',
               isFitWidth: true,
               gutter: 30
-            });
+          });
 
             msnry.on( 'layoutComplete', function() {
               gallery_left_margin = parseInt($("#masonry-gallery-container").css('margin-left'))
@@ -549,7 +547,7 @@
             });
 
             imagesLoaded( container, function() {
-              msnry.layout();
+              msnry.masonry();
             });
         }
 
@@ -616,7 +614,7 @@
                         </div>\
                     </div>')
             .append('<div class="galereya-cell-overlay" />');
-            msnry.appended(current_cell);
+            msnry.masonry('appended', current_cell);
 
             info = {_id: remake["_id"], like_count: like_count, view_count: view_count, share_count: share_count}
        
@@ -625,7 +623,7 @@
         }
 
         skip += limit;
-        msnry.layout();
+        msnry.masonry();
         $('.hmg-gallery-cell').on('click' , function() {
           remake_index = $(this).attr("data-index");
           remake = all_remakes[remake_index];
@@ -664,11 +662,11 @@
     function addSpinnerCell() {
         $('#masonry-gallery-container').append('<div class="hmg-gallery-cell spinner-cell"></div>')
         spinner = $('.spinner-cell').append('<i class="fa fa-refresh fa-spin"></i>');
-        msnry.appended(spinner);
+        msnry.masonry('appended', spinner);
     }
 
     function removeSpinnerCell() {
-        msnry.remove($('.spinner-cell'))
+        msnry.masonry('remove', $('.spinner-cell'))
     }
 
     
@@ -685,8 +683,7 @@
     });
 
   function cleanGallery() {
-    msnry.remove($('.hmg-gallery-cell'));
-    msnry.layout(); 
+    msnry.masonry( 'remove', $('.hmg-gallery-cell'));
     skip = 0;
     all_remakes = [];
   }
