@@ -532,7 +532,8 @@
 
         if (!msnry) {
           msnry = $(container).masonry({
-            itemSelector: '.hmg-gallery-cell'
+            itemSelector: '.hmg-gallery-cell',
+            gutter: 30
           });
 
             msnry.on( 'layoutComplete', function() {
@@ -612,7 +613,7 @@
                         </div>\
                     </div>')
             .append('<div class="galereya-cell-overlay" />');
-            msnry.masonry('appended', current_cell);
+            msnry.masonry('appended', current_cell).masonry();
 
             info = {_id: remake["_id"], like_count: like_count, view_count: view_count, share_count: share_count}
        
@@ -660,11 +661,11 @@
     function addSpinnerCell() {
         $('#masonry-gallery-container').append('<div class="hmg-gallery-cell spinner-cell"></div>')
         spinner = $('.spinner-cell').append('<i class="fa fa-refresh fa-spin"></i>');
-        msnry.masonry('appended', spinner);
+        msnry.masonry('appended', spinner).masonry();
     }
 
     function removeSpinnerCell() {
-        msnry.masonry('remove', $('.spinner-cell'))
+        msnry.masonry('remove', $('.spinner-cell')).masonry();
     }
 
     
@@ -681,7 +682,7 @@
     });
 
   function cleanGallery() {
-    msnry.masonry( 'remove', $('.hmg-gallery-cell'));
+    msnry.masonry( 'remove', $('.hmg-gallery-cell')).masonry();
     skip = 0;
     all_remakes = [];
   }
@@ -719,7 +720,8 @@
 
   $('.trending-remakes-button').on('click', function(e) {
     cleanGallery();
-     fetch_remakes(TrendingQuery);
+    fetch_remakes(TrendingQuery);
+    
     $(".all-remakes-button .clickable-link").removeClass("selected");
     $('.hmg-dropdown-toggle-stories').html("Campaign Stories" +' <span class="caret"></span>');
   });
