@@ -576,6 +576,18 @@ subdomain settings.play_subdomain do
 		erb :minisiteV1
 	end
 
+	get '/masonryTest/:campaign_name' do
+		@config = getConfigDictionary();
+		@campaign = settings.db.collection("Campaigns").find_one({name: params[:campaign_name]})
+		campaign_id = @campaign["_id"]
+		@stories = settings.db.collection("Stories").find({active:true, campaign_id: campaign_id})
+		info = Hash.new
+		info["reason"] = "campaign_gallery"
+		info["campaign_id"] = campaign_id
+		settings.mixpanel.track("12345", "MinisiteView", info) if settings.respond_to?(:mixpanel)	
+		erb :msonrytest
+	end
+
 	get '/:entity_id' do
 		remakes = settings.db.collection("Remakes")
 		users   = settings.db.collection("Users")
