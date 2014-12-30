@@ -299,6 +299,7 @@ html {
   height: 100%;
   float: right;
   text-align: center;
+  margin-right: 100px;
 }
 .campaign-logo {
   background: url('/resources/minisite/HomageBanner.png') no-repeat center;
@@ -324,8 +325,15 @@ html {
   color: #f0f0f0;
 }
 .campaign-video-container {
-  float: left;
+  height: 180px;
+  width: 320px;
   position: relative;
+  margin-left: 100px;
+}
+@media (max-width: 767px) {
+  .campaign-video-container {
+    margin: 0 auto;
+  }
 }
 .campaign-video-play-button-container {
   position: absolute;

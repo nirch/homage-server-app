@@ -26,21 +26,21 @@ HTML_ESCAPE	=	{ '&' => '&amp;', '>' => '&gt;', '<' => '&lt;', '"' => '&quot;', "
 HTML_ESCAPE	=	{ '&' => '&amp;', '>' => '&gt;', '<' => '&lt;', '"' => '&quot;', "'" => '' }
 HTML_ESCAPE_REGEXP	=	/[&"'><]/
 
-helpers do
-  def h(s)
-    s = s.to_s
-	if s.html_safe?
-	  s 
-	else		
-	  s = s.gsub(HTML_ESCAPE_REGEXP, HTML_ESCAPE)
-	  # puts "after gsub: " + s
-	  s = s.html_safe
-	  # puts "S after html safe: " + s
-	end
-	# puts "S: " + s
-	return s
-  end
-end
+# helpers do
+#   def h(s)
+#     s = s.to_s
+# 	if s.html_safe?
+# 	  s 
+# 	else		
+# 	  s = s.gsub(HTML_ESCAPE_REGEXP, HTML_ESCAPE)
+# 	  # puts "after gsub: " + s
+# 	  s = s.html_safe
+# 	  # puts "S after html safe: " + s
+# 	end
+# 	# puts "S: " + s
+# 	return s
+#   end
+# end
 
 configure do
 	# Global configuration (regardless of the environment)

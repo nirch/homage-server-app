@@ -6,9 +6,9 @@
 
 
     <% if @story then %>
-      <meta name="description" content='<%= h(@story["share_message"]) %>'>
-      <meta property="og:title" content='<%= h(@story["share_message"]) %> '/>
-      <meta name="twitter:title" content='<%= h(@story["share_message"]) %> '/>
+      <meta name="description" content='<%= @story["share_message"] %>'>
+      <meta property="og:title" content='<%= @story["share_message"] %> '/>
+      <meta name="twitter:title" content='<%= @story["share_message"] %> '/>
     <% end %>
 
     <% if @remake then %>
@@ -532,22 +532,24 @@
 
         if (!msnry) {
           msnry = $(container).masonry({
+            columnWidth: parseInt($('.hmg-gallery-cell').css("width")),
             itemSelector: '.hmg-gallery-cell',
+            isFitWidth: true,
             gutter: 30
           });
 
-            msnry.on( 'layoutComplete', function() {
-              gallery_left_margin = parseInt($("#masonry-gallery-container").css('margin-left'))
-              gallery_right_margin = parseInt($("#masonry-gallery-container").css('margin-right'))
+            // msnry.on( 'layoutComplete', function() {
+            //   gallery_left_margin = parseInt($("#masonry-gallery-container").css('margin-left'))
+            //   gallery_right_margin = parseInt($("#masonry-gallery-container").css('margin-right'))
 
-              gallery_right_margin += 30;
-              $(".campaign-video-container").css('margin-left',gallery_left_margin + 'px')
-              $(".campaign-info").css('margin-right',gallery_right_margin + 'px');
-            });
+            //   gallery_right_margin += 30;
+            //   $(".campaign-video-container").css('margin-left',gallery_left_margin + 'px')
+            //   $(".campaign-info").css('margin-right',gallery_right_margin + 'px');
+            // });
 
-            imagesLoaded( container, function() {
-              msnry.masonry();
-            });
+            // imagesLoaded( container, function() {
+            //   msnry.masonry();
+            // });
         }
 
         $.get('/remakes', remakes_cond , function(data, status, xhr){
