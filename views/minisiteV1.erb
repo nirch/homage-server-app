@@ -532,7 +532,7 @@
 
         if (!msnry) {
           msnry = $(container).masonry({
-            columnWidth: parseInt($('.hmg-gallery-cell').css("width")),
+            columnWidth: 350,
             itemSelector: '.hmg-gallery-cell',
             isFitWidth: true,
             gutter: 30
@@ -709,7 +709,8 @@
 
   $('.all-remakes-button').on('click', function(e) {
     cleanGallery();
-    setTimeout(function() {fetch_remakes(AllQuery)} , 3000);
+    // setTimeout(function() {fetch_remakes(AllQuery)} , 500);
+    fetch_remakes(AllQuery);
     $('.hmg-dropdown-toggle-stories').html("Campaign Stories" +' <span class="caret"></span>');
   });
 
@@ -722,7 +723,8 @@
 
   $('.trending-remakes-button').on('click', function(e) {
     cleanGallery();
-    setTimeout(function() {fetch_remakes(TrendingQuery)} , 3000);
+    // setTimeout(function() {fetch_remakes(TrendingQuery)} , 500);
+    fetch_remakes(TrendingQuery);
     
     $(".all-remakes-button .clickable-link").removeClass("selected");
     $('.hmg-dropdown-toggle-stories').html("Campaign Stories" +' <span class="caret"></span>');
