@@ -532,9 +532,7 @@
 
         if (!msnry) {
           msnry = $(container).masonry({
-            itemSelector: '.hmg-gallery-cell',
-              isFitWidth: true,
-              gutter: 30
+            itemSelector: '.hmg-gallery-cell'
           });
 
             msnry.on( 'layoutComplete', function() {
@@ -721,7 +719,7 @@
 
   $('.trending-remakes-button').on('click', function(e) {
     cleanGallery();
-    fetch_remakes(TrendingQuery);
+     fetch_remakes(TrendingQuery);
     $(".all-remakes-button .clickable-link").removeClass("selected");
     $('.hmg-dropdown-toggle-stories').html("Campaign Stories" +' <span class="caret"></span>');
   });
