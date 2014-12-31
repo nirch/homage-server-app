@@ -616,6 +616,7 @@
                         </div>\
                     </div>')
             .append('<div class="galereya-cell-overlay" />');
+
             msnry.append(current_cell);
             msnry.masonry('appended', current_cell);
 
@@ -715,7 +716,7 @@
     // setTimeout(function() {fetch_remakes(AllQuery)} , delay);
     $('#masonry-gallery-container').cleanGallery().populateGallery(AllQuery);
 
-    $('.hmg-dropdown-toggle-stories').html("Campaign Stories" +' <span class="caret"></span>');
+    $('.hmg-dropdown-toggle-stories').html("Select A Story" +' <span class="caret"></span>');
   });
 
   // FILTERS HANDLERS
@@ -725,7 +726,7 @@
     // setTimeout(function() {fetch_remakes(AllQuery)} , delay);
     $('#masonry-gallery-container').cleanGallery().populateGallery(AllQuery);
 
-    $('.hmg-dropdown-toggle-stories').html("Campaign Stories" +' <span class="caret"></span>');
+    $('.hmg-dropdown-toggle-stories').html("Select A Story" +' <span class="caret"></span>');
   });
 
   $('.my-takes-button').on('click', function(e) {
@@ -733,7 +734,7 @@
     // fetch_remakes(myTakesQuery);
 
     $(".all-remakes-button .clickable-link").removeClass("selected");
-    $('.hmg-dropdown-toggle-stories').html("Campaign Stories" +' <span class="caret"></span>');
+    $('.hmg-dropdown-toggle-stories').html("Select A Story" +' <span class="caret"></span>');
   });
 
   $('.trending-remakes-button').on('click', function(e) {
@@ -742,7 +743,7 @@
     $('#masonry-gallery-container').cleanGallery().populateGallery(TrendingQuery);
     
     $(".all-remakes-button .clickable-link").removeClass("selected");
-    $('.hmg-dropdown-toggle-stories').html("Campaign Stories" +' <span class="caret"></span>');
+    $('.hmg-dropdown-toggle-stories').html("Select A Story" +' <span class="caret"></span>');
   });
 
 
