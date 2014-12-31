@@ -502,7 +502,7 @@
 
   // REMAKE GALLERY
 
-  function fetch_remakes(query_type) {
+  function fetch_remakes(query_type, container) {
        
         var single_batch_remakes = [];
         currentlyLoadingImgs = true;
@@ -561,10 +561,11 @@
             currentlyLoadingImgs = false;
             index = skip + i;
 
-            $('#masonry-gallery-container').append('<div class="hmg-gallery-cell" data-index="' + index + '"></div>')
+            var current_cell = $('<div class="hmg-gallery-cell" data-index="' + index + '"></div>');
+            // $('#masonry-gallery-container').append()
 
-            jq_selector = ".hmg-gallery-cell[data-index=" + index + "]"
-            current_cell = $(jq_selector);
+            // jq_selector = ".hmg-gallery-cell[data-index=" + index + "]"
+            // current_cell = $(jq_selector);
 
             src = remake["thumbnail"];
             var $img = $(document.createElement('img')).attr('src', src);
@@ -615,7 +616,8 @@
                         </div>\
                     </div>')
             .append('<div class="galereya-cell-overlay" />');
-            msnry.masonry('appended', current_cell).masonry();
+            msnry.append(current_cell);
+            msnry.masonry('appended', current_cell);
 
             info = {_id: remake["_id"], like_count: like_count, view_count: view_count, share_count: share_count}
        
