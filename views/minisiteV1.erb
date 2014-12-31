@@ -164,7 +164,7 @@
       <div class="col-sm-6 tbs-col campaign-stories-col">
         <ul class="filter-right">
           <li class="dropdown filter-label">
-            <a href="#" class="dropdown-toggle hmg-dropdown-toggle-stories clickable-link" data-toggle="dropdown">Campaign Stories<span class="caret"></span></a>
+            <a href="#" class="dropdown-toggle hmg-dropdown-toggle-stories clickable-link" data-toggle="dropdown">Select A story<span class="caret"></span></a>
             <ul class="dropdown-menu campaign-stories-dropdown" role="menu">
               <li><a class="all-stories" href="#">All</a></li>
               <% for story in @stories do %>
@@ -683,11 +683,16 @@
 
     });
 
-  function cleanGallery() {
-    msnry.masonry( 'remove', $('.hmg-gallery-cell')).masonry();
-    skip = 0;
-    all_remakes = [];
-  }
+    $.fn.populateGallery = function (query_type) {
+      fetch_remakes(query_type);
+    }
+
+    $.fn.cleanGallery = function() {
+      this.masonry( 'remove', this.find('.hmg-gallery-cell')).masonry();
+      skip = 0;
+      all_remakes = [];
+      return this;
+    };
 
   // STORIES DROPDOWN HANDLERS
 
@@ -697,36 +702,42 @@
       story_name = $(this).text().toString();
       $('.hmg-dropdown-toggle-stories').html(story_name +' <span class="caret"></span>');
       currently_selected_story = story_name;
-      cleanGallery();
-      setTimeout(function() {fetch_remakes(StoryQuery)} , delay);
+      
+      // cleanGallery();
+      // setTimeout(function() {fetch_remakes(StoryQuery)} , delay);
+      $('#masonry-gallery-container').cleanGallery().populateGallery(StoryQuery);
    });
 
   $(".campaign-stories-dropdown .all-stories").on('click', function(){
-    cleanGallery();
-    setTimeout(function() {fetch_remakes(AllQuery)} , delay);
+    // cleanGallery();
+    // setTimeout(function() {fetch_remakes(AllQuery)} , delay);
+    $('#masonry-gallery-container').cleanGallery().populateGallery(AllQuery);
+
     $('.hmg-dropdown-toggle-stories').html("Campaign Stories" +' <span class="caret"></span>');
   });
 
   // FILTERS HANDLERS
 
   $('.all-remakes-button').on('click', function(e) {
-    cleanGallery();
-    setTimeout(function() {fetch_remakes(AllQuery)} , delay);
-    //fetch_remakes(AllQuery);
+    // cleanGallery();
+    // setTimeout(function() {fetch_remakes(AllQuery)} , delay);
+    $('#masonry-gallery-container').cleanGallery().populateGallery(AllQuery);
+
     $('.hmg-dropdown-toggle-stories').html("Campaign Stories" +' <span class="caret"></span>');
   });
 
   $('.my-takes-button').on('click', function(e) {
     cleanGallery();
     // fetch_remakes(myTakesQuery);
+
     $(".all-remakes-button .clickable-link").removeClass("selected");
     $('.hmg-dropdown-toggle-stories').html("Campaign Stories" +' <span class="caret"></span>');
   });
 
   $('.trending-remakes-button').on('click', function(e) {
-    cleanGallery();
-    setTimeout(function() {fetch_remakes(TrendingQuery)} , delay);
-    //fetch_remakes(TrendingQuery);
+    // cleanGallery();
+    // setTimeout(function() {fetch_remakes(TrendingQuery)} , delay);
+    $('#masonry-gallery-container').cleanGallery().populateGallery(TrendingQuery);
     
     $(".all-remakes-button .clickable-link").removeClass("selected");
     $('.hmg-dropdown-toggle-stories').html("Campaign Stories" +' <span class="caret"></span>');
