@@ -85,7 +85,7 @@ body {
             <div class="hero-unit">
                 <input  type="text" placeholder="start date" id="dpStartDate">
                 <input  type="text" placeholder="end date" id="dpEndDate">
-                <button type="button" class="btn btn-default" id="send_button">Send</button>
+                
               
                 <div class="btn-group">
                   <button type="button" id="time_resolution_button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" id="dropdownButton">
@@ -98,10 +98,10 @@ body {
                  </ul>
                </div>
 
-               <select class="multiselect" id="story_selector" multiple="multiple">
-                
-              </select>
-            
+               <select class="multiselect" id="campaign_selector"></select>
+               <select class="multiselect" id="story_selector" multiple="multiple"></select>
+               <button type="button" class="btn btn-default" id="send_button">Send</button>
+                        
             </div>
 
             <div class="container col-sm-6">
@@ -210,10 +210,22 @@ body {
                 }); 
 
                 $('#story_selector').multiselect({
-                            includeSelectAllOption: true,
-                            enableCaseInsensitiveFiltering: true,
-                            maxHeight: 300
-                  });
+                    includeSelectAllOption: true,
+                    enableCaseInsensitiveFiltering: true,
+                    maxHeight: 300
+                });
+
+                $('#campaign_selector').multiselect({
+                    //includeSelectAllOption: true,
+                    enableCaseInsensitiveFiltering: true,
+                    maxHeight: 300,
+                    selectedClass: 'multiselect-selected',
+                    onChange: function(option, checked, select) {
+                       campaign_id = $(option).val();
+                       console.log("selected: " + campaign_id.toString())
+                       getStories(campaign_id);
+                    }
+                });
 
                 dp_start_date = new Date();
                 dp_start_date = dp_start_date.setDate(dp_start_date.getDate()-14);
@@ -233,8 +245,9 @@ body {
                 $('#dpEndDate').datepicker('update');
                 //$('#dpEndDate').val('');
 
-                //$('#story_selector').multiselect();
-                $.get('/stories', null , function(data, status, xhr){
+                function getStories(campaign_id){
+
+                $.get('/stories', {"campaign_id": campaign_id} , function(data, status, xhr){
                   json_data = $.parseJSON(data);
 
                   var data = [];
@@ -253,9 +266,29 @@ body {
                   sd = $('#dpStartDate').val();
                   ed = $('#dpEndDate').val();
                   selected_stories = $('#story_selector').val();
-                  fetchAnalyticsData(sd,ed,selected_stories);
+                  // fetchAnalyticsData(sd,ed,selected_stories);
                   
                 });
+              }
+
+              function getCampaigns(){
+                $.get('/campaigns', null , function(data, status, xhr){
+                  json_data = $.parseJSON(data);
+                  var selector_data = [];
+                  for (i = 0; i < json_data.length; i++) {
+                    data_set = json_data[i];
+                    campaign_id = data_set["_id"]["$oid"].toString();
+                    campaign_name = data_set["name"];
+                    selector_data.push({"label": campaign_name , "value": campaign_id});
+                  }
+
+                  $('#campaign_selector').multiselect('dataprovider',selector_data);
+                  //$('#campaign_selector').multiselect('selectAll');
+                  $('#campaign_selector').multiselect('rebuild');
+                  campaign_id = $('#campaign_selector multiselect-selected').val();
+                  getStories(campaign_id);
+                });
+              }
 
                 $('#send_button').on('click', function (e) {
                   e.preventDefault();
@@ -272,7 +305,9 @@ body {
                     $("#time_resolution_button:first-child").val($(this).text());
                     currentDropDownSelection = val;
                   });
-                });        
+                });
+
+                getCampaigns();        
            });
   </script>
 </body>
