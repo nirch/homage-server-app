@@ -414,10 +414,29 @@ subdomain settings.play_subdomain do
 		erb :demoday
 	end 
 
+	get '/getuser/:remakeid' do
+		userremakeid = BSON::ObjectId.from_string(params[:remakeid]) if params[:remakeid]
+		remake = settings.db.collection("Remakes").find_one(userremakeid)
+		@user = settings.db.collection("Users").find_one(remake["user_id"])
+		return @user.to_json
+	end
+
 	get '/date/:from_date' do
 		remake_hash = Hash.new
 		from_date = Time.parse(params[:from_date])
 		@date = params[:from_date]
+		@ispublic  = params[:ispublic]
+		
+		# PUBLIC
+		if @ispublic
+			# Getting all the public users
+			public_users_cursor = settings.db.collection("Users").find({is_public:true})
+			public_users = Array.new
+			for user in public_users_cursor do
+				public_users.push(user["_id"])
+			end
+			remake_hash["user_id"] = {"$in" => public_users}
+		end
 
 		# STORY
 		@stories  = settings.db.collection("Stories").find(active:true).sort(created_at:-1)
@@ -465,13 +484,18 @@ subdomain settings.play_subdomain do
 			@lastraw = nil
 		end
 
+		# ONE REMAKE
 		userremakeid = BSON::ObjectId.from_string(params[:remakeid]) if params[:remakeid]
 		
         if userremakeid != nil
             @raw = true
             @remakes = settings.db.collection("Remakes").find(_id:userremakeid)
             @heading = "Remakes id " + userremakeid.to_s
-            @grade = true
+            if @remakes.count == 0
+            	share = settings.db.collection("Shares").find_one(userremakeid)
+            	@remakes = settings.db.collection("Remakes").find(_id:share["remake_id"])	
+            end
+        	@grade = true
         else
         	remake_hash["status"] = 3
 			remake_hash["created_at"] = {"$gte"=>from_date}
@@ -479,12 +503,7 @@ subdomain settings.play_subdomain do
 			@heading = @remakes.count.to_s + " Remakes from " + from_date.strftime("%d/%m/%Y")
 			@grade = true
         end
-
-		
-
-		# @heading = remake_hash
-		
-
+		# @heading = @remakes.count.to_s
 		erb :demoday
 	end
 
