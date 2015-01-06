@@ -261,18 +261,26 @@
 			    		button.disabled = false;
 			    		button.innerHTML = '+';
 			    		var user_info = JSON.parse(xmlHttp.responseText);
-			    		devices = "";
-			    		for(var i = 0;i < user_info.devices.length;i++){
-			    			devices +=  JSON.stringify(user_info.devices[i].model) + "\n";
-			    			devices +=  JSON.stringify(user_info.devices[i].system_name) + "\n";
-			    			devices +=  JSON.stringify(user_info.devices[i].system_version) + "\n";
-			    			devices +=  JSON.stringify(user_info.devices[i].name) + "\n";
-			    		}
-			    		appinfo = "";
-		    			appinfo +=  JSON.stringify(user_info.app_info.Objectbuild) + "\n";
-		    			appinfo +=  JSON.stringify(user_info.app_info.version);
+			    		user_info_string = JSON.stringify(user_info, null, "\t");
+			   //  		if(user_info.hasOwnProperty('merchant_id')){
+
+						// }
+			   //  		devices = "";
+			   //  		if(user_info.hasOwnProperty('devices')){
+			   //  			for(var i = 0;i < user_info.devices.length;i++){
+				  //   			devices += JSON.stringify(user_info.devices[i], null, "\t") + "\n";
+				  //   		}
+				  //   	}
+		    // 			appinfo = "";
+				  //   	if(user_info.hasOwnProperty('appinfo')){
+			   //  			appinfo +=  JSON.stringify(user_info.app_info.Objectbuild) + "\n";
+			   //  			appinfo +=  JSON.stringify(user_info.app_info.version);
+				  //   	}
+			    		// appinfo = "";
+		    			// appinfo +=  JSON.stringify(user_info.app_info.Objectbuild) + "\n";
+		    			// appinfo +=  JSON.stringify(user_info.app_info.version);
 			    		
-			    		alert("Created at: " + String(created_at) + "\n" + "App Info: " + appinfo + "Devices: \n" + String(devices));
+			    		alert("Remake Created at: " + String(created_at) + "\n" + user_info_string);//"Devices: \n" + String(devices));
 				    }
 				  }
 
