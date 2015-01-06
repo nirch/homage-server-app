@@ -65,6 +65,9 @@
 		<h1>
 			<%= @heading %>
 		</h1>
+		<h1>
+			<%= @test %>
+		</h1>
 		<!-- The Bootstrap Image Gallery lightbox, should be a child element of the document body -->
 		<div id="blueimp-gallery" class="blueimp-gallery">
 		    <!-- The container for the modal slides -->
@@ -143,7 +146,11 @@
 
 			<!-- Ispublic Checkbox -->
 			<div class="select-container col-xs-4"> 
-			<input id="ispublic" type="checkbox" name="ispublic" value="check" onclick='refreshpage();'>public<br>
+			<% if @ispublic %>
+				<input id="ispublic" type="checkbox" name="ispublic" checked="checked" onclick='refreshpage();'>public<br>
+			<% else %>
+				<input id="ispublic" type="checkbox" name="ispublic" onclick='refreshpage();'>public<br>
+			<% end %>
 			</div>
 		</div>
 	</div>
@@ -262,25 +269,7 @@
 			    		button.innerHTML = '+';
 			    		var user_info = JSON.parse(xmlHttp.responseText);
 			    		user_info_string = JSON.stringify(user_info, null, "\t");
-			   //  		if(user_info.hasOwnProperty('merchant_id')){
-
-						// }
-			   //  		devices = "";
-			   //  		if(user_info.hasOwnProperty('devices')){
-			   //  			for(var i = 0;i < user_info.devices.length;i++){
-				  //   			devices += JSON.stringify(user_info.devices[i], null, "\t") + "\n";
-				  //   		}
-				  //   	}
-		    // 			appinfo = "";
-				  //   	if(user_info.hasOwnProperty('appinfo')){
-			   //  			appinfo +=  JSON.stringify(user_info.app_info.Objectbuild) + "\n";
-			   //  			appinfo +=  JSON.stringify(user_info.app_info.version);
-				  //   	}
-			    		// appinfo = "";
-		    			// appinfo +=  JSON.stringify(user_info.app_info.Objectbuild) + "\n";
-		    			// appinfo +=  JSON.stringify(user_info.app_info.version);
-			    		
-			    		alert("Remake Created at: " + String(created_at) + "\n" + user_info_string);//"Devices: \n" + String(devices));
+			    		alert("Remake Created at: " + String(created_at) + "\n" + user_info_string);
 				    }
 				  }
 
@@ -290,20 +279,21 @@
 
 		function refreshpage(){
 			var ispublic = document.getElementById("ispublic").checked;
-			// alert(ispublic);
+
 			var selstories = document.getElementById("selstories");
 			var story = selstories.options[selstories.selectedIndex].value;
-			// alert(story);
+
 			var selraw = document.getElementById("selraw");
 			var raw = selraw.options[selraw.selectedIndex].value;
-			// alert(raw);
+
 			var selgrade = document.getElementById("selgrade");
 			var grade = selgrade.options[selgrade.selectedIndex].value;
-			// alert(grade);
+
 			var surl = String(document.URL);
 			var date = surl.substring(surl.indexOf("te/") + 3,surl.indexOf("te/") +  11);
-			// alert(date);
+
 			var pagebuilder = "/date/" + date + "?ispublic=" + ispublic;
+
 			if(story){
 				pagebuilder += "&story_id=" + story;
 			}

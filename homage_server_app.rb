@@ -426,9 +426,13 @@ subdomain settings.play_subdomain do
 		from_date = Time.parse(params[:from_date])
 		@date = params[:from_date]
 		@ispublic  = params[:ispublic]
-		
+		if @ispublic == "false"
+			@ispublic = false
+		end
+		@test = "before ispublic: " + params[:ispublic]
 		# PUBLIC
 		if @ispublic
+			@test = "in ispublic"
 			# Getting all the public users
 			public_users_cursor = settings.db.collection("Users").find({is_public:true})
 			public_users = Array.new
