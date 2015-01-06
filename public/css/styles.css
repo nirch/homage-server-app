@@ -203,6 +203,9 @@ html {
   width: 100%;
   margin: 0px;
   border-radius: 0px;
+  overflow-x: hidden;
+  max-height: 400px;
+  height: auto;
   overflow-y: auto;
 }
 .filter-label {
@@ -299,6 +302,7 @@ html {
   height: 100%;
   float: right;
   text-align: center;
+  margin-right: 50px;
 }
 .campaign-logo {
   background: url('/resources/minisite/HomageBanner.png') no-repeat center;
@@ -324,8 +328,15 @@ html {
   color: #f0f0f0;
 }
 .campaign-video-container {
-  float: left;
+  height: 180px;
+  width: 320px;
   position: relative;
+  margin-left: 50px;
+}
+@media (max-width: 767px) {
+  .campaign-video-container {
+    margin: 0 auto;
+  }
 }
 .campaign-video-play-button-container {
   position: absolute;

@@ -164,7 +164,7 @@
       <div class="col-sm-6 tbs-col campaign-stories-col">
         <ul class="filter-right">
           <li class="dropdown filter-label">
-            <a href="#" class="dropdown-toggle hmg-dropdown-toggle-stories clickable-link" data-toggle="dropdown">Select A story<span class="caret"></span></a>
+            <a href="#" class="dropdown-toggle hmg-dropdown-toggle-stories clickable-link" data-toggle="dropdown">Campaign Stories<span class="caret"></span></a>
             <ul class="dropdown-menu campaign-stories-dropdown" role="menu">
               <li><a class="all-stories" href="#">All</a></li>
               <% for story in @stories do %>
@@ -502,7 +502,7 @@
 
   // REMAKE GALLERY
 
-  function fetch_remakes(query_type, container) {
+  function fetch_remakes(query_type) {
        
         var single_batch_remakes = [];
         currentlyLoadingImgs = true;
@@ -561,11 +561,10 @@
             currentlyLoadingImgs = false;
             index = skip + i;
 
-            var current_cell = $('<div class="hmg-gallery-cell" data-index="' + index + '"></div>');
-            // $('#masonry-gallery-container').append()
+            $('#masonry-gallery-container').append('<div class="hmg-gallery-cell" data-index="' + index + '"></div>')
 
-            // jq_selector = ".hmg-gallery-cell[data-index=" + index + "]"
-            // current_cell = $(jq_selector);
+            jq_selector = ".hmg-gallery-cell[data-index=" + index + "]"
+            current_cell = $(jq_selector);
 
             src = remake["thumbnail"];
             var $img = $(document.createElement('img')).attr('src', src);
@@ -616,9 +615,7 @@
                         </div>\
                     </div>')
             .append('<div class="galereya-cell-overlay" />');
-
-            msnry.append(current_cell);
-            msnry.masonry('appended', current_cell);
+            msnry.masonry('appended', current_cell).masonry();
 
             info = {_id: remake["_id"], like_count: like_count, view_count: view_count, share_count: share_count}
        
@@ -686,64 +683,50 @@
 
     });
 
-    $.fn.populateGallery = function (query_type) {
-      fetch_remakes(query_type);
-    }
-
-    $.fn.cleanGallery = function() {
-      this.masonry( 'remove', this.find('.hmg-gallery-cell')).masonry();
-      skip = 0;
-      all_remakes = [];
-      return this;
-    };
+  function cleanGallery() {
+    msnry.masonry( 'remove', $('.hmg-gallery-cell')).masonry();
+    skip = 0;
+    all_remakes = [];
+  }
 
   // STORIES DROPDOWN HANDLERS
-
-  var delay = 1500
-
   $(".campaign-stories-dropdown .single-story").on('click', function(){
       story_name = $(this).text().toString();
       $('.hmg-dropdown-toggle-stories').html(story_name +' <span class="caret"></span>');
       currently_selected_story = story_name;
-      
-      // cleanGallery();
-      // setTimeout(function() {fetch_remakes(StoryQuery)} , delay);
-      $('#masonry-gallery-container').cleanGallery().populateGallery(StoryQuery);
+      cleanGallery();
+      fetch_remakes(StoryQuery);
    });
 
   $(".campaign-stories-dropdown .all-stories").on('click', function(){
-    // cleanGallery();
-    // setTimeout(function() {fetch_remakes(AllQuery)} , delay);
-    $('#masonry-gallery-container').cleanGallery().populateGallery(AllQuery);
-
-    $('.hmg-dropdown-toggle-stories').html("Select A Story" +' <span class="caret"></span>');
+    cleanGallery();
+    fetch_remakes(AllQuery);
+    $('.hmg-dropdown-toggle-stories').html("Campaign Stories" +' <span class="caret"></span>');
   });
 
   // FILTERS HANDLERS
 
   $('.all-remakes-button').on('click', function(e) {
-    // cleanGallery();
-    // setTimeout(function() {fetch_remakes(AllQuery)} , delay);
-    $('#masonry-gallery-container').cleanGallery().populateGallery(AllQuery);
-
-    $('.hmg-dropdown-toggle-stories').html("Select A Story" +' <span class="caret"></span>');
+    cleanGallery();
+    fetch_remakes(AllQuery);
+    //fetch_remakes(AllQuery);
+    $('.hmg-dropdown-toggle-stories').html("Campaign Stories" +' <span class="caret"></span>');
   });
 
   $('.my-takes-button').on('click', function(e) {
     cleanGallery();
     // fetch_remakes(myTakesQuery);
-
     $(".all-remakes-button .clickable-link").removeClass("selected");
-    $('.hmg-dropdown-toggle-stories').html("Select A Story" +' <span class="caret"></span>');
+    $('.hmg-dropdown-toggle-stories').html("Campaign Stories" +' <span class="caret"></span>');
   });
 
   $('.trending-remakes-button').on('click', function(e) {
-    // cleanGallery();
-    // setTimeout(function() {fetch_remakes(TrendingQuery)} , delay);
-    $('#masonry-gallery-container').cleanGallery().populateGallery(TrendingQuery);
+    cleanGallery();
+    fetch_remakes(TrendingQuery);
+    //fetch_remakes(TrendingQuery);
     
     $(".all-remakes-button .clickable-link").removeClass("selected");
-    $('.hmg-dropdown-toggle-stories').html("Select A Story" +' <span class="caret"></span>');
+    $('.hmg-dropdown-toggle-stories').html("Campaign Stories" +' <span class="caret"></span>');
   });
 
 

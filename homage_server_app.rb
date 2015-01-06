@@ -26,21 +26,21 @@ HTML_ESCAPE	=	{ '&' => '&amp;', '>' => '&gt;', '<' => '&lt;', '"' => '&quot;', "
 HTML_ESCAPE	=	{ '&' => '&amp;', '>' => '&gt;', '<' => '&lt;', '"' => '&quot;', "'" => '' }
 HTML_ESCAPE_REGEXP	=	/[&"'><]/
 
-helpers do
-  def h(s)
-    s = s.to_s
-	if s.html_safe?
-	  s 
-	else		
-	  s = s.gsub(HTML_ESCAPE_REGEXP, HTML_ESCAPE)
-	  # puts "after gsub: " + s
-	  s = s.html_safe
-	  # puts "S after html safe: " + s
-	end
-	# puts "S: " + s
-	return s
-  end
-end
+# helpers do
+#   def h(s)
+#     s = s.to_s
+# 	if s.html_safe?
+# 	  s 
+# 	else		
+# 	  s = s.gsub(HTML_ESCAPE_REGEXP, HTML_ESCAPE)
+# 	  # puts "after gsub: " + s
+# 	  s = s.html_safe
+# 	  # puts "S after html safe: " + s
+# 	end
+# 	# puts "S: " + s
+# 	return s
+#   end
+# end
 
 configure do
 	# Global configuration (regardless of the environment)
@@ -595,6 +595,18 @@ subdomain settings.play_subdomain do
 		erb :minisiteV1
 	end
 
+	get '/masonryTest/:campaign_name' do
+		@config = getConfigDictionary();
+		@campaign = settings.db.collection("Campaigns").find_one({name: params[:campaign_name]})
+		campaign_id = @campaign["_id"]
+		@stories = settings.db.collection("Stories").find({active:true, campaign_id: campaign_id})
+		info = Hash.new
+		info["reason"] = "campaign_gallery"
+		info["campaign_id"] = campaign_id
+		settings.mixpanel.track("12345", "MinisiteView", info) if settings.respond_to?(:mixpanel)	
+		erb :msonrytest
+	end
+
 	get '/:entity_id' do
 		remakes = settings.db.collection("Remakes")
 		users   = settings.db.collection("Users")
@@ -649,7 +661,18 @@ get '/stories' do
 	limit = params[:limit].to_i if params[:limit] # Optional
 	remakes_num = params[:remakes].to_i if params[:remakes] # Optional
 
-	campaign_id = request.env["HTTP_CAMPAIGN_ID"] ? BSON::ObjectId.from_string(request.env["HTTP_CAMPAIGN_ID"].to_s) : settings.db.collection("Campaigns").find_one({name: "HomageApp"})["_id"]
+	campaign_id = nil;
+	
+	campaign_id = BSON::ObjectId.from_string(request.env["HTTP_CAMPAIGN_ID"].to_s) if request.env["HTTP_CAMPAIGN_ID"]
+
+	if !campaign_id then
+		campaign_id = BSON::ObjectId.from_string(params[:campaign_id]) if params[:campaign_id]
+	end
+
+	if !campaign_id then
+		campaign_id = settings.db.collection("Campaigns").find_one({name: "HomageApp"})["_id"]
+	end
+
 	logger.debug "getting stories for campaign_id: " + campaign_id.to_s;
 
 	stories = settings.db.collection("Stories").find({campaign_id: campaign_id}, {fields: {after_effects: 0}}).sort({order_id: 1})
@@ -695,6 +718,16 @@ get '/stories' do
 	logger.info "Returning " + stories_json_array.count.to_s + " stories"
 
 	stories_result = "[" + stories_json_array.join(",") + "]"
+end
+
+get '/campaigns' do
+	campaigns = settings.db.collection("Campaigns").find({})
+	campaigns_json_array = Array.new
+	for campaign in campaigns do
+		campaigns_json_array.push(campaign.to_json)
+	end
+
+	campaigns_result = "[" + campaigns_json_array.join(",") + "]"
 end
 
 
@@ -954,7 +987,7 @@ def merge_users(user_a, user_b)
 	user_a_remakes = remakes.find({user_id: user_a["_id"]})
 	for remake in user_a_remakes do
 		logger.info "Moving remake " + remake["_id"].to_s + " from user " + user_a["_id"].to_s + " to user " + user_b["_id"].to_s
-		remakes.update({_id: remake["_id"]}, {"$set" => {user_id: user_b["_id"]}})
+		remakes.update({_id: remake["_id"]}, {"$set" => {user_id: user_b["_id"], is_public: user_b["is_public"]}})
 	end
 
 	add_devices(users, user_a, user_b, user_b["_id"])
