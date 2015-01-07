@@ -65,6 +65,9 @@
 		<h1>
 			<%= @heading %>
 		</h1>
+		<!-- <h1>
+			<%= @test %>
+		</h1> -->
 		<!-- The Bootstrap Image Gallery lightbox, should be a child element of the document body -->
 		<div id="blueimp-gallery" class="blueimp-gallery">
 		    <!-- The container for the modal slides -->
@@ -104,55 +107,50 @@
 			<!-- Stroy Selector -->
 			<div class="select-container col-xs-4"> 
 			Select a Story
-			<select onchange="location = this.options[this.selectedIndex].value;">
+			<select id="selstories" onchange="refreshpage()">
 			<% if @laststory %>
 		  		<option value="<%= @laststory["_id"] %>"><%= @laststory["name"].to_s %></option>
   			<% end %>
-  			<option value="<%= "/date/" + @date %>">All</option>
+  			<option value="">All</option>
 			  <% for story in @stories do %>
-			  	<% if story != @laststory %> 
-				  	<% if @showraw && @lastraw then %>
-				  		<option value="<%= "/date/" + @date + "?story_id=" + story["_id"].to_s + "&raw=" + @lastraw.to_s %>"><%= story["name"] %></option>
-			  		<% else %>
-			  			<option value="<%= "/date/" + @date + "?story_id=" + story["_id"].to_s %>"><%= story["name"] %></option>
-			  		<% end %>
-		  		<% end %>
+			  	<option value="<%= story["_id"] %>"><%= story["name"] %></option>
 			  <% end %>
 			</select>
 			</div>
 			<!-- Raw Selector -->
 			<div class="select-container col-xs-4"> 
 			Select Raw
-			<select onchange="location = this.options[this.selectedIndex].value;">
+			<select id="selraw" onchange="refreshpage()">
 				<% if @lastraw %>
 			  		<option value="<%= @lastraw %>"><%= @lastraw.to_s %></option>
 	  			<% end %>
-	  			<option value="<%= "/date/" + @date %>">None</option>
+	  			<option value="">None</option>
 			  <% for rawd in @raws do %>
-			  	<% if @laststory then %>
-			  		<option value="<%= "/date/" + @date + "?story_id=" + @laststory["_id"].to_s + "&raw=" + rawd.to_s %>"><%= rawd.to_s %></option>
-		  		<% else %>
-		  			<option value="<%= "/date/" + @date + "?raw=" + rawd.to_s %>"><%= rawd.to_s %></option>
-		  		<% end %>
+			  	<option value="<%= rawd.to_s %>"><%= rawd.to_s %></option>
 			  <% end %>
 			</select>
 			</div>
 			<!-- Grade Selector -->
 			<div class="select-container col-xs-4"> 
 			Select a Grade
-			<select onchange="location = this.options[this.selectedIndex].value;" selected>
+			<select id="selgrade" onchange="refreshpage()" selected>
 				<% if @lastgrade %>
 			  		<option value="<%= @lastgrade %>"><%= @lastgrade.to_s %></option>
 	  			<% end %>
-	  			<!-- <option value="<%= "/date/" + @date %>">Choose</option> -->
+	  			<option value="">None</option>
 			  <% for graded in @grades do %>
-			  	<% if @laststory then %>
-			  		<option value="<%= "/date/" + @date + "?story_id=" + @laststory["_id"].to_s + "&grade=" + graded.to_s %>"><%= graded.to_s %></option>
-		  		<% else %>
-		  			<option value="<%= "/date/" + @date + "?grade=" + graded.to_s %>"><%= graded.to_s %></option>
-		  		<% end %>
+			  	<option value="<%= graded.to_s %>"><%= graded.to_s %></option>
 			  <% end %>
 			</select>
+			</div>
+
+			<!-- Ispublic Checkbox -->
+			<div class="select-container col-xs-4"> 
+			<% if @ispublic %>
+				<input id="ispublic" type="checkbox" name="ispublic" checked="checked" onclick='refreshpage();'>public<br>
+			<% else %>
+				<input id="ispublic" type="checkbox" name="ispublic" onclick='refreshpage();'>public<br>
+			<% end %>
 			</div>
 		</div>
 	</div>
@@ -179,6 +177,8 @@
 					    </form>
 					<% end %>
 					<button id="downloadbutton" class="btn btn-lg btn-warning" onclick="DownloadRemake(this,'<%= remake["_id"].to_s %>')">Download</button>
+
+					<button id="userinfobutton" class="btn btn-lg btn-warning" onclick="getuserinfo(this,'<%= remake["created_at"] %>','<%= remake["_id"] %>')">+</button>
 					<!-- <button type="button" onclick="DownloadRemake('<%= remake["_id"].to_s %>')">Download Remake</button> -->
 			</div>
 			<!-- ListObjectsFromS3() -->
@@ -252,32 +252,88 @@
 
 		})
 
+		function getuserinfo(button, created_at, remake_id){
+			button.innerHTML = '-';
+			button.disabled = true
+			var theUrl = '/getuser/' + remake_id;
+
+			var xmlHttp = null;
+
+			    xmlHttp = new XMLHttpRequest();
+
+			    xmlHttp.onreadystatechange=function()
+				  {
+				  if (xmlHttp.readyState==4 && xmlHttp.status==200)
+				    {
+			    		button.disabled = false;
+			    		button.innerHTML = '+';
+			    		var user_info = JSON.parse(xmlHttp.responseText);
+			    		user_info_string = JSON.stringify(user_info, null, "\t");
+			    		alert("Remake Created at: " + String(created_at) + "\n" + user_info_string);
+				    }
+				  }
+
+			    xmlHttp.open( "GET", theUrl, true );
+			    xmlHttp.send( null );
+		}
+
+		function refreshpage(){
+			var ispublic = document.getElementById("ispublic").checked;
+
+			var selstories = document.getElementById("selstories");
+			var story = selstories.options[selstories.selectedIndex].value;
+
+			var selraw = document.getElementById("selraw");
+			var raw = selraw.options[selraw.selectedIndex].value;
+
+			var selgrade = document.getElementById("selgrade");
+			var grade = selgrade.options[selgrade.selectedIndex].value;
+
+			var surl = String(document.URL);
+			var date = surl.substring(surl.indexOf("te/") + 3,surl.indexOf("te/") +  11);
+
+			var pagebuilder = "/date/" + date + "?ispublic=" + ispublic;
+
+			if(story){
+				pagebuilder += "&story_id=" + story;
+			}
+			if(raw){
+				pagebuilder += "&raw=" + raw;
+			}
+			if(grade){
+				pagebuilder += "&grade=" + grade;
+			}
+			// alert(pagebuilder);
+			window.location.assign(String(pagebuilder));
+		}
 		
 		//Download the remake from S3
 		function DownloadRemake(button, remake_id) {
 
-					button.innerHTML = '<span class="glyphicon glyphicon-refresh glyphicon-refresh-animate" ></span> Loading...';
-					var theUrl = '/download/remake/' + remake_id;
+			button.innerHTML = '<span class="glyphicon glyphicon-refresh glyphicon-refresh-animate" ></span> Loading...';
+			button.disabled = true
+			var theUrl = '/download/remake/' + remake_id;
 
-					var xmlHttp = null;
+			var xmlHttp = null;
 
-					    xmlHttp = new XMLHttpRequest();
+			    xmlHttp = new XMLHttpRequest();
 
-					    xmlHttp.onreadystatechange=function()
-						  {
-						  if (xmlHttp.readyState==4 && xmlHttp.status==200)
-						    {
-						    	var pom = document.createElement('a');
-							  pom.setAttribute('href', xmlHttp.responseText);
-							  pom.setAttribute('download', remake_id + '.zip');
-							  pom.setAttribute('type', 'application/zip');
-							  pom.click();
-							  button.innerHTML = 'Download';
-						    }
-						  }
+			    xmlHttp.onreadystatechange=function()
+				  {
+				  if (xmlHttp.readyState==4 && xmlHttp.status==200)
+				    {
+				    	button.disabled = false
+				    	var pom = document.createElement('a');
+					  pom.setAttribute('href', xmlHttp.responseText);
+					  pom.setAttribute('download', remake_id + '.zip');
+					  pom.setAttribute('type', 'application/zip');
+					  pom.click();
+					  button.innerHTML = 'Download';
+				    }
+				  }
 
-					    xmlHttp.open( "GET", theUrl, true );
-					    xmlHttp.send( null );
+			    xmlHttp.open( "GET", theUrl, true );
+			    xmlHttp.send( null );
 		}
 		//Download the remake from S3-------------------------
 		
