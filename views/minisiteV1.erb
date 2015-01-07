@@ -46,14 +46,14 @@
     <script src="/js/imagesloaded.pkgd.js"></script>
     
     <!-- LESS -->
-    <link rel="stylesheet/less" type="text/css" href="/less/styles.less">
+    <link rel="stylesheet/less" type="text/css" href="/less/<%= @campaign["name"] %>.less">
     <script src="/js/less.js" type="text/javascript"></script>
     <script type="text/javascript">
       less.watch();
     </script>
 
     <!-- UNTIL MORE ROBUST SOLUTION - NEED TO COMPILE MANUALLY B4 GOING TO PRODUCTION  -->
-    <link href="/css/styles.css" rel="stylesheet"/>
+    <link href="/css/<%= @campaign["name"] %>.css" rel="stylesheet"/> 
 
     <!-- UTILS -->
     <script src="/js/Objectid.js"></script>
@@ -115,11 +115,21 @@
       <ul class="nav navbar-nav navbar-right">
         <li><a id="hmg-header-share" class="bold-font-label header-button" href="#">Share</a></li>
         <li id="share-site-container">
-            <a class="header-share-site-button twitter_site_share"></a>
-            <a class="header-share-site-button facebook_site_share"></a>
-            <a class="header-share-site-button gplus_site_share"></a>
-            <a class="header-share-site-button pinterest_site_share"></a>
-            <a class="header-share-site-button email_site_share"></a>
+          <span class="main-font-label hoverable-element twitter_share">
+            <i class="fa fa-twitter"> </i>
+          </span>
+          <span class="main-font-label hoverable-element facebook_share">
+            <i class="fa fa-facebook"> </i>
+          </span>
+          <span class="main-font-label hoverable-element gplus_share">
+            <i class="fa fa-google-plus"> </i>
+          </span>
+          <span class="main-font-label hoverable-element pinterest_share">
+            <i class="fa fa-pinterest"> </i>
+          </span>
+          <span class="main-font-label hoverable-element email_share">
+            <i class="fa fa-send"> </i>
+          </span>
         </li>
         <li class="dropdown hidden-lg hidden-md hidden-sm hidden-xs">
           <a id="hmg-header-login" href="#" class="dropdown-toggle bold-font-label header-button" data-toggle="dropdown" role="button" aria-expanded="false">Login 
@@ -184,7 +194,6 @@
           </div>
 
           <a class="bold-font-label campaign-button" href="http://homage.it/" target="_blank" >Go to Homage web site 
-
           </a>
         </div>
       </div> 
@@ -200,7 +209,10 @@
               <source src="" type="video/mp4"/>
             </video>
           </div> 
-        </div>   
+        </div> 
+        <div class="left-image">
+          <img>
+        </div>  
       </div>
     </div>
     <div class="row tbs-row gallery">
@@ -216,7 +228,7 @@
  
 <!-- ++++++++++++++++++++++++++++++++++ MINISITE FOOTER ++++++++++++++++++++++++++++++++++++++++++++++ -->
 <div class="row footer tbs-row hidden-xs">
-  <div class="col-xs-9 tbs-col">
+  <div class="col-xs-4 tbs-col">
     <ul class="footer-left">
         <li class="footer-label"><a class="clickable-link hmg-footer-logo" href="#">Fueled With Homage</a></li>
         <li class="footer-label"><a class="homage-footer-logo">
@@ -229,7 +241,17 @@
   </div>
 
   
-  <div class="col-xs-3 tbs-col">
+  <div class="col-xs-4 tbs-col">
+    <div class="hmg-customer-footer-info footer-middle">
+      <div class="logo">
+        <img/>
+      </div>
+      <div class="textinfo">&#169;2014-2015 Smartoonz Ltd. Monkey See Monkey Do. All rights reserved 
+      </div>
+    </div>
+  </div>
+
+  <div class="col-xs-4 tbs-col">
     <ul class="footer-right">
       <li class="footer-label hmg-social-link">
         <a class="hoverable-element">
