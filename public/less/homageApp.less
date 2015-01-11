@@ -202,6 +202,7 @@ html
   }
 }
 
+
 .header-share-site-button
 {
 	display: inline-block !important
@@ -763,9 +764,10 @@ html
 	text-align: left;
 	padding-bottom: 0px;
 	padding-left: 30px;
-	.hmg-footer-logo
+	.hmg-footer-text
 	{
 		color: @main-theme-color;
+		cursor: pointer;
 	}
 	.footer-label
 	{
@@ -1008,7 +1010,7 @@ html
   left: 0;
   height: 100%;
   width: 100%;
-  z-index: 20000000000;
+  z-index: 1000;
   background-color: rgba(0,0,0,0.85);
   display: none;
   cursor: pointer;
@@ -1116,5 +1118,15 @@ html
 		margin-right:0%;
 		margin-left: 0%;
 	}
+}
+
+#hmg-modal
+{
+	z-index: 2000;
+}
+
+.hmg-customer-footer-info
+{
+	display: none;
 }
 

@@ -110,12 +110,13 @@ html
 	border-radius: 0px;
 	margin-bottom: 0px;
 	z-index: 50;
+	height:68px;
 	.tbs-row
 	{
 		padding-right:30px;
 		padding-left: 30px;
+		height: 100%
 	}
-	height:68px;
 	.app-icon
 	{
 		padding-top: 7px
@@ -408,7 +409,7 @@ html
 	}
 	.gallery
 	{
-		padding-top: 150px;
+		padding-top: 80px;
 		@media(max-width:767px){
 			padding-top: 60px;
 		}
@@ -540,11 +541,11 @@ html
 		font-size: 14px;
 	}
 
-	.circular-usr-thumbnail
-	{
-		height: 35px;
-		width: 35px;
-	}
+	// .circular-usr-thumbnail
+	// {
+	// 	height: 35px;
+	// 	width: 35px;
+	// }
 
 	.user-name
 	{
@@ -565,6 +566,11 @@ html
 			float: right;
 			padding-left:5px;
 			margin-top: 7px;
+		}
+		.user-thumbnail-container
+		{
+			width:25px;
+			height:25px;
 		}
 	}
 	.galereya-cell-desc-text
@@ -633,14 +639,14 @@ html
 	margin-bottom: 30px;
 	span
 	{
-		font-size: 14px;
+		font-size: 16px;
 	}
 
-	.circular-usr-thumbnail
-	{
-		height: 35px;
-		width: 35px;
-	}
+	// .circular-usr-thumbnail
+	// {
+	// 	height: 35px;
+	// 	width: 35px;
+	// }
 
 	.user-name
 	{
@@ -716,6 +722,18 @@ html
 				padding-left:5px;
 				margin-top: 7px;
 			}
+			.user-thumbnail-container
+			{
+				width:40px;
+				height:40px;
+				.circular-usr-thumbnail
+				{
+					position: relative;
+					top: 2px;
+					left:1px;
+				}
+
+			}
 		}
 		.galereya-cell-desc-text
 		{
@@ -725,7 +743,7 @@ html
 			left: 0;
 			min-height: 20px;
 			width: 100%;
-			padding-bottom: 10px;
+			padding-bottom: 5px;
 			padding-left: 5px;
 			padding-right: 5px;
 			.like 
@@ -793,9 +811,10 @@ html
 	text-align: left;
 	padding-bottom: 0px;
 	padding-left: 30px;
-	.hmg-footer-logo
+	.hmg-footer-text
 	{
 		color: @main-theme-color;
+		cursor: default;
 	}
 	.footer-label
 	{
@@ -895,6 +914,11 @@ html
   		padding-right: 0px;
   	}
   }
+  .user-thumbnail-container
+  {
+  	height: 50px;
+  	width: 50px;
+  }
 }
 
 
@@ -937,21 +961,32 @@ html
 	}
 }
 
-.user-thumbnail {
-	content: url('/resources/minisite/anonymous_user.jpeg') no-repeat left center;
-	height:60px;
-	width:60px;
-}
+// .user-thumbnail {
+// 	content: url('/resources/minisite/anonymous_user.jpeg') no-repeat left center;
+// 	height:60px;
+// 	width:60px;
+// }
 
-.circular-usr-thumbnail {
-	width: 50px;
-	height: 50px;
+.user-thumbnail-container
+{
 	border-radius: 150px;
 	-webkit-border-radius: 150px;
 	-moz-border-radius: 150px;
-	background: url('/resources/minisite/anonymous_user.jpeg') no-repeat;
+	border: 2px solid @main-theme-color;
+}
+
+.circular-usr-thumbnail 
+{
+	position:relative;
+	top:3px;
+	left:3px;
+	height: 90%;
+	width:90%;
+
+	content:url('/resources/minisite/monkeyHead.png') no-repeat;
 	background-size: contain;
-	border: 2px solid @main-theme-color
+	border:none;
+	
 }
 
 // social counters
@@ -1058,7 +1093,7 @@ html
   left: 0;
   height: 100%;
   width: 100%;
-  z-index: 20000000000;
+  z-index: 1000;
   background-color: rgba(0,0,0,0.85);
   display: none;
   cursor: pointer;
@@ -1166,5 +1201,10 @@ html
 		margin-right:0%;
 		margin-left: 0%;
 	}
+}
+
+#hmg-modal
+{
+	z-index: 2000;
 }
 

@@ -550,8 +550,9 @@ html {
   padding-bottom: 0px;
   padding-left: 30px;
 }
-.footer-left .hmg-footer-logo {
+.footer-left .hmg-footer-text {
   color: #ff5f45;
+  cursor: pointer;
 }
 .footer-left .footer-label {
   margin-right: 10px;
@@ -739,7 +740,7 @@ html {
   left: 0;
   height: 100%;
   width: 100%;
-  z-index: 20000000000;
+  z-index: 1000;
   background-color: rgba(0, 0, 0, 0.85);
   display: none;
   cursor: pointer;
@@ -822,4 +823,10 @@ html {
     margin-right: 0%;
     margin-left: 0%;
   }
+}
+#hmg-modal {
+  z-index: 2000;
+}
+.hmg-customer-footer-info {
+  display: none;
 }

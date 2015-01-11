@@ -73,6 +73,7 @@ html {
 #hmg-nav-bar .tbs-row {
   padding-right: 30px;
   padding-left: 30px;
+  height: 100%;
 }
 #hmg-nav-bar .app-icon {
   padding-top: 7px;
@@ -285,7 +286,7 @@ html {
   background-size: contain;
 }
 .gallery-row .gallery {
-  padding-top: 150px;
+  padding-top: 80px;
 }
 @media (max-width: 767px) {
   .gallery-row .gallery {
@@ -397,10 +398,6 @@ html {
 .galereya-cell span {
   font-size: 14px;
 }
-.galereya-cell .circular-usr-thumbnail {
-  height: 35px;
-  width: 35px;
-}
 .galereya-cell .user-name {
   float: left;
   padding-left: 6px;
@@ -415,6 +412,10 @@ html {
   float: right;
   padding-left: 5px;
   margin-top: 7px;
+}
+.galereya-cell .galereya-cell-desc-title .user-thumbnail-container {
+  width: 25px;
+  height: 25px;
 }
 .galereya-cell .galereya-cell-desc-text .like {
   float: left;
@@ -454,11 +455,7 @@ html {
   margin-bottom: 30px;
 }
 .hmg-gallery-cell span {
-  font-size: 14px;
-}
-.hmg-gallery-cell .circular-usr-thumbnail {
-  height: 35px;
-  width: 35px;
+  font-size: 16px;
 }
 .hmg-gallery-cell .user-name {
   float: left;
@@ -524,6 +521,15 @@ html {
   padding-left: 5px;
   margin-top: 7px;
 }
+.hmg-gallery-cell .galereya-cell-desc .galereya-cell-desc-title .user-thumbnail-container {
+  width: 40px;
+  height: 40px;
+}
+.hmg-gallery-cell .galereya-cell-desc .galereya-cell-desc-title .user-thumbnail-container .circular-usr-thumbnail {
+  position: relative;
+  top: 2px;
+  left: 1px;
+}
 .hmg-gallery-cell .galereya-cell-desc .galereya-cell-desc-text {
   font-weight: bold;
   position: absolute;
@@ -531,7 +537,7 @@ html {
   left: 0;
   min-height: 20px;
   width: 100%;
-  padding-bottom: 10px;
+  padding-bottom: 5px;
   padding-left: 5px;
   padding-right: 5px;
 }
@@ -575,8 +581,9 @@ html {
   padding-bottom: 0px;
   padding-left: 30px;
 }
-.footer-left .hmg-footer-logo {
+.footer-left .hmg-footer-text {
   color: #ffaf00;
+  cursor: default;
 }
 .footer-left .footer-label {
   margin-right: 10px;
@@ -645,6 +652,10 @@ html {
     padding-right: 0px;
   }
 }
+.remake-header .user-thumbnail-container {
+  height: 50px;
+  width: 50px;
+}
 .user-container {
   height: inherit;
 }
@@ -675,20 +686,21 @@ html {
   color: #c96b21;
   font-size: 14px;
 }
-.user-thumbnail {
-  content: url('/resources/minisite/anonymous_user.jpeg') no-repeat left center;
-  height: 60px;
-  width: 60px;
-}
-.circular-usr-thumbnail {
-  width: 50px;
-  height: 50px;
+.user-thumbnail-container {
   border-radius: 150px;
   -webkit-border-radius: 150px;
   -moz-border-radius: 150px;
-  background: url('/resources/minisite/anonymous_user.jpeg') no-repeat;
-  background-size: contain;
   border: 2px solid #ffaf00;
+}
+.circular-usr-thumbnail {
+  position: relative;
+  top: 3px;
+  left: 3px;
+  height: 90%;
+  width: 90%;
+  content: url('/resources/minisite/monkeyHead.png') no-repeat;
+  background-size: contain;
+  border: none;
 }
 .mobile-social-counters-row {
   height: 40px;
@@ -775,7 +787,7 @@ html {
   left: 0;
   height: 100%;
   width: 100%;
-  z-index: 20000000000;
+  z-index: 1000;
   background-color: rgba(0, 0, 0, 0.85);
   display: none;
   cursor: pointer;
@@ -858,4 +870,7 @@ html {
     margin-right: 0%;
     margin-left: 0%;
   }
+}
+#hmg-modal {
+  z-index: 2000;
 }

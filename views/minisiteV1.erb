@@ -53,7 +53,7 @@
     </script>
 
     <!-- UNTIL MORE ROBUST SOLUTION - NEED TO COMPILE MANUALLY B4 GOING TO PRODUCTION  -->
-    <link href="/css/<%= @campaign["name"] %>.css" rel="stylesheet"/> 
+    <!-- <link href="/css/<%= @campaign["name"] %>.css" rel="stylesheet"/>  -->
 
     <!-- UTILS -->
     <script src="/js/Objectid.js"></script>
@@ -230,8 +230,8 @@
 <div class="row footer tbs-row hidden-xs">
   <div class="col-xs-4 tbs-col">
     <ul class="footer-left">
-        <li class="footer-label"><a class="clickable-link hmg-footer-logo" href="#">Fueled With Homage</a></li>
-        <li class="footer-label"><a class="homage-footer-logo">
+        <li class="footer-label"><a class="clickable-link hmg-footer-text">Fueled With</a></li>
+        <li class="footer-label"><a class="clickable-link" href="http://www.homage.it" target="_blank">
           <img id="hmg-footer-logo"/>
         </a>
         </li>
@@ -453,6 +453,24 @@
 
 </div>
 
+<!-- Modal -->
+<div class="modal fade" id="hmg-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="myModalLabel">Report as inappropriate</h4>
+      </div>
+      <div class="modal-body">
+        Are you sure you want to flag this clip?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default dismiss-button" data-dismiss="modal">No</button>
+        <button type="button" class="btn btn-primary confirm-button">Yes</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 
 <script type="text/javascript">
@@ -518,8 +536,6 @@
   $(window).resize( function() {
     adjustGallerySize();
   });
-  
-
   
 
   // REMAKE GALLERY
@@ -1288,11 +1304,33 @@ videojs('remake_video_player').ready(function() {
     );
   });
 
+  function flagRemakeAsInappropriate(remake_id, user_id) {
+    remake_id = currentRemake["remake_id"]
+    cookie_id = $.cookie('homageCookieID')
+    report = {"remake_id": remake_id, "cookie_id":cookie_id}
+    $.post('/remake/report', report, function(data,status){
+           
+    });
+  }
+
+  $(".flag-button").click(function() {
+    $("#hmg-modal").modal('show');
+  })
+
+  $("#hmg-modal .dismiss-button").click(function() {
+    $("#hmg-modal").modal('hide');
+  })
+
+  $("#hmg-modal .confirm-button").click(function() {
+    flagRemakeAsInappropriate()
+    $("#hmg-modal").modal('hide');
+  })
+
   // MAIN 
   $(".all-remakes-button .clickable-link").toggleClass("selected")
   adjustGallerySize();
   fetch_remakes(AllQuery);
-
+  
 </script>
 </body>
 
