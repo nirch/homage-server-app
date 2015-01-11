@@ -293,6 +293,7 @@ get '/remakes' do
 		for story in stories do
 			story_id = story["_id"]
 			story_names["story_id"] = story["name"]
+			story_id_array.push(story_id);
 		end
 
 
@@ -310,8 +311,6 @@ get '/remakes' do
 		end
 
 		remakes_find_condition = {"$match" => find_condition}
-		puts "remake find condition"
-		puts remakes_find_condition
 		aggregation_pipeline.push(remakes_find_condition)
 	    
 		if query_type == RemakesQueryType::TrendingQuery then
@@ -1262,11 +1261,17 @@ end
 post '/remake/report' do
 	# input
 	remake_id = BSON::ObjectId.from_string(params[:remake_id])
-	user_id = BSON::ObjectId.from_string(params[:user_id])
 
-	remakes = settings.db.collection("Remakes")
+	report = {reported_at: Time.now}
+	if params[:user_id] then
+		report["user_id"] = params[:user_id]
+	end
 
-	report = {reported_at: Time.now, user_id: user_id}
+	if params[:cookie_id] then
+		report["cookie_id"] = params[:cookie_id]
+	end
+
+	remakes = settings.db.collection("Remakes")	
 	remakes.update({_id: remake_id}, {"$push" => {reports: report}})
 
 	# returning the remake object
@@ -1361,8 +1366,6 @@ def userLikedRemake(entity_id,remake_id)
 			}
 		]
 	}).count
-
-	puts "current_user_likes: " + current_user_likes.to_s
 
 	if current_user_likes != 0 then
 		return true
