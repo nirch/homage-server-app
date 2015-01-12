@@ -88,9 +88,11 @@ html {
   }
 }
 #hmg-navbar-toggle-menu {
-  background: url('/resources/minisite/MenuLinesHorizMobile.png') no-repeat;
   border: none;
-  margin-top: 23px;
+  font-size: 24px !important;
+}
+#hmg-navbar-toggle-menu .fa {
+  color: #ffaf00 !important;
 }
 #hmg-header-logo {
   height: 68px;
@@ -98,13 +100,13 @@ html {
   padding-left: 0px;
   display: none;
 }
-#hmg-logo-mobile {
+#hmg-logo-mobile:before {
   content: url("/resources/minisite/HomageLogoMobile.png");
 }
-#hmg-appstore-link {
+#hmg-appstore-link:before {
   content: url("/resources/minisite/monkeyDance/appStoreIcon.png");
 }
-#hmg-playstore-link {
+#hmg-playstore-link:before {
   content: url("/resources/minisite/PlayStoreIcon.png");
   display: none;
 }
@@ -279,7 +281,7 @@ html {
 .gallery-row .banner .left-image {
   padding-left: 30px;
 }
-.gallery-row .banner .left-image img {
+.gallery-row .banner .left-image span:before {
   content: url('/resources/minisite/monkeyDance/monkey.png');
   height: 300px;
   width: 300px;
@@ -395,46 +397,6 @@ html {
   width: 100%!important;
   height: 100%!important;
 }
-.galereya-cell span {
-  font-size: 14px;
-}
-.galereya-cell .user-name {
-  float: left;
-  padding-left: 6px;
-  padding-top: 7px;
-}
-.galereya-cell .galereya-cell-desc {
-  background-color: rgba(0, 0, 0, 0.65);
-}
-.galereya-cell .galereya-cell-desc-title .like,
-.galereya-cell .galereya-cell-desc-title .view,
-.galereya-cell .galereya-cell-desc-title .share {
-  float: right;
-  padding-left: 5px;
-  margin-top: 7px;
-}
-.galereya-cell .galereya-cell-desc-title .user-thumbnail-container {
-  width: 25px;
-  height: 25px;
-}
-.galereya-cell .galereya-cell-desc-text .like {
-  float: left;
-}
-.galereya-cell .galereya-cell-desc-text .flag {
-  float: right;
-}
-.loading-images {
-  position: relative;
-}
-.loading-images .spinner {
-  position: absolute;
-  left: 45%;
-  top: 5%;
-  font-size: 40px;
-}
-.loading-images .fa {
-  color: #ffaf00;
-}
 .wrapper {
   overflow-y: auto;
 }
@@ -524,6 +486,8 @@ html {
 .hmg-gallery-cell .galereya-cell-desc .galereya-cell-desc-title .user-thumbnail-container {
   width: 40px;
   height: 40px;
+  padding-top: 3px;
+  padding-right: 2px;
 }
 .hmg-gallery-cell .galereya-cell-desc .galereya-cell-desc-title .user-thumbnail-container .circular-usr-thumbnail {
   position: relative;
@@ -537,7 +501,7 @@ html {
   left: 0;
   min-height: 20px;
   width: 100%;
-  padding-bottom: 5px;
+  padding-bottom: 10px;
   padding-left: 5px;
   padding-right: 5px;
 }
@@ -576,6 +540,9 @@ html {
 .footer-right .hmg-social-link {
   margin-left: 15px;
 }
+.footer-right .fa {
+  font-size: 16px;
+}
 .footer-left {
   text-align: left;
   padding-bottom: 0px;
@@ -589,13 +556,17 @@ html {
   margin-right: 10px;
 }
 #hmg-footer-logo {
+  position: relative;
+  top: 7px;
+}
+#hmg-footer-logo:before {
   content: url('/resources/minisite/HomageLogoFooter.png');
 }
 .hmg-customer-footer-info {
   text-align: center;
   padding-top: 5px;
 }
-.hmg-customer-footer-info .logo img {
+.hmg-customer-footer-info .logo span:before {
   content: url('/resources/minisite/monkeyDance/smartoonzLogo.png');
 }
 .hmg-customer-footer-info .textinfo {
@@ -636,12 +607,13 @@ html {
   color: #f0f0f0;
 }
 .close-button {
-  background: url('/resources/minisite/XClose.png') no-repeat left center;
   float: right;
   height: 15px;
   width: 15px;
   margin-top: 30px;
   margin-right: 40px;
+  color: #ffaf00;
+  font-size: 24px !important;
 }
 .remake-header {
   height: 60px;
@@ -655,6 +627,8 @@ html {
 .remake-header .user-thumbnail-container {
   height: 50px;
   width: 50px;
+  padding-top: 5px;
+  padding-left: 2px;
 }
 .user-container {
   height: inherit;
@@ -692,14 +666,13 @@ html {
   -moz-border-radius: 150px;
   border: 2px solid #ffaf00;
 }
-.circular-usr-thumbnail {
-  position: relative;
-  top: 3px;
-  left: 3px;
-  height: 90%;
-  width: 90%;
-  content: url('/resources/minisite/monkeyHead.png') no-repeat;
-  background-size: contain;
+.circular-usr-thumbnail:before {
+  display: inline-block;
+  width: 100%;
+  height: 100%;
+  content: "";
+  background: url('/resources/minisite/monkeyHead.png') no-repeat;
+  background-size: 100%;
   border: none;
 }
 .mobile-social-counters-row {

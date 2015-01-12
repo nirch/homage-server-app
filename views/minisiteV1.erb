@@ -91,9 +91,10 @@
       <!-- Brand and toggle get grouped for better mobile display -->
     <div class="navbar-header">
       <button type="button" class="navbar-toggle collapsed" id="hmg-navbar-toggle-menu" data-toggle="collapse" data-target="#hmg-nav-bar-collapse">
+        <i class="fa fa-bars"> </i>
       </button>
       <a class="navbar-brand" id="hmg-header-logo" href="#">
-        <img id="hmg-logo-mobile"/>
+        <span id="hmg-logo-mobile"/>
       </a>
     </div>
 
@@ -102,12 +103,12 @@
       <ul class="nav navbar-nav">
         <li>
           <a class="app-icon" href="/ios" target="_blank">
-            <img id="hmg-appstore-link"/>
+            <span id="hmg-appstore-link"/>
           </a>
         </li>
         <li>
           <a class="app-icon" href="/android" target="_blank">
-            <img id="hmg-playstore-link"/>
+            <span id="hmg-playstore-link"/>
           </a>
         </li>
       </ul>
@@ -211,7 +212,7 @@
           </div> 
         </div> 
         <div class="left-image">
-          <img>
+          <span>
         </div>  
       </div>
     </div>
@@ -232,7 +233,7 @@
     <ul class="footer-left">
         <li class="footer-label"><a class="clickable-link hmg-footer-text">Fueled With</a></li>
         <li class="footer-label"><a class="clickable-link" href="http://www.homage.it" target="_blank">
-          <img id="hmg-footer-logo"/>
+          <span id="hmg-footer-logo"/>
         </a>
         </li>
         <!-- <li class="footer-label"><a class="clickable-link" href="#">Privacy Policy</a></li>
@@ -243,9 +244,9 @@
   
   <div class="col-xs-4 tbs-col">
     <div class="hmg-customer-footer-info footer-middle">
-      <div class="logo">
-        <img/>
-      </div>
+      <a class="logo" href='<%=@campaign["primary_link"]%>' target="_blank">
+        <span/>
+      </a>
       <div class="textinfo">&#169;2014-2015 Smartoonz Ltd. Monkey See Monkey Do. All rights reserved 
       </div>
     </div>
@@ -254,18 +255,23 @@
   <div class="col-xs-4 tbs-col">
     <ul class="footer-right">
       <li class="footer-label hmg-social-link">
-        <a class="hoverable-element">
+        <a class="hoverable-element" href='<%=@campaign["facebook_link"]%>' target="_blank">
           <i class="fa fa-facebook hmg-facebook"> </i>
         </a>
       </li>
       <li class="footer-label hmg-social-link">
-        <a class="hoverable-element">
+        <a class="hoverable-element" href='<%=@campaign["twitter_link"]%>' target="_blank">
           <i class="fa fa-twitter hmg-twitter"> </i>
         </a>
       </li>
       <li class="footer-label hmg-social-link">
-        <a class="hoverable-element">
+        <a class="hoverable-element" href='<%=@campaign["tumblr_link"]%>' target="_blank">
           <i class="fa fa-tumblr hmg-tumblr"> </i>
+        </a>
+      </li>
+      <li class="footer-label hmg-social-link">
+        <a class="hoverable-element" href='<%=@campaign["youtube_link"]%>' target="_blank">
+          <i class="fa fa-youtube-play hmg-youtube"> </i>
         </a>
       </li>
     </ul>
@@ -276,7 +282,8 @@
 <!-- ++++++++++++++++++++++++++++++++++ SINGLE REMAKE VIDEO OVERLAY ++++++++++++++++++++++++++++++++++++++++ -->
 <div class="container-fluid video-overlay tbs-container-fluid">
   <div class="row tbs-row hidden-xs">
-    <div class="close-button"></div>
+    <i class="fa close-button fa-close"> </i> 
+    <!-- <div class="close-button"></div> -->
   </div>
   
   <div class="row tbs-row">
@@ -291,13 +298,14 @@
         <div class="row tbs-row remake-header">  
             <div class="col-sm-6 col-xs-12 user-container">
               <div class="user-thumbnail-container">
-                 <img class="circular-usr-thumbnail">
+                 <span class="circular-usr-thumbnail">
               </div>            
               <div class="user-info-container">  
                 <div class="main-font-label user-name-label"></div>
                 <!-- <div class="main-font-label hoverable-element visible-xs more-from-button"></div> -->
-              </div>     
-              <div class="close-button visible-xs"></div>
+              </div>    
+              <i class="fa close-button fa-close visible-xs"> </i> 
+              <!-- <div class="close-button visible-xs"></div> -->
             </div>
 
             <div class="col-sm-6 hidden-xs">
@@ -361,10 +369,10 @@
                 <span class="app-icons-container">
                   <div class="general-overlay-label main-font-label">Or get busy:</div>
                   <a class="app-icon" href="/ios" target="_blank">
-                    <img id="hmg-appstore-link"/>
+                    <span id="hmg-appstore-link"/>
                   </a>
                   <a class="app-icon" href="/android" target="_blank">
-                    <img id="hmg-playstore-link"/>
+                    <span id="hmg-playstore-link"/>
                   </a>
                 </span>
               </div>
@@ -623,7 +631,7 @@
             .append('<div class="galereya-cell-desc">\
                         <div class="galereya-cell-desc-title">\
                             <span class="user-thumbnail-container">\
-                                <img class="circular-usr-thumbnail">\
+                                <span class="circular-usr-thumbnail"></span>\
                             </span>\
                             <span class="main-font-label user-name">' + user_name + '</span>\
                             <span class="main-font-label social_count_label like">\
@@ -1288,21 +1296,6 @@ videojs('remake_video_player').ready(function() {
     }
     $(this).attr('href' , href);
   })
-
-  //footer homage links
-  $('.hmg-facebook').on('click',function() {
-    window.open(
-      'https://www.facebook.com/homageit',
-      '_blank' // <- This is what makes it open in a new window.
-    );
-  });
-
-  $('.hmg-twitter').on('click',function() {
-    window.open(
-      'https://twitter.com/Homagination',
-      '_blank' // <- This is what makes it open in a new window.
-    );
-  });
 
   function flagRemakeAsInappropriate(remake_id, user_id) {
     remake_id = currentRemake["remake_id"]

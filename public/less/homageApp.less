@@ -123,12 +123,18 @@ html
 	text-align: center;
 }
 
+
 #hmg-navbar-toggle-menu
 {
-	background: url('/resources/minisite/MenuLinesHorizMobile.png') no-repeat;
+	//background: url('/resources/minisite/MenuLinesHorizMobile.png') no-repeat;
 	border: none;
-	margin-top: 23px;
+	font-size: 24px !important;
+	.fa
+	{
+		color: @main-theme-color !important;
+	}
 }
+
 
 #hmg-header-logo
 {
@@ -137,17 +143,17 @@ html
 	padding-left:0px;
 }
 
-#hmg-logo-mobile
+#hmg-logo-mobile:before
 {
 	content:url("/resources/minisite/HomageLogoMobile.png")
 }
 
-#hmg-appstore-link
+#hmg-appstore-link:before
 {
 	content:url("/resources/minisite/AppStoreIcon.png");
 }
 
-#hmg-playstore-link
+#hmg-playstore-link:before
 {
 	content:url("/resources/minisite/PlayStoreIcon.png");
 }
@@ -687,6 +693,20 @@ html
 				padding-left:5px;
 				margin-top: 7px;
 			}
+			.user-thumbnail-container
+			{
+				width:40px;
+				height:40px;
+				padding-top: 3px;
+				padding-right: 2px;
+				.circular-usr-thumbnail
+				{
+					position: relative;
+					top: 2px;
+					left:1px;
+				}
+
+			}
 		}
 		.galereya-cell-desc-text
 		{
@@ -757,6 +777,10 @@ html
 		// width:20px;
 		// text-align: center;
 	}
+	.fa
+	{
+		font-size: 16px;
+	}
 }
 
 .footer-left
@@ -777,7 +801,11 @@ html
 
 #hmg-footer-logo
 {
-	content: url('/resources/minisite/HomageLogoFooter.png')
+	position: relative;
+	top: 7px;
+	&:before{
+		content: url('/resources/minisite/HomageLogoFooter.png');
+	}
 }
 
 
@@ -828,12 +856,14 @@ html
 }
 
 .close-button {
-  background: url('/resources/minisite/XClose.png') no-repeat left center;
+  //background: url('/resources/minisite/XClose.png') no-repeat left center;
   float: right;
   height: 15px;
   width: 15px;
   margin-top: 30px;
   margin-right: 40px;
+  color: @main-theme-color;
+  font-size: 24px !important;
 }
 
 // remake header
@@ -847,8 +877,14 @@ html
   		padding-right: 0px;
   	}
   }
+  .user-thumbnail-container
+  {
+  	height: 50px;
+  	width: 50px;
+  	padding-top: 8px;
+  	padding-left: 10px;
+  }
 }
-
 
 .user-container
 {
@@ -889,21 +925,27 @@ html
 	}
 }
 
-.user-thumbnail {
-	content: url('/resources/minisite/anonymous_user.jpeg') no-repeat left center;
-	height:60px;
-	width:60px;
-}
-
-.circular-usr-thumbnail {
-	width: 50px;
-	height: 50px;
+.user-thumbnail-container
+{
 	border-radius: 150px;
 	-webkit-border-radius: 150px;
 	-moz-border-radius: 150px;
-	background: url('/resources/minisite/anonymous_user.jpeg') no-repeat;
-	background-size: contain;
-	border: 2px solid @main-theme-color
+	border: 2px solid @main-theme-color;
+	background-color: black;
+}
+
+.circular-usr-thumbnail 
+{
+	&:before 
+	{
+		display: inline-block;
+	    width: 75%;
+	    height: 75%;
+	    content: "";
+	    background:url('/resources/minisite/anonymous_user.jpeg') no-repeat;
+	    background-size: 100%;
+	    border: none;
+	}
 }
 
 // social counters

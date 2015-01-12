@@ -78,22 +78,24 @@ html {
   text-align: center;
 }
 #hmg-navbar-toggle-menu {
-  background: url('/resources/minisite/MenuLinesHorizMobile.png') no-repeat;
   border: none;
-  margin-top: 23px;
+  font-size: 24px !important;
+}
+#hmg-navbar-toggle-menu .fa {
+  color: #ff5f45 !important;
 }
 #hmg-header-logo {
   height: 68px;
   margin-left: 0px;
   padding-left: 0px;
 }
-#hmg-logo-mobile {
+#hmg-logo-mobile:before {
   content: url("/resources/minisite/HomageLogoMobile.png");
 }
-#hmg-appstore-link {
+#hmg-appstore-link:before {
   content: url("/resources/minisite/AppStoreIcon.png");
 }
-#hmg-playstore-link {
+#hmg-playstore-link:before {
   content: url("/resources/minisite/PlayStoreIcon.png");
 }
 .header-button {
@@ -500,6 +502,17 @@ html {
   padding-left: 5px;
   margin-top: 7px;
 }
+.hmg-gallery-cell .galereya-cell-desc .galereya-cell-desc-title .user-thumbnail-container {
+  width: 40px;
+  height: 40px;
+  padding-top: 3px;
+  padding-right: 2px;
+}
+.hmg-gallery-cell .galereya-cell-desc .galereya-cell-desc-title .user-thumbnail-container .circular-usr-thumbnail {
+  position: relative;
+  top: 2px;
+  left: 1px;
+}
 .hmg-gallery-cell .galereya-cell-desc .galereya-cell-desc-text {
   font-weight: bold;
   position: absolute;
@@ -545,6 +558,9 @@ html {
 .footer-right .hmg-social-link {
   margin-left: 15px;
 }
+.footer-right .fa {
+  font-size: 16px;
+}
 .footer-left {
   text-align: left;
   padding-bottom: 0px;
@@ -558,6 +574,10 @@ html {
   margin-right: 10px;
 }
 #hmg-footer-logo {
+  position: relative;
+  top: 7px;
+}
+#hmg-footer-logo:before {
   content: url('/resources/minisite/HomageLogoFooter.png');
 }
 .footer-label {
@@ -594,12 +614,13 @@ html {
   color: #f0f0f0;
 }
 .close-button {
-  background: url('/resources/minisite/XClose.png') no-repeat left center;
   float: right;
   height: 15px;
   width: 15px;
   margin-top: 30px;
   margin-right: 40px;
+  color: #ff5f45;
+  font-size: 24px !important;
 }
 .remake-header {
   height: 60px;
@@ -609,6 +630,12 @@ html {
     padding-left: 0px;
     padding-right: 0px;
   }
+}
+.remake-header .user-thumbnail-container {
+  height: 50px;
+  width: 50px;
+  padding-top: 8px;
+  padding-left: 10px;
 }
 .user-container {
   height: inherit;
@@ -640,20 +667,21 @@ html {
   color: #707070;
   font-size: 14px;
 }
-.user-thumbnail {
-  content: url('/resources/minisite/anonymous_user.jpeg') no-repeat left center;
-  height: 60px;
-  width: 60px;
-}
-.circular-usr-thumbnail {
-  width: 50px;
-  height: 50px;
+.user-thumbnail-container {
   border-radius: 150px;
   -webkit-border-radius: 150px;
   -moz-border-radius: 150px;
-  background: url('/resources/minisite/anonymous_user.jpeg') no-repeat;
-  background-size: contain;
   border: 2px solid #ff5f45;
+  background-color: black;
+}
+.circular-usr-thumbnail:before {
+  display: inline-block;
+  width: 75%;
+  height: 75%;
+  content: "";
+  background: url('/resources/minisite/anonymous_user.jpeg') no-repeat;
+  background-size: 100%;
+  border: none;
 }
 .mobile-social-counters-row {
   height: 40px;

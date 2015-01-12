@@ -137,9 +137,13 @@ html
 
 #hmg-navbar-toggle-menu
 {
-	background: url('/resources/minisite/MenuLinesHorizMobile.png') no-repeat;
+	//background: url('/resources/minisite/MenuLinesHorizMobile.png') no-repeat;
 	border: none;
-	margin-top: 23px;
+	font-size: 24px !important;
+	.fa
+	{
+		color: @main-theme-color !important;
+	}
 }
 
 #hmg-header-logo
@@ -150,17 +154,17 @@ html
 	display: none;
 }
 
-#hmg-logo-mobile
+#hmg-logo-mobile:before
 {
 	content:url("/resources/minisite/HomageLogoMobile.png")
 }
 
-#hmg-appstore-link
+#hmg-appstore-link:before
 {
 	content:url("/resources/minisite/monkeyDance/appStoreIcon.png");
 }
 
-#hmg-playstore-link
+#hmg-playstore-link:before
 {
 	content:url("/resources/minisite/PlayStoreIcon.png");
 	display: none;
@@ -397,8 +401,9 @@ html
 		.left-image
 		{
 			padding-left: 30px;
-			img
+			span:before
 			{
+
 				content: url('/resources/minisite/monkeyDance/monkey.png');
 				height: 300px;
 				width: 300px;
@@ -534,75 +539,77 @@ html
 
 
 // GALLERY GRID ADDTIONAL CSS
-.galereya-cell 
-{
-	span
-	{
-		font-size: 14px;
-	}
+// .galereya-cell 
+// {
+// 	span
+// 	{
+// 		font-size: 14px;
+// 	}
 
-	// .circular-usr-thumbnail
-	// {
-	// 	height: 35px;
-	// 	width: 35px;
-	// }
+// 	// .circular-usr-thumbnail
+// 	// {
+// 	// 	height: 35px;
+// 	// 	width: 35px;
+// 	// }
 
-	.user-name
-	{
-		float:left;
-		padding-left:6px;
-		padding-top:7px;
-	}
+// 	.user-name
+// 	{
+// 		float:left;
+// 		padding-left:6px;
+// 		padding-top:7px;
+// 	}
 
-	.galereya-cell-desc
-	{
-		background-color: rgba(0,0,0,0.65);
-	}
+// 	.galereya-cell-desc
+// 	{
+// 		background-color: rgba(0,0,0,0.65);
+// 	}
 
-	.galereya-cell-desc-title
-	{
-		.like, .view, .share
-		{
-			float: right;
-			padding-left:5px;
-			margin-top: 7px;
-		}
-		.user-thumbnail-container
-		{
-			width:25px;
-			height:25px;
-		}
-	}
-	.galereya-cell-desc-text
-	{
-		.like 
-		{
-			float: left;
-		}
+// 	.galereya-cell-desc-title
+// 	{
+// 		.like, .view, .share
+// 		{
+// 			float: right;
+// 			padding-left:5px;
+// 			margin-top: 7px;
+// 		}
+// 		.user-thumbnail-container
+// 		{
+// 			width:25px;
+// 			height:25px;
+// 			padding-top: 5px;
+// 			padding-left: 2px;
+// 		}
+// 	}
+// 	.galereya-cell-desc-text
+// 	{
+// 		.like 
+// 		{
+// 			float: left;
+// 		}
 
-		.flag 
-		{
-			float: right;
-		}
-	}
+// 		.flag 
+// 		{
+// 			float: right;
+// 		}
+// 	}
 	
-}
+// }
 
-.loading-images
-{
-	position: relative;
-	.spinner
-	{
-		position: absolute;
-		left:45%;
-		top:5%;
-		font-size: 40px;
-	}
-	.fa
-	{
-		color: @main-theme-color;
-	}
-}
+// .loading-images
+// {
+// 	position: relative;
+// 	.spinner
+// 	{
+// 		position: absolute;
+// 		left:45%;
+// 		top:5%;
+// 		font-size: 40px;
+// 	}
+// 	.fa
+// 	{
+// 		color: @main-theme-color;
+// 	}
+// }
 
 // MASONRY GALLERY
 
@@ -726,6 +733,8 @@ html
 			{
 				width:40px;
 				height:40px;
+				padding-top: 3px;
+				padding-right: 2px;
 				.circular-usr-thumbnail
 				{
 					position: relative;
@@ -743,7 +752,7 @@ html
 			left: 0;
 			min-height: 20px;
 			width: 100%;
-			padding-bottom: 5px;
+			padding-bottom: 10px;
 			padding-left: 5px;
 			padding-right: 5px;
 			.like 
@@ -804,6 +813,10 @@ html
 		// width:20px;
 		// text-align: center;
 	}
+	.fa
+	{
+		font-size: 16px;
+	}
 }
 
 .footer-left
@@ -824,7 +837,11 @@ html
 
 #hmg-footer-logo
 {
-	content: url('/resources/minisite/HomageLogoFooter.png')
+	position: relative;
+	top: 7px;
+	&:before{
+		content: url('/resources/minisite/HomageLogoFooter.png');
+	}
 }
 
 .hmg-customer-footer-info
@@ -833,7 +850,7 @@ html
 	padding-top: 5px;
 	.logo
 	{
-		img
+		span:before
 		{
 			content: url('/resources/minisite/monkeyDance/smartoonzLogo.png')
 		}
@@ -895,12 +912,14 @@ html
 }
 
 .close-button {
-  background: url('/resources/minisite/XClose.png') no-repeat left center;
+  //background: url('/resources/minisite/XClose.png') no-repeat left center;
   float: right;
   height: 15px;
   width: 15px;
   margin-top: 30px;
   margin-right: 40px;
+  color: @main-theme-color;
+  font-size: 24px !important;
 }
 
 // remake header
@@ -918,6 +937,8 @@ html
   {
   	height: 50px;
   	width: 50px;
+  	padding-top: 5px;
+  	padding-left: 2px;
   }
 }
 
@@ -961,11 +982,6 @@ html
 	}
 }
 
-// .user-thumbnail {
-// 	content: url('/resources/minisite/anonymous_user.jpeg') no-repeat left center;
-// 	height:60px;
-// 	width:60px;
-// }
 
 .user-thumbnail-container
 {
@@ -977,16 +993,16 @@ html
 
 .circular-usr-thumbnail 
 {
-	position:relative;
-	top:3px;
-	left:3px;
-	height: 90%;
-	width:90%;
-
-	content:url('/resources/minisite/monkeyHead.png') no-repeat;
-	background-size: contain;
-	border:none;
-	
+	&:before 
+	{
+		display: inline-block;
+	    width: 100%;
+	    height: 100%;
+	    content: "";
+	    background:url('/resources/minisite/monkeyHead.png') no-repeat;
+	    background-size: 100%;
+	    border: none;
+	}
 }
 
 // social counters
