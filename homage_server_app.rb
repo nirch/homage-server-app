@@ -428,6 +428,7 @@ subdomain settings.play_subdomain do
 		if @ispublic == "false"
 			@ispublic = false
 		end
+
 		# PUBLIC
 		if @ispublic
 			# @test = "in ispublic"
@@ -440,8 +441,19 @@ subdomain settings.play_subdomain do
 			remake_hash["user_id"] = {"$in" => public_users}
 		end
 
-		# STORY
-		@stories  = settings.db.collection("Stories").find(active:true).sort(created_at:-1)
+		# CAMPAIGN
+		if params[:campaign_name]
+			@campaign = settings.db.collection("Campaigns").find_one({name: params[:campaign_name]})
+			if @campaign
+				campaign_id = @campaign["_id"]
+				@stories = settings.db.collection("Stories").find({active:true, campaign_id: campaign_id}).sort(created_at:-1)
+			else
+				@stories  = settings.db.collection("Stories").find(active:true).sort(created_at:-1)
+			end
+		else
+			# STORY
+			@stories  = settings.db.collection("Stories").find(active:true).sort(created_at:-1)
+		end
 		
 		if params[:story_id] == nil
 			story_ids = []
@@ -505,7 +517,7 @@ subdomain settings.play_subdomain do
 			@heading = @remakes.count.to_s + " Remakes from " + from_date.strftime("%d/%m/%Y")
 			@grade = true
         end
-		# @heading = @remakes.count.to_s
+		# @heading = params[:campaign_name]
 		erb :demoday
 	end
 

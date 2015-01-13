@@ -1,0 +1,85 @@
+html, body {
+			height: 100%;
+}
+body {
+	background-color:#f8f8f8;
+}
+nav {
+	background-color: #ff7d5f !important;
+}
+#remakes {
+	text-align: center;
+}
+#remakes .video {
+	display:inline-block;
+	text-decoration:none;
+	color:black;
+}
+#remakes a img {
+	margin: 3px 1px;
+}
+.loading {
+  font-size: 1.5em;
+  font-family: Georgia;
+  visibility: hidden;
+  /*color: #f0f0f0;*/
+}
+.glyphicon-refresh-animate {
+    -animation: spin .7s infinite linear;
+    -webkit-animation: spin2 .7s infinite linear;
+}
+
+@-webkit-keyframes spin2 {
+    from { -webkit-transform: rotate(0deg);}
+    to { -webkit-transform: rotate(360deg);}
+}
+
+@keyframes spin {
+    from { transform: scale(1) rotate(0deg);}
+    to { transform: scale(1) rotate(360deg);}
+}
+
+#message
+{
+    position: absolute;
+    /*top: 50%;*/
+    left: 50%;
+    width: 500px;
+    height: 500px;
+    /*margin-top: -250px;*/
+    margin-left: -250px;
+    background-color: transparent;
+    text-align: left;
+}
+
+#videoplayer
+{
+  position: absolute;
+/*    top: 50%;*/
+    left: 50%;
+    width: 640px;
+    height: 360px;
+/*    margin-top: -180px;*/
+    margin-left: -320px;
+}
+
+.closebutton
+{
+	position: relative
+	bottom: 10px;
+	left: 10px;
+	width: 40px;
+	height: 40px;
+	background-color: Transparent;
+	background-repeat:no-repeat;
+	border: none;
+	cursor:pointer;
+	overflow: hidden;
+	outline:none;
+	font-family:arial;
+	font-size:24px;
+	padding:16px 16px;
+	text-shadow:0px 1px 0px #35ad23;
+	cursor:pointer;
+	color:#fa0a0a;
+}
