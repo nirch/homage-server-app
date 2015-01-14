@@ -689,7 +689,7 @@ get '/stories' do
 	end
 
 	if !campaign_id then
-		campaign_id = settings.db.collection("Campaigns").find_one({name: "HomageApp"})["_id"]
+		campaign_id = settings.db.collection("Campaigns").find_one({name: /^homageapp$/i})["_id"]
 	end
 
 	logger.debug "getting stories for campaign_id: " + campaign_id.to_s;
