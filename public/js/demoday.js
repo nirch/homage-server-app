@@ -68,6 +68,9 @@ function getuserinfo(event, button, created_at, remake_id){
 function refreshpage(){
 	var ispublic = document.getElementById("ispublic").checked;
 
+	var selcampaigns = document.getElementById("selcampaigns");
+	var campaign = selcampaigns.options[selcampaigns.selectedIndex].value;
+
 	var selstories = document.getElementById("selstories");
 	var story = selstories.options[selstories.selectedIndex].value;
 
@@ -82,6 +85,9 @@ function refreshpage(){
 
 	var pagebuilder = "/date/" + date + "?ispublic=" + ispublic;
 
+	if(campaign){
+		pagebuilder += "&campaign_name=" + campaign;
+	}
 	if(story){
 		pagebuilder += "&story_id=" + story;
 	}

@@ -421,6 +421,7 @@ subdomain settings.play_subdomain do
 	end
 
 	get '/date/:from_date' do
+		@heading = ""
 		remake_hash = Hash.new
 		from_date = Time.parse(params[:from_date])
 		@date = params[:from_date]
@@ -442,12 +443,16 @@ subdomain settings.play_subdomain do
 		end
 
 		# CAMPAIGN
+		@campaigns = settings.db.collection("Campaigns").find().sort(name: 1)
+
 		if params[:campaign_name]
 			@campaign = settings.db.collection("Campaigns").find_one({name: params[:campaign_name]})
 			if @campaign
 				campaign_id = @campaign["_id"]
+				@lastcampaign = @campaign
 				@stories = settings.db.collection("Stories").find({active:true, campaign_id: campaign_id}).sort(created_at:-1)
 			else
+				@heading += " No such campaign name: " + params[:campaign_name]
 				@stories  = settings.db.collection("Stories").find(active:true).sort(created_at:-1)
 			end
 		else
@@ -504,7 +509,7 @@ subdomain settings.play_subdomain do
         if userremakeid != nil
             @raw = true
             @remakes = settings.db.collection("Remakes").find(_id:userremakeid)
-            @heading = "Remakes id " + userremakeid.to_s
+            @heading += " Remakes id " + userremakeid.to_s
             if @remakes.count == 0
             	share = settings.db.collection("Shares").find_one(userremakeid)
             	@remakes = settings.db.collection("Remakes").find(_id:share["remake_id"])	
@@ -514,10 +519,10 @@ subdomain settings.play_subdomain do
         	remake_hash["status"] = 3
 			remake_hash["created_at"] = {"$gte"=>from_date}
 			@remakes = settings.db.collection("Remakes").find(remake_hash).sort(created_at:-1)
-			@heading = @remakes.count.to_s + " Remakes from " + from_date.strftime("%d/%m/%Y")
+			@heading += " " + @remakes.count.to_s + " Remakes from " + from_date.strftime("%d/%m/%Y")
 			@grade = true
         end
-		# @heading = params[:campaign_name]
+		# @heading += " " + params[:campaign_name]
 		erb :demoday
 	end
 

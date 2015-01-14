@@ -61,8 +61,21 @@
 		</div>
 	<div class="container-fluid">
 		<div class="row">
+			<!-- Campaign Selector -->
+			<div class="select-container col-xs-3">
+			Select a Campaign
+			<select id="selcampaigns" onchange="refreshpage()">
+			<% if @lastcampaign %>
+		  		<option value="<%= @lastcampaign["name"] %>"><%= @lastcampaign["name"].to_s %></option>
+  			<% end %>
+  			<option value="">All</option>
+			  <% for campaign in @campaigns do %>
+			  	<option value="<%= campaign["name"] %>"><%= campaign["name"] %></option>
+			  <% end %>
+			</select>
+			</div>
 			<!-- Stroy Selector -->
-			<div class="select-container col-xs-4">
+			<div class="select-container col-xs-3">
 			Select a Story
 			<select id="selstories" onchange="refreshpage()">
 			<% if @laststory %>
@@ -75,7 +88,7 @@
 			</select>
 			</div>
 			<!-- Raw Selector -->
-			<div class="select-container col-xs-4">
+			<div class="select-container col-xs-3">
 			Select Raw
 			<select id="selraw" onchange="refreshpage()">
 				<% if @lastraw %>
@@ -88,7 +101,7 @@
 			</select>
 			</div>
 			<!-- Grade Selector -->
-			<div class="select-container col-xs-4">
+			<div class="select-container col-xs-3">
 			Select a Grade
 			<select id="selgrade" onchange="refreshpage()" selected>
 				<% if @lastgrade %>
@@ -116,16 +129,9 @@
 			<% for remake in @remakes do %>
 			<div id="video" class="video">
 				<% if @showraw then %>
-			    	<a href=<%= remake["video"] %> title="<%= remake["_id"].to_s %>" type="video/mp4" data-poster=<%= remake["thumbnail"] %> data-gallery>
-			        <img src=<%= File.dirname(remake["thumbnail"]).to_s + "/" + remake["_id"].to_s + "_raw1.jpg" %> width=320 height=180 alt="<%= remake["title"] %>">
+					<input type="image" onclick="showvideoplayer(event, '<%= remake["video"] %>');" src="<%= File.dirname(remake["thumbnail"]).to_s + "/" + remake["_id"].to_s + "_raw1.jpg" %>" width="320px" height="180px">
 		        <% else %>
 		        	<input type="image" onclick="showvideoplayer(event, '<%= remake["video"] %>');" src="<%= remake["thumbnail"] %>" width="320px" height="180px">
-		        	<!-- <video width="320" height="180" controls>
-		        		<source src='<%= remake["video"] %>' type="video/mp4" thumbnail="<%= remake["thumbnail"] %>">
-		        		Your browser does not support the video tag.
-		        	</video> -->
-		        	<!-- <a id="video1" href=<%= remake["video"] %> title="<%= remake["_id"].to_s %>" type="video/mp4" data-poster=<%= remake["thumbnail"] %> data-gallery>
-			        <img src=<%= remake["thumbnail"] %> width=320 height=180 alt="<%= remake["title"] %>"></a> -->
 		        <% end %>
 		        <div class="background">Background score: <%= remake["footages"][0]["background"].to_s %></div>
 			    	<% if @grade then %>
