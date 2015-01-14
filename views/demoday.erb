@@ -62,7 +62,7 @@
 	<div class="container-fluid">
 		<div class="row">
 			<!-- Campaign Selector -->
-			<div class="select-container col-xs-3">
+			<div class="select-container col-xs-4">
 			Select a Campaign
 			<select id="selcampaigns" onchange="refreshpage()">
 			<% if @lastcampaign %>
@@ -74,21 +74,8 @@
 			  <% end %>
 			</select>
 			</div>
-			<!-- Stroy Selector -->
-			<div class="select-container col-xs-3">
-			Select a Story
-			<select id="selstories" onchange="refreshpage()">
-			<% if @laststory %>
-		  		<option value="<%= @laststory["_id"] %>"><%= @laststory["name"].to_s %></option>
-  			<% end %>
-  			<option value="">All</option>
-			  <% for story in @stories do %>
-			  	<option value="<%= story["_id"] %>"><%= story["name"] %></option>
-			  <% end %>
-			</select>
-			</div>
 			<!-- Raw Selector -->
-			<div class="select-container col-xs-3">
+			<div class="select-container col-xs-4">
 			Select Raw
 			<select id="selraw" onchange="refreshpage()">
 				<% if @lastraw %>
@@ -100,8 +87,23 @@
 			  <% end %>
 			</select>
 			</div>
+		</div>
+		<div class="row">
+			<!-- Stroy Selector -->
+			<div class="select-container col-xs-4">
+			Select a Story
+			<select id="selstories" onchange="refreshpage()">
+			<% if @laststory %>
+		  		<option value="<%= @laststory["_id"] %>"><%= @laststory["name"].to_s %></option>
+  			<% end %>
+  			<option value="">All</option>
+			  <% for story in @stories do %>
+			  	<option value="<%= story["_id"] %>"><%= story["name"] %></option>
+			  <% end %>
+			</select>
+			</div>
 			<!-- Grade Selector -->
-			<div class="select-container col-xs-3">
+			<div class="select-container col-xs-4">
 			Select a Grade
 			<select id="selgrade" onchange="refreshpage()" selected>
 				<% if @lastgrade %>
@@ -113,9 +115,10 @@
 			  <% end %>
 			</select>
 			</div>
-
+		</div>
+		<div class="row">
 			<!-- Ispublic Checkbox -->
-			<div class="select-container col-xs-4">
+			<div class="select-container col-xs-1">
 			<% if @ispublic %>
 				<input id="ispublic" type="checkbox" name="ispublic" checked="checked" onclick='refreshpage();'>public<br>
 			<% else %>
@@ -123,6 +126,7 @@
 			<% end %>
 			</div>
 		</div>
+		
 	</div>
 		<!-- Remakes -->
 		<div id="remakes">
