@@ -14,6 +14,7 @@ require 'aws-sdk'
 require 'active_support'
 require 'user_agent_parser'
 require 'sinatra/subdomain'
+require "sinatra/basic_auth"
 require 'mixpanel-ruby'
 require 'mail'
 require 'zip'
@@ -25,6 +26,11 @@ HTML_ESCAPE	=	{ '&' => '&amp;', '>' => '&gt;', '<' => '&lt;', '"' => '&quot;', "
 # HACK ALERT! removing Chuku as it not working on facebook open graph scraping
 HTML_ESCAPE	=	{ '&' => '&amp;', '>' => '&gt;', '<' => '&lt;', '"' => '&quot;', "'" => '' }
 HTML_ESCAPE_REGEXP	=	/[&"'><]/
+
+# Specify your authorization logic
+authorize do |username, password|
+  username == "homage" && password == "homageit10"
+end
 
 # helpers do
 #   def h(s)
@@ -238,19 +244,6 @@ module RemakesSaveToDevice
 	Premium  = 2
 end
 
-# helpers do
-#   def protected!
-#     return if authorized?
-#     headers['WWW-Authenticate'] = 'Basic realm="Restricted Area"'
-#     halt 401, "Not authorized\n"
-#   end
-
-#   def authorized?
-#     @auth ||=  Rack::Auth::Basic::Request.new(request.env)
-#     @auth.provided? and @auth.basic? and @auth.credentials and @auth.credentials == ['admin', 'Homage2014']
-#   end
-# end
-
 
 get '/test/cgi' do
 	x = "Don't bla bla cgi"
@@ -420,6 +413,8 @@ subdomain settings.play_subdomain do
 		return @user.to_json
 	end
 
+# Set protected routes
+protect do
 	get '/date/:from_date' do
 		@heading = ""
 		remake_hash = Hash.new
@@ -525,6 +520,7 @@ subdomain settings.play_subdomain do
 		# @heading += " " + params[:campaign_name]
 		erb :demoday
 	end
+end
 
 	get '/public/date/:from_date' do
 		from_date = Time.parse(params[:from_date])
