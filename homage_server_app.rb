@@ -413,114 +413,114 @@ subdomain settings.play_subdomain do
 		return @user.to_json
 	end
 
-# Set protected routes
-protect do
-	get '/date/:from_date' do
-		@heading = ""
-		remake_hash = Hash.new
-		from_date = Time.parse(params[:from_date])
-		@date = params[:from_date]
-		@ispublic  = params[:ispublic]
-		if @ispublic == "false"
-			@ispublic = false
-		end
-
-		# PUBLIC
-		if @ispublic
-			# @test = "in ispublic"
-			# Getting all the public users
-			public_users_cursor = settings.db.collection("Users").find({is_public:true})
-			public_users = Array.new
-			for user in public_users_cursor do
-				public_users.push(user["_id"])
+	# Set protected routes
+	protect do
+		get '/date/:from_date' do
+			@heading = ""
+			remake_hash = Hash.new
+			from_date = Time.parse(params[:from_date])
+			@date = params[:from_date]
+			@ispublic  = params[:ispublic]
+			if @ispublic == "false"
+				@ispublic = false
 			end
-			remake_hash["user_id"] = {"$in" => public_users}
-		end
 
-		# CAMPAIGN
-		@campaigns = settings.db.collection("Campaigns").find().sort(name: 1)
+			# PUBLIC
+			if @ispublic
+				# @test = "in ispublic"
+				# Getting all the public users
+				public_users_cursor = settings.db.collection("Users").find({is_public:true})
+				public_users = Array.new
+				for user in public_users_cursor do
+					public_users.push(user["_id"])
+				end
+				remake_hash["user_id"] = {"$in" => public_users}
+			end
 
-		if params[:campaign_name]
-			@campaign = settings.db.collection("Campaigns").find_one({name: params[:campaign_name]})
-			if @campaign
-				campaign_id = @campaign["_id"]
-				@lastcampaign = @campaign
-				@stories = settings.db.collection("Stories").find({active:true, campaign_id: campaign_id}).sort(created_at:-1)
+			# CAMPAIGN
+			@campaigns = settings.db.collection("Campaigns").find().sort(name: 1)
+
+			if params[:campaign_name]
+				@campaign = settings.db.collection("Campaigns").find_one({name: params[:campaign_name]})
+				if @campaign
+					campaign_id = @campaign["_id"]
+					@lastcampaign = @campaign
+					@stories = settings.db.collection("Stories").find({active:true, campaign_id: campaign_id}).sort(created_at:-1)
+				else
+					@heading += " No such campaign name: " + params[:campaign_name]
+					@stories  = settings.db.collection("Stories").find(active:true).sort(created_at:-1)
+				end
 			else
-				@heading += " No such campaign name: " + params[:campaign_name]
+				# STORY
 				@stories  = settings.db.collection("Stories").find(active:true).sort(created_at:-1)
 			end
-		else
-			# STORY
-			@stories  = settings.db.collection("Stories").find(active:true).sort(created_at:-1)
-		end
-		
-		if params[:story_id] == nil
-			story_ids = []
-			for storyidloop in @stories do
-				bson_story = BSON::ObjectId.from_string(storyidloop["_id"].to_s)
-				story_ids.push(bson_story)
+			
+			if params[:story_id] == nil
+				story_ids = []
+				for storyidloop in @stories do
+					bson_story = BSON::ObjectId.from_string(storyidloop["_id"].to_s)
+					story_ids.push(bson_story)
+				end
+				remake_hash["story_id"] = {"$in"=>story_ids}
+				@stories.rewind!
+			else
+				bson_story = BSON::ObjectId.from_string(params[:story_id])
+				@laststory = settings.db.collection("Stories").find_one(:_id => bson_story)
+				remake_hash["story_id"] = bson_story
 			end
-			remake_hash["story_id"] = {"$in"=>story_ids}
-			@stories.rewind!
-		else
-			bson_story = BSON::ObjectId.from_string(params[:story_id])
-			@laststory = settings.db.collection("Stories").find_one(:_id => bson_story)
-			remake_hash["story_id"] = bson_story
-		end
 
-		# GRADE
-		@grades = ["all","no_grade",-1,0,1,2,3,4,5,6,7,8,9,10]
+			# GRADE
+			@grades = ["all","no_grade",-1,0,1,2,3,4,5,6,7,8,9,10]
 
-		if params[:grade] != nil && params[:grade] == 'no_grade'
-			remake_hash["grade"] = {"$exists"=> false}
-			@lastgrade = params[:grade]
-		elsif params[:grade] != nil && params[:grade] != 'all'
- 			remake_hash["grade"] = {"$in"=>[params[:grade].to_i]}
-			@lastgrade = params[:grade].to_i
-		end
-		
-
-		# RAW
-		badbackgrounds = ["-1","-2","-3","-4","-5","-6","-7","-8","-9","-10","-11"]
-		goodbackgrounds = ["1","0"]
-		@raws = ["all","bad","1","0","-1","-2","-3","-4","-5","-6","-7","-8","-9","-10","-11"]
-		if badbackgrounds.include?(params[:raw]) || params[:raw] == 'all' || goodbackgrounds.include?(params[:raw]) || params[:raw] == 'bad'
-			if badbackgrounds.include?(params[:raw]) || goodbackgrounds.include?(params[:raw])
-				remake_hash["footages.background"] = {"$in"=>[params[:raw]]}
-			elsif params[:raw] == 'bad'
-				remake_hash["footages.background"] = {"$in"=>badbackgrounds}
+			if params[:grade] != nil && params[:grade] == 'no_grade'
+				remake_hash["grade"] = {"$exists"=> false}
+				@lastgrade = params[:grade]
+			elsif params[:grade] != nil && params[:grade] != 'all'
+	 			remake_hash["grade"] = {"$in"=>[params[:grade].to_i]}
+				@lastgrade = params[:grade].to_i
 			end
-			@lastraw = params[:raw]
-			@showraw = true
-		else
-			@showraw = false
-			@lastraw = nil
-		end
+			
 
-		# ONE REMAKE
-		userremakeid = BSON::ObjectId.from_string(params[:remakeid]) if params[:remakeid]
-		
-        if userremakeid != nil
-            @raw = true
-            @remakes = settings.db.collection("Remakes").find(_id:userremakeid)
-            @heading += " Remakes id " + userremakeid.to_s
-            if @remakes.count == 0
-            	share = settings.db.collection("Shares").find_one(userremakeid)
-            	@remakes = settings.db.collection("Remakes").find(_id:share["remake_id"])	
-            end
-        	@grade = true
-        else
-        	remake_hash["status"] = 3
-			remake_hash["created_at"] = {"$gte"=>from_date}
-			@remakes = settings.db.collection("Remakes").find(remake_hash).sort(created_at:-1)
-			@heading += " " + @remakes.count.to_s + " Remakes from " + from_date.strftime("%d/%m/%Y")
-			@grade = true
-        end
-		# @heading += " " + params[:campaign_name]
-		erb :demoday
+			# RAW
+			badbackgrounds = ["-1","-2","-3","-4","-5","-6","-7","-8","-9","-10","-11"]
+			goodbackgrounds = ["1","0"]
+			@raws = ["all","bad","1","0","-1","-2","-3","-4","-5","-6","-7","-8","-9","-10","-11"]
+			if badbackgrounds.include?(params[:raw]) || params[:raw] == 'all' || goodbackgrounds.include?(params[:raw]) || params[:raw] == 'bad'
+				if badbackgrounds.include?(params[:raw]) || goodbackgrounds.include?(params[:raw])
+					remake_hash["footages.background"] = {"$in"=>[params[:raw]]}
+				elsif params[:raw] == 'bad'
+					remake_hash["footages.background"] = {"$in"=>badbackgrounds}
+				end
+				@lastraw = params[:raw]
+				@showraw = true
+			else
+				@showraw = false
+				@lastraw = nil
+			end
+
+			# ONE REMAKE
+			userremakeid = BSON::ObjectId.from_string(params[:remakeid]) if params[:remakeid]
+			
+	        if userremakeid != nil
+	            @raw = true
+	            @remakes = settings.db.collection("Remakes").find(_id:userremakeid)
+	            @heading += " Remakes id " + userremakeid.to_s
+	            if @remakes.count == 0
+	            	share = settings.db.collection("Shares").find_one(userremakeid)
+	            	@remakes = settings.db.collection("Remakes").find(_id:share["remake_id"])	
+	            end
+	        	@grade = true
+	        else
+	        	remake_hash["status"] = 3
+				remake_hash["created_at"] = {"$gte"=>from_date}
+				@remakes = settings.db.collection("Remakes").find(remake_hash).sort(created_at:-1)
+				@heading += " " + @remakes.count.to_s + " Remakes from " + from_date.strftime("%d/%m/%Y")
+				@grade = true
+	        end
+			# @heading += " " + params[:campaign_name]
+			erb :demoday
+		end
 	end
-end
 
 	get '/public/date/:from_date' do
 		from_date = Time.parse(params[:from_date])
