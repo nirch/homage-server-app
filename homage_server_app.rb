@@ -600,7 +600,7 @@ subdomain settings.play_subdomain do
 
 	get '/campaign/:campaign_name' do
 		@config = getConfigDictionary();
-		@campaign = settings.db.collection("Campaigns").find_one({name: params[:campaign_name]})
+		@campaign = settings.db.collection("Campaigns").find_one({name: /^#{params[:campaign_name]}$/i})
 		campaign_id = @campaign["_id"]
 		@stories = settings.db.collection("Stories").find({active:true, campaign_id: campaign_id})
 		info = Hash.new
