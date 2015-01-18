@@ -280,6 +280,8 @@ get '/remakes' do
 			story_find_condition["campaign_id"] = campaign_id
 		end
 
+		logger.info "story condition:"
+		logger.info story_find_condition
 		stories = settings.db.collection("Stories").find(story_find_condition, {fields: {after_effects: 0}}) 
 	
 		story_names = Hash.new
@@ -295,9 +297,7 @@ get '/remakes' do
 		aggregation_pipeline = []
 		
 		find_condition = {status: RemakeStatus::Done, is_public: true, grade:{"$ne" => -1}}
-		if story_id_array.length != 0 then
-			find_condition["story_id"] = {"$in"=> story_id_array}
-		end
+		find_condition["story_id"] = {"$in"=> story_id_array}
 
 		if query_type == RemakesQueryType::MyTakesQuery then
 			#once we have a user (user! not cookie) replace the find_condition "user_id:"
@@ -305,6 +305,8 @@ get '/remakes' do
 
 		remakes_find_condition = {"$match" => find_condition}
 		aggregation_pipeline.push(remakes_find_condition)
+		logger.info "remakes_find_condition"
+		logger.info remakes_find_condition
 	    
 		if query_type == RemakesQueryType::TrendingQuery then
 			share_weight = 0.5
