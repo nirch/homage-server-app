@@ -1861,6 +1861,7 @@ post '/remake/like' do
 	
 	logger.info "New like saved in the DB with like id " + like_objectId.to_s
 	remake = remakes.find_one(remake_id)
+	remake["is_liked"] = true
 	return remake.to_json
 end
 
@@ -1899,6 +1900,7 @@ post '/remake/unlike' do
 	end
 
 	remake = remakes.find_one(remake_id)
+	remake["is_liked"] = false
 	return remake.to_json
 end
 	
