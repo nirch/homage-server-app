@@ -93,7 +93,9 @@ configure :production do
 	set :homage_server_foreground_uri, URI.parse("http://homage-render-prod-elb-882305239.us-east-1.elb.amazonaws.com:4567/footage")
 	set :homage_server_render_uri, URI.parse("http://homage-render-prod-elb-882305239.us-east-1.elb.amazonaws.com:4567/render")
 
-	set :mixpanel, Mixpanel::Tracker.new("7d575048f24cb2424cd5c9799bbb49b1")
+	set :mixpanel_token, "7d575048f24cb2424cd5c9799bbb49b1"
+	# set :mixpanel, Mixpanel::Tracker.new("7d575048f24cb2424cd5c9799bbb49b1")
+	set :mixpanel, Mixpanel::Tracker.new(settings.mixpanel_token)
 
 	# AWS S3
 	s3 = AWS::S3.new
@@ -138,8 +140,9 @@ configure :test do
 	s3 = AWS::S3.new
 	set :bucket, s3.buckets['homagetest']
 
-	# enables mixpanel for testing
-	set :mixpanel, Mixpanel::Tracker.new("bab0997e7171d56daf35df751f523962")
+	set :mixpanel_token, "bab0997e7171d56daf35df751f523962"
+	set :mixpanel, Mixpanel::Tracker.new(settings.mixpanel_token)
+	# set :mixpanel, Mixpanel::Tracker.new("bab0997e7171d56daf35df751f523962")
 
 	set :play_subdomain, :'play-test'
 end
@@ -1741,9 +1744,7 @@ def getConfigDictionary()
 	config["share_link_prefix"] = settings.share_link_prefix;
 	config["significant_view_pct_threshold"] = 0.5
 	config["mirror_selfie_silhouette"] = true
-	if settings.respond_to?(:mixpanel) then
-		config["mixpanel_token"] = "7d575048f24cb2424cd5c9799bbb49b1"
-	end
+	config["mixpanel_token"] = settings.mixpanel_token;
 
 	campaign_id = request.env["HTTP_CAMPAIGN_ID"] if request.env["HTTP_CAMPAIGN_ID"].to_s
 	# campaign_id = "54919516454c61f4080000e5"
