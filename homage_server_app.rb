@@ -93,7 +93,6 @@ configure :production do
 	set :homage_server_foreground_uri, URI.parse("http://homage-render-prod-elb-882305239.us-east-1.elb.amazonaws.com:4567/footage")
 	set :homage_server_render_uri, URI.parse("http://homage-render-prod-elb-882305239.us-east-1.elb.amazonaws.com:4567/render")
 
-	# Setting MixPanel only in prodution
 	set :mixpanel, Mixpanel::Tracker.new("7d575048f24cb2424cd5c9799bbb49b1")
 
 	# AWS S3
@@ -140,7 +139,7 @@ configure :test do
 	set :bucket, s3.buckets['homagetest']
 
 	# enables mixpanel for testing
-	# set :mixpanel, Mixpanel::Tracker.new("7d575048f24cb2424cd5c9799bbb49b1")
+	set :mixpanel, Mixpanel::Tracker.new("bab0997e7171d56daf35df751f523962")
 
 	set :play_subdomain, :'play-test'
 end
