@@ -93,8 +93,8 @@ configure :production do
 	set :homage_server_foreground_uri, URI.parse("http://homage-render-prod-elb-882305239.us-east-1.elb.amazonaws.com:4567/footage")
 	set :homage_server_render_uri, URI.parse("http://homage-render-prod-elb-882305239.us-east-1.elb.amazonaws.com:4567/render")
 
-	set :mixpanel_token, "7d575048f24cb2424cd5c9799bbb49b1"
 	# set :mixpanel, Mixpanel::Tracker.new("7d575048f24cb2424cd5c9799bbb49b1")
+	set :mixpanel_token, "7d575048f24cb2424cd5c9799bbb49b1"
 	set :mixpanel, Mixpanel::Tracker.new(settings.mixpanel_token)
 
 	# AWS S3
@@ -140,10 +140,10 @@ configure :test do
 	s3 = AWS::S3.new
 	set :bucket, s3.buckets['homagetest']
 
+	# set :mixpanel, Mixpanel::Tracker.new("bab0997e7171d56daf35df751f523962")
 	set :mixpanel_token, "bab0997e7171d56daf35df751f523962"
 	set :mixpanel, Mixpanel::Tracker.new(settings.mixpanel_token)
-	# set :mixpanel, Mixpanel::Tracker.new("bab0997e7171d56daf35df751f523962")
-
+	
 	set :play_subdomain, :'play-test'
 end
 
