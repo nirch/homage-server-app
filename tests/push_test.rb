@@ -5,7 +5,7 @@ require 'houston'
 
 # Debug (Test)
 APN = Houston::Client.development
-APN.certificate = File.read("../certificates/homage_push_notification_dev.pem")
+APN.certificate = File.read("../certificates/monkey_push_notification_dev.pem")
 
 # # Prodcution
 # APN = Houston::Client.production
@@ -27,12 +27,14 @@ APN.certificate = File.read("../certificates/homage_push_notification_dev.pem")
 # Yoav
 #token = "<83b2deb3 26d549ac 5d045055 697a43e5 b8c3e2fb ddd2b74e e2d903ac 8cafd570>"
 #token = "<3613e36f b419bfca 0063ddd4 fcdf3374 20491e54 8545779d 793cf71b 4a003b8a>"
+# token = "<a9aeb930 41cbdcbb 3a1c8d18 8f0264f0 f2d0bd95 633f65d1 754ed908 0e672b1e>"
 
 # Nir (Tomer)
 #token = "<3613e36f b419bfca 0063ddd4 fcdf3374 20491e54 8545779d 793cf71b 4a003b8a>"
 
 # Aviv iPhone 6 Plus
-token = "<452d30f7 c6d1964e c5a1cda7 78be8517 b1136b42 ae154783 7fb61e3e 43dc7795>"
+# token = "<452d30f7 c6d1964e c5a1cda7 78be8517 b1136b42 ae154783 7fb61e3e 43dc7795>"
+token = "<9ff7be11 fe85f73b db772f96 5f2c6bbf 98087656 10b4020f 7b0b1076 7749e64f>"
 # Aviv iPhone 5
 #token = "<ec0ad57f 4fcea35f 03e4fab9 1572a145 a2facdef b58a8203 4acdc1d8 186cac0b>"
 #token = "<0a7b7b15 3f0fb335 0e252182 38675505 e739547b 47dd8ab2 60e39582 85fbe150>"

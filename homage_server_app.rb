@@ -129,6 +129,9 @@ configure :test do
 	render_queue_url = "https://sqs.us-east-1.amazonaws.com/509268258673/RenderQueueTest"
     set :render_queue, AWS::SQS.new.queues[render_queue_url]
 
+    #this is a fix for getting a bad background "unlocked" version
+    set :allow_footage_on_bad_bg, true
+
 	# Test AE server connection
 	set :homage_server_foreground_uri, URI.parse("http://54.83.32.172:4567/footage")
 	set :homage_server_render_uri, URI.parse("http://54.83.32.172:4567/render")
@@ -1745,6 +1748,9 @@ def getConfigDictionary()
 	config["significant_view_pct_threshold"] = 0.5
 	config["mirror_selfie_silhouette"] = true
 	config["mixpanel_token"] = settings.mixpanel_token;
+	if settings.respond_to?(:allow_footage_on_bad_bg) then
+		config["recorder_forced_bbg_policy"] = 0;
+	end
 
 	campaign_id = request.env["HTTP_CAMPAIGN_ID"] if request.env["HTTP_CAMPAIGN_ID"].to_s
 	# campaign_id = "54919516454c61f4080000e5"
