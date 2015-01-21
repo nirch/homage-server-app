@@ -76,6 +76,7 @@ class UserTest < MiniTest::Unit::TestCase
     assert_nil json_response["facebook"]
 
     user = USERS.find_one(user_id)
+    assert user["campaign_id"]
     assert user
 
     # deleting the user
@@ -97,6 +98,7 @@ class UserTest < MiniTest::Unit::TestCase
 
     # checking that the user exists in the DB
     user = USERS.find_one(user_id)
+    assert user["campaign_id"]
     assert user
 
     # deleting the user
@@ -146,6 +148,7 @@ class UserTest < MiniTest::Unit::TestCase
     user = USERS.find_one(user_id)
     assert user
     assert_equal true, user["is_public"]
+    assert user["campaign_id"]
     assert user["devices"]
     assert_equal "unit_email@test.com", user["email"]
     assert user["password_hash"]

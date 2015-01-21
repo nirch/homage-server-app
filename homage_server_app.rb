@@ -676,13 +676,7 @@ end
 # All Other Routes
 ###################
 
-# Get all stories
-get '/stories' do
-	# input
-	skip = params[:skip].to_i if params[:skip] # Optional
-	limit = params[:limit].to_i if params[:limit] # Optional
-	remakes_num = params[:remakes].to_i if params[:remakes] # Optional
-
+def get_campaign_id
 	campaign_id = nil;
 	
 	campaign_id = BSON::ObjectId.from_string(request.env["HTTP_CAMPAIGN_ID"].to_s) if request.env["HTTP_CAMPAIGN_ID"]
@@ -694,6 +688,18 @@ get '/stories' do
 	if !campaign_id then
 		campaign_id = settings.db.collection("Campaigns").find_one({name: /^homageapp$/i})["_id"]
 	end
+
+	return campaign_id	
+end
+
+# Get all stories
+get '/stories' do
+	# input
+	skip = params[:skip].to_i if params[:skip] # Optional
+	limit = params[:limit].to_i if params[:limit] # Optional
+	remakes_num = params[:remakes].to_i if params[:remakes] # Optional
+
+	campaign_id = get_campaign_id
 
 	logger.debug "getting stories for campaign_id: " + campaign_id.to_s;
 
@@ -906,10 +912,8 @@ def handle_user_params(user)
 		user.delete("device")
 	end
 
-	campaign_id = request.env["HTTP_CAMPAIGN_ID"]
-	if campaign_id then
-		user["campaign_id"] = BSON::ObjectId.from_string(campaign_id)
-	end
+	campaign_id = get_campaign_id
+	user["campaign_id"] = campaign_id
 end
 
 post '/user' do
