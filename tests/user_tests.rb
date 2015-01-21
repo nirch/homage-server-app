@@ -8,7 +8,7 @@ class UserTest < MiniTest::Unit::TestCase
 
 
   GUEST_USER =  {  :is_public => "NO", 
-                   :device => {:identifier_for_vendor => "3DACF253-C0B7-4F4C-843E-435A43699715", :name => "Nir's iPhone", :system_name => "iPhone", :system_version => "7.1", :model => "5s" } 
+                   :device => {:identifier_for_vendor => "3DACF253-C0B7-4F4C-843E-435A43699715", :name => "Nir's iPhone", :system_name => "iPhone", :system_version => "7.1", :model => "5s" , :push_token => "<09377d71 ddffb776 6d5e8d08 6e649cd9 b50497f2 cba5281f b80a5fed a912b748>" } 
                 }
 
   GUEST_USER_MONKEY =  {  :is_public => "NO", 
@@ -1366,6 +1366,32 @@ class UserTest < MiniTest::Unit::TestCase
     USERS.remove({_id: user_id})
     user = USERS.find_one({_id: user_id})
     assert_nil(user)
+  end
+
+  def test_update_push_token_ios
+    post '/user', GUEST_USER
+
+    json_response = JSON.parse(last_response.body)
+    assert json_response["_id"]["$oid"]
+    guest_user_id = BSON::ObjectId.from_string(json_response["_id"]["$oid"])
+    guest_device_id = GUEST_USER[:device][:identifier_for_vendor]
+
+    new_push_token = "<09377d71 ddffb776 6d5e8d08 6e649cd9 b50497f2 cba5281f b80a5fed a912bXXX>"
+
+    # Updating push token
+    put '/user/push_token', {:user_id => guest_user_id.to_s, :device_id => guest_device_id, :ios_push_token => new_push_token}
+    assert_equal 200, last_response.status
+    json_response = JSON.parse(last_response.body)
+    assert json_response["_id"]["$oid"]
+    assert_equal new_push_token, json_response["devices"][0]["push_token"]
+
+    user = USERS.find_one(guest_user_id)
+    assert_equal new_push_token, user["devices"][0]["push_token"]
+
+    # deleting the user
+    USERS.remove({_id: guest_user_id})
+    user = USERS.find_one(guest_user_id)
+    assert_nil user
   end
 
   def test_update_push_token

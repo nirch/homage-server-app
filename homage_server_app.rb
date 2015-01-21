@@ -1119,6 +1119,7 @@ put '/user/push_token' do
 	device_id = params[:device_id]
 	#system_name = params[:system_name]
 	android_push_token = params[:android_push_token]
+	ios_push_token = params[:ios_push_token]
 
 	users = settings.db.collection("Users")
 	user = users.find_one(user_id)
@@ -1136,6 +1137,8 @@ put '/user/push_token' do
 	for device in user["devices"] do
 		if device["device_id"] then
 			device_found = true if device["device_id"] == device_id
+		elsif device["identifier_for_vendor"] then
+			device_found = true if device["identifier_for_vendor"] == device_id			
 		end
 	end
 
@@ -1147,7 +1150,11 @@ put '/user/push_token' do
 	end
 
 	# Updating the push token
-	users.update({_id: user_id, "devices.device_id" => device_id}, {"$set" => {"devices.$.android_push_token" => android_push_token}})
+	if android_push_token then
+		users.update({_id: user_id, "devices.device_id" => device_id}, {"$set" => {"devices.$.android_push_token" => android_push_token}})
+	elsif ios_push_token then
+		users.update({_id: user_id, "devices.identifier_for_vendor" => device_id}, {"$set" => {"devices.$.push_token" => ios_push_token}})
+	end
 
 	return users.find_one(_id: user_id).to_json
 end
