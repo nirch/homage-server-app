@@ -823,7 +823,7 @@ def handle_facebook_login(user)
 	else
 		# checking if the user exists with an email
 		if user["email"] then
-			email_exists = users.find_one({"email" => user["email"]})
+			email_exists = users.find_one({"email" => user["email"], "campaign_id" => campaign_id})
 			if email_exists then
 				# This is an existing user which previously had an email login and now has a facebook login
 				update_user_id = email_exists["_id"]
