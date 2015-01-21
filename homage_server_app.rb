@@ -810,9 +810,11 @@ end
 
 def handle_facebook_login(user)
 	facebook_id = user["facebook"]["id"]
+	campaign_id = user["campaign_id"]
+
 
 	users = settings.db.collection("Users")
-	user_exists = users.find_one({"facebook.id" => facebook_id})
+	user_exists = users.find_one({"facebook.id" => facebook_id, "campaign_id" => campaign_id})
 
 	if user_exists then
 		logger.info "Facebook user <" + user["facebook"]["name"] + "> exists with id <" + user_exists["_id"].to_s + ">. returning existing user"
@@ -849,10 +851,11 @@ end
 
 def handle_password_login(user)
 	email = user["email"]
+	campaign_id = user["campaign_id"]
 
 	# Checking if this is a signup or login attempt
 	users = settings.db.collection("Users")
-	user_exists = users.find_one({"email" => email})
+	user_exists = users.find_one({"email" => email, "campaign_id" => campaign_id})
 	if user_exists then
 
 		if user_type(user_exists) == UserType::FacebookUser then
@@ -1051,7 +1054,7 @@ put '/user' do
 		# Guest to Facebook user
 
 		# Checking if there is another facebook user with the same ID
-		facebook_user_exists = users.find_one({"facebook.id" => params[:facebook][:id]})
+		facebook_user_exists = users.find_one({"facebook.id" => params[:facebook][:id], "campaign_id" => params[:campaign_id]})
 		if facebook_user_exists then
 			logger.info "facebook id already exists, merging guest user " + update_user_id.to_s + " into facebook user " + facebook_user_exists["_id"].to_s
 			merge_users(existing_user, facebook_user_exists)
@@ -1067,7 +1070,7 @@ put '/user' do
 		# Guest to Email user
 
 		# Checking if there is another user with the same email
-		email_user_exists = users.find_one({email: params[:email]})
+		email_user_exists = users.find_one({email: params[:email], campaign_id: params[:campaign_id]})
 		if email_user_exists then
 			if user_type(email_user_exists) == UserType::FacebookUser then
 				logger.warn "cannot downgrade a facebook user to an email user"
