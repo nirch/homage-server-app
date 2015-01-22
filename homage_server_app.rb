@@ -2533,3 +2533,7 @@ get '/test/:entity_id' do
 	erb :minisiteV1
 end
 
+get '/privacy' do
+	erb :privacy_policy
+end
+
