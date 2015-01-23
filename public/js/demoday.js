@@ -19,19 +19,19 @@ $(document).ready(function(){
 		$(this).closest('form').submit();
 	})
 
-	// form submit ajax
-	$('form').submit(function(event) {
-        event.preventDefault();
-        //console.log('submit closest done');
-        $.ajax({
-            type: "POST",
-            url: $(this).attr('action'),
-            data: $(this).serialize(),
-            success: function(data){
-                alert('Grade successfully applied!');
-            }
-        });
-    });
+	// // form submit ajax
+	// $('form').onclick(function(event) {
+ //        event.preventDefault();
+ //        //console.log('submit closest done');
+ //        $.ajax({
+ //            type: "POST",
+ //            url: $(this).attr('action'),
+ //            data: $(this).serialize(),
+ //            success: function(data){
+ //                alert('Grade successfully applied!');
+ //            }
+ //        });
+ //    });
 
 	// $( ".container" ).change(function(event) {
 	//   alert(event.target.options[event.target.selectedIndex].value);
@@ -129,6 +129,39 @@ function DownloadRemake(button, remake_id) {
 	    xmlHttp.open( "GET", theUrl, true );
 	    xmlHttp.send( null );
 }
+
+//Update the grade
+function updateGrade(button, remake_id, grade) {
+
+	// button.innerHTML = '<span class="glyphicon glyphicon-refresh glyphicon-refresh-animate" ></span>';
+	// button.disabled = true
+	var theUrl = "/update/gradeasync?grade=" + grade + "&remake_id=" + remake_id;
+
+	var xmlHttp = null;
+
+	    xmlHttp = new XMLHttpRequest();
+
+	    xmlHttp.onreadystatechange=function()
+		  {
+		  if (xmlHttp.readyState==4 && xmlHttp.status==200)
+		    {
+		    	button.checked = true;
+		    	// button.innerHTML = grade;
+		    }
+		    else{
+		    	// button.disabled = false
+		    	// button.innerHTML = grade;
+		    	// alert("did not grade")
+		    }
+		  }
+
+	    xmlHttp.open( "GET", theUrl, true );
+	    // xmlHttp.setRequestHeader("X-Requested-With","XMLHttpRequest");
+	    // xmlHttp.setRequestHeader("Content-Type","application/x-www-form-urlencoded; charset=UTF-8");
+		xmlHttp.send();
+}
+
+
 //Download the remake from S3-------------------------
 function closemessage(){
 	var message = document.getElementById('message');
@@ -153,8 +186,8 @@ function closevideoplayer(){
 function showvideoplayer(event, text){
 	var videoplayer = document.getElementById('videoplayer');
 	videoplayer.style.visibility='visible';
-	videoplayer.style.top = String(event.pageY-180) + "px";
+	// videoplayer.style.top = String(event.pageY-180) + "px";
 	// message.style.left = String(event.clientX) + "px";
 	videoplayer.innerHTML = '<button id="closemessage" onclick="closevideoplayer()" class="closebutton">X</button>' +
-	 '<video width="640" height="360" controls><source src='+ text +' type="video/mp4">Your browser does not support the video tag.</video>'
+	 '<video style="background-color:black;" width="640" height="360" controls><source src='+ text +' type="video/mp4">Your browser does not support the video tag.</video>'
 }

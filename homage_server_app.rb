@@ -1737,6 +1737,19 @@ post '/update/grade' do
 	redirect back
 end
 
+get '/update/gradeasync' do
+	@result = false
+	remake_id = BSON::ObjectId.from_string(params[:remake_id])
+	grade = params[:grade].to_i
+
+	logger.info "updating grade for remake " + remake_id.to_s + " to grade " + grade.to_s
+
+	remakes = settings.db.collection("Remakes")
+	remakes.update({_id: remake_id}, {"$set" => {grade: grade}})
+	@reuslt = true
+	return true
+end
+
 def getConfigDictionary()
 	config = Hash.new 
 	config["share_link_prefix"] = settings.share_link_prefix;
