@@ -8,7 +8,12 @@ class UserTest < MiniTest::Unit::TestCase
 
 
   GUEST_USER =  {  :is_public => "NO", 
-                   :device => {:identifier_for_vendor => "3DACF253-C0B7-4F4C-843E-435A43699715", :name => "Nir's iPhone", :system_name => "iPhone", :system_version => "7.1", :model => "5s" } 
+                   :device => {:identifier_for_vendor => "3DACF253-C0B7-4F4C-843E-435A43699715", :name => "Nir's iPhone", :system_name => "iPhone", :system_version => "7.1", :model => "5s" , :push_token => "<09377d71 ddffb776 6d5e8d08 6e649cd9 b50497f2 cba5281f b80a5fed a912b748>" } 
+                }
+
+  GUEST_USER_MONKEY =  {  :is_public => "NO", 
+                    :campaign_id => BSON::ObjectId.from_string("54919516454c61f4080000e5"),
+                   :device => {:identifier_for_vendor => "3DACF253-C0B7-4F4C-843E-435A43699715", :name => "Nir's iPhone", :system_name => "iPhone", :system_version => "7.1", :model => "5s" }
                 }
 
 
@@ -18,7 +23,22 @@ class UserTest < MiniTest::Unit::TestCase
                     :facebook => { :id => "929292929299", :name => "Bla Bla", :first_name => "Nir" }
                   }
 
+  FACEBOOK_USER_MONKEY = { :email => "unit_facebook@test.com",
+                    :campaign_id => BSON::ObjectId.from_string("54919516454c61f4080000e5"),
+                    :is_public => "YES", 
+                    :device => { :identifier_for_vendor => "3DACF253-C0B7-4F4C-843E-435A43612084", :name => "Nir's iPhone", :system_name => "iPhone", :system_version => "7.1", :model => "5s" }, 
+                    :facebook => { :id => "929292929299", :name => "Bla Bla", :first_name => "Nir" }
+                  }
+
+
   EMAIL_USER = {  :email => "unit_email@test.com",
+                  :password => "qwerty123",
+                  :is_public => "YES", 
+                  :device => { :identifier_for_vendor => "3DACF253-C0B7-4F4C-843E-435A436A1932", :name => "Nir's iPhone", :system_name => "iPhone", :system_version => "7.1", :model => "5s" }, 
+                }
+
+  EMAIL_USER_MONKEY = {  :email => "unit_email@test.com",
+                    :campaign_id => BSON::ObjectId.from_string("54919516454c61f4080000e5"),
                   :password => "qwerty123",
                   :is_public => "YES", 
                   :device => { :identifier_for_vendor => "3DACF253-C0B7-4F4C-843E-435A436A1932", :name => "Nir's iPhone", :system_name => "iPhone", :system_version => "7.1", :model => "5s" }, 
@@ -76,6 +96,7 @@ class UserTest < MiniTest::Unit::TestCase
     assert_nil json_response["facebook"]
 
     user = USERS.find_one(user_id)
+    assert user["campaign_id"]
     assert user
 
     # deleting the user
@@ -97,6 +118,7 @@ class UserTest < MiniTest::Unit::TestCase
 
     # checking that the user exists in the DB
     user = USERS.find_one(user_id)
+    assert user["campaign_id"]
     assert user
 
     # deleting the user
@@ -146,6 +168,7 @@ class UserTest < MiniTest::Unit::TestCase
     user = USERS.find_one(user_id)
     assert user
     assert_equal true, user["is_public"]
+    assert user["campaign_id"]
     assert user["devices"]
     assert_equal "unit_email@test.com", user["email"]
     assert user["password_hash"]
@@ -558,6 +581,48 @@ class UserTest < MiniTest::Unit::TestCase
     assert_nil user
   end
 
+  # There is an existing facebook user in the DB. A new guest user upgrades to the same existing facebook user => the guest user should merge into the existing facebook user
+  def test_guest_to_existing_facebook_other_campaign
+    post '/user', FACEBOOK_USER
+
+    json_response = JSON.parse(last_response.body)
+    assert json_response["_id"]["$oid"]
+    facebook_user_id = BSON::ObjectId.from_string(json_response["_id"]["$oid"])
+
+    post '/user', GUEST_USER_MONKEY
+
+    json_response = JSON.parse(last_response.body)
+    assert json_response["_id"]["$oid"]
+    guest_user_id = BSON::ObjectId.from_string(json_response["_id"]["$oid"])
+
+    guest_to_facebook_user = FACEBOOK_USER_MONKEY.clone
+    guest_to_facebook_user[:user_id] = guest_user_id.to_s
+    put '/user', guest_to_facebook_user
+
+    json_response = JSON.parse(last_response.body)
+    assert json_response["_id"]["$oid"]
+    guest_to_facebook_user_id = BSON::ObjectId.from_string(json_response["_id"]["$oid"])
+
+    assert facebook_user_id != guest_to_facebook_user_id
+
+    # Guest user should exist and should be facebook
+    user = USERS.find_one(guest_user_id)
+    assert user
+    assert user["facebook"]
+
+    # deleting the user, and checking that both ids (which is the same id) doesn;t exist in the DB
+    USERS.remove({_id: facebook_user_id})
+    user = USERS.find_one(facebook_user_id)
+    assert_nil user
+    user = USERS.find_one(guest_to_facebook_user_id)
+    assert user
+    USERS.remove({_id: guest_to_facebook_user_id})
+    user = USERS.find_one(guest_to_facebook_user_id)
+    assert_nil user
+  end
+
+
+
   def test_guest_to_password
     post '/user', GUEST_USER
 
@@ -659,6 +724,46 @@ class UserTest < MiniTest::Unit::TestCase
     user = USERS.find_one(guest_user_id)
     assert_nil user
   end
+
+  def test_guest_to_existing_passoword_other_campaign
+    post '/user', EMAIL_USER
+
+    json_response = JSON.parse(last_response.body)
+    assert json_response["_id"]["$oid"]
+    email_user_id = BSON::ObjectId.from_string(json_response["_id"]["$oid"])
+
+    post '/user', GUEST_USER_MONKEY
+
+    json_response = JSON.parse(last_response.body)
+    assert json_response["_id"]["$oid"]
+    guest_user_id = BSON::ObjectId.from_string(json_response["_id"]["$oid"])
+
+    guest_to_email_user = EMAIL_USER_MONKEY.clone
+    guest_to_email_user[:user_id] = guest_user_id.to_s
+    put '/user', guest_to_email_user
+
+    json_response = JSON.parse(last_response.body)
+    assert json_response["_id"]["$oid"]
+    guest_to_email_user_id = BSON::ObjectId.from_string(json_response["_id"]["$oid"])
+
+    assert email_user_id != guest_to_email_user_id
+
+    # Guest user should exists and should have a mail
+    user = USERS.find_one(guest_user_id)
+    assert user
+    assert user["email"]
+
+    # deleting the user, and checking that both ids (which is the same id) doesn't exist in the DB
+    USERS.remove({_id: email_user_id})
+    user = USERS.find_one(email_user_id)
+    assert_nil user
+    user = USERS.find_one(guest_to_email_user_id)
+    assert user
+    USERS.remove({_id: guest_to_email_user_id})
+    user = USERS.find_one(guest_to_email_user_id)
+    assert_nil user
+  end
+
 
   def test_facebook_to_password
     post '/user', FACEBOOK_USER
@@ -1261,6 +1366,32 @@ class UserTest < MiniTest::Unit::TestCase
     USERS.remove({_id: user_id})
     user = USERS.find_one({_id: user_id})
     assert_nil(user)
+  end
+
+  def test_update_push_token_ios
+    post '/user', GUEST_USER
+
+    json_response = JSON.parse(last_response.body)
+    assert json_response["_id"]["$oid"]
+    guest_user_id = BSON::ObjectId.from_string(json_response["_id"]["$oid"])
+    guest_device_id = GUEST_USER[:device][:identifier_for_vendor]
+
+    new_push_token = "<09377d71 ddffb776 6d5e8d08 6e649cd9 b50497f2 cba5281f b80a5fed a912bXXX>"
+
+    # Updating push token
+    put '/user/push_token', {:user_id => guest_user_id.to_s, :device_id => guest_device_id, :ios_push_token => new_push_token}
+    assert_equal 200, last_response.status
+    json_response = JSON.parse(last_response.body)
+    assert json_response["_id"]["$oid"]
+    assert_equal new_push_token, json_response["devices"][0]["push_token"]
+
+    user = USERS.find_one(guest_user_id)
+    assert_equal new_push_token, user["devices"][0]["push_token"]
+
+    # deleting the user
+    USERS.remove({_id: guest_user_id})
+    user = USERS.find_one(guest_user_id)
+    assert_nil user
   end
 
   def test_update_push_token

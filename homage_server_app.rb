@@ -93,8 +93,9 @@ configure :production do
 	set :homage_server_foreground_uri, URI.parse("http://homage-render-prod-elb-882305239.us-east-1.elb.amazonaws.com:4567/footage")
 	set :homage_server_render_uri, URI.parse("http://homage-render-prod-elb-882305239.us-east-1.elb.amazonaws.com:4567/render")
 
-	# Setting MixPanel only in prodution
-	set :mixpanel, Mixpanel::Tracker.new("7d575048f24cb2424cd5c9799bbb49b1")
+	# set :mixpanel, Mixpanel::Tracker.new("7d575048f24cb2424cd5c9799bbb49b1")
+	set :mixpanel_token, "7d575048f24cb2424cd5c9799bbb49b1"
+	set :mixpanel, Mixpanel::Tracker.new(settings.mixpanel_token)
 
 	# AWS S3
 	s3 = AWS::S3.new
@@ -128,6 +129,9 @@ configure :test do
 	render_queue_url = "https://sqs.us-east-1.amazonaws.com/509268258673/RenderQueueTest"
     set :render_queue, AWS::SQS.new.queues[render_queue_url]
 
+    #this is a fix for getting a bad background "unlocked" version
+    set :allow_footage_on_bad_bg, true
+
 	# Test AE server connection
 	set :homage_server_foreground_uri, URI.parse("http://54.83.32.172:4567/footage")
 	set :homage_server_render_uri, URI.parse("http://54.83.32.172:4567/render")
@@ -139,9 +143,10 @@ configure :test do
 	s3 = AWS::S3.new
 	set :bucket, s3.buckets['homagetest']
 
-	# enables mixpanel for testing
-	# set :mixpanel, Mixpanel::Tracker.new("7d575048f24cb2424cd5c9799bbb49b1")
-
+	# set :mixpanel, Mixpanel::Tracker.new("bab0997e7171d56daf35df751f523962")
+	set :mixpanel_token, "bab0997e7171d56daf35df751f523962"
+	set :mixpanel, Mixpanel::Tracker.new(settings.mixpanel_token)
+	
 	set :play_subdomain, :'play-test'
 end
 
@@ -671,13 +676,7 @@ end
 # All Other Routes
 ###################
 
-# Get all stories
-get '/stories' do
-	# input
-	skip = params[:skip].to_i if params[:skip] # Optional
-	limit = params[:limit].to_i if params[:limit] # Optional
-	remakes_num = params[:remakes].to_i if params[:remakes] # Optional
-
+def get_campaign_id
 	campaign_id = nil;
 	
 	campaign_id = BSON::ObjectId.from_string(request.env["HTTP_CAMPAIGN_ID"].to_s) if request.env["HTTP_CAMPAIGN_ID"]
@@ -689,6 +688,18 @@ get '/stories' do
 	if !campaign_id then
 		campaign_id = settings.db.collection("Campaigns").find_one({name: /^homageapp$/i})["_id"]
 	end
+
+	return campaign_id	
+end
+
+# Get all stories
+get '/stories' do
+	# input
+	skip = params[:skip].to_i if params[:skip] # Optional
+	limit = params[:limit].to_i if params[:limit] # Optional
+	remakes_num = params[:remakes].to_i if params[:remakes] # Optional
+
+	campaign_id = get_campaign_id
 
 	logger.debug "getting stories for campaign_id: " + campaign_id.to_s;
 
@@ -799,9 +810,11 @@ end
 
 def handle_facebook_login(user)
 	facebook_id = user["facebook"]["id"]
+	campaign_id = user["campaign_id"]
+
 
 	users = settings.db.collection("Users")
-	user_exists = users.find_one({"facebook.id" => facebook_id})
+	user_exists = users.find_one({"facebook.id" => facebook_id, "campaign_id" => campaign_id})
 
 	if user_exists then
 		logger.info "Facebook user <" + user["facebook"]["name"] + "> exists with id <" + user_exists["_id"].to_s + ">. returning existing user"
@@ -810,7 +823,7 @@ def handle_facebook_login(user)
 	else
 		# checking if the user exists with an email
 		if user["email"] then
-			email_exists = users.find_one({"email" => user["email"]})
+			email_exists = users.find_one({"email" => user["email"], "campaign_id" => campaign_id})
 			if email_exists then
 				# This is an existing user which previously had an email login and now has a facebook login
 				update_user_id = email_exists["_id"]
@@ -838,10 +851,11 @@ end
 
 def handle_password_login(user)
 	email = user["email"]
+	campaign_id = user["campaign_id"]
 
 	# Checking if this is a signup or login attempt
 	users = settings.db.collection("Users")
-	user_exists = users.find_one({"email" => email})
+	user_exists = users.find_one({"email" => email, "campaign_id" => campaign_id})
 	if user_exists then
 
 		if user_type(user_exists) == UserType::FacebookUser then
@@ -901,10 +915,8 @@ def handle_user_params(user)
 		user.delete("device")
 	end
 
-	campaign_id = request.env["HTTP_CAMPAIGN_ID"]
-	if campaign_id then
-		user["campaign_id"] = BSON::ObjectId.from_string(campaign_id)
-	end
+	campaign_id = get_campaign_id
+	user["campaign_id"] = campaign_id
 end
 
 post '/user' do
@@ -1042,7 +1054,7 @@ put '/user' do
 		# Guest to Facebook user
 
 		# Checking if there is another facebook user with the same ID
-		facebook_user_exists = users.find_one({"facebook.id" => params[:facebook][:id]})
+		facebook_user_exists = users.find_one({"facebook.id" => params[:facebook][:id], "campaign_id" => params[:campaign_id]})
 		if facebook_user_exists then
 			logger.info "facebook id already exists, merging guest user " + update_user_id.to_s + " into facebook user " + facebook_user_exists["_id"].to_s
 			merge_users(existing_user, facebook_user_exists)
@@ -1058,7 +1070,7 @@ put '/user' do
 		# Guest to Email user
 
 		# Checking if there is another user with the same email
-		email_user_exists = users.find_one({email: params[:email]})
+		email_user_exists = users.find_one({email: params[:email], campaign_id: params[:campaign_id]})
 		if email_user_exists then
 			if user_type(email_user_exists) == UserType::FacebookUser then
 				logger.warn "cannot downgrade a facebook user to an email user"
@@ -1107,6 +1119,7 @@ put '/user/push_token' do
 	device_id = params[:device_id]
 	#system_name = params[:system_name]
 	android_push_token = params[:android_push_token]
+	ios_push_token = params[:ios_push_token]
 
 	users = settings.db.collection("Users")
 	user = users.find_one(user_id)
@@ -1124,6 +1137,8 @@ put '/user/push_token' do
 	for device in user["devices"] do
 		if device["device_id"] then
 			device_found = true if device["device_id"] == device_id
+		elsif device["identifier_for_vendor"] then
+			device_found = true if device["identifier_for_vendor"] == device_id			
 		end
 	end
 
@@ -1135,7 +1150,11 @@ put '/user/push_token' do
 	end
 
 	# Updating the push token
-	users.update({_id: user_id, "devices.device_id" => device_id}, {"$set" => {"devices.$.android_push_token" => android_push_token}})
+	if android_push_token then
+		users.update({_id: user_id, "devices.device_id" => device_id}, {"$set" => {"devices.$.android_push_token" => android_push_token}})
+	elsif ios_push_token then
+		users.update({_id: user_id, "devices.identifier_for_vendor" => device_id}, {"$set" => {"devices.$.push_token" => ios_push_token}})
+	end
 
 	return users.find_one(_id: user_id).to_json
 end
@@ -1755,8 +1774,9 @@ def getConfigDictionary()
 	config["share_link_prefix"] = settings.share_link_prefix;
 	config["significant_view_pct_threshold"] = 0.5
 	config["mirror_selfie_silhouette"] = true
-	if settings.respond_to?(:mixpanel) then
-		config["mixpanel_token"] = "7d575048f24cb2424cd5c9799bbb49b1"
+	config["mixpanel_token"] = settings.mixpanel_token;
+	if settings.respond_to?(:allow_footage_on_bad_bg) then
+		config["recorder_forced_bbg_policy"] = 0;
 	end
 
 	campaign_id = request.env["HTTP_CAMPAIGN_ID"] if request.env["HTTP_CAMPAIGN_ID"].to_s
@@ -2538,5 +2558,9 @@ get '/test/:entity_id' do
 	# erb :new_minisite
 	#erb :HMGVideoPlayer
 	erb :minisiteV1
+end
+
+get '/privacy' do
+	erb :privacy_policy
 end
 
