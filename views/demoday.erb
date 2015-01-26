@@ -142,12 +142,18 @@
 				        <div class="caption">
 				        	<%= remake["_id"].to_s %>
 				        </div>
-				       	<form action="/update/grade" method="post" style='z-index: 1000;' class="grade_form">
-					    	Grade: <input type="text" value=<% if remake["grade"] then %> <%= remake["grade"] %> <% else %> "0" <% end %> name="grade">
-					       	<input type="submit" value="Update">
-					       	<input type="hidden" name="remake_id" value=<%= remake["_id"].to_s %>>
+				      <form action="/update/grade" method="get" style='z-index: 1000;' class="grade_form">
+					    	Grade: <!-- <input type="text" value=<% if remake["grade"] then %> <%= remake["grade"] %> <% else %> "0" <% end %> name="grade"> -->
+					    	-1:<input name="grade" type="radio" value="-1" onclick="updateGrade(this,'<%= remake["_id"].to_s %>',-1);" <% if remake["grade"] == -1 then %> checked="true" <% end %>>
+					    	0:<input name="grade" type="radio" value="0" onclick="updateGrade(this,'<%= remake["_id"].to_s %>',0);" <% if remake["grade"] == 0 then %> checked="true" <% end %>>
+					       	1:<input name="grade" type="radio" value="1" onclick="updateGrade(this,'<%= remake["_id"].to_s %>',1);" <% if remake["grade"] >= 1 then %> checked="true" <% end %>>
+					       	<!-- <input type="hidden" name="remake_id" value=<%= remake["_id"].to_s %>> -->
 					    </form>
 					<% end %>
+					<!-- <button id="gradeMinusOne" class="upgradeButton" onclick="updateGrade(this,'<%= remake["_id"].to_s %>',-1)">-1</button>
+					<button id="gradeZero" class="upgradeButton" onclick="updateGrade(this,'<%= remake["_id"].to_s %>',0)">0</button>
+					<button id="gradePlusOne" class="upgradeButton" onclick="updateGrade(this,'<%= remake["_id"].to_s %>',1)">1</button> -->
+					
 					<button id="downloadbutton" class="btn btn-lg btn-warning" onclick="DownloadRemake(this,'<%= remake["_id"].to_s %>')">Download</button>
 
 					<button id="userinfobutton" class="btn btn-lg btn-warning" onclick="getuserinfo(event,this,'<%= remake["created_at"] %>','<%= remake["_id"] %>')">+</button>
