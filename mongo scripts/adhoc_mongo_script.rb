@@ -24,19 +24,23 @@ AWS.config(aws_config)
 s3 = AWS::S3.new
 s3_bucket = s3.buckets['homageapp']
 
-msmd_campaign = BSON::ObjectId.from_string("54919516454c61f4080000e5")
-msmd_stories = test_stories.find({campaign_id: msmd_campaign})
-
-msmd_story_id_array = []
-for story in msmd_stories do
-	puts "rafi"
-	msmd_story_id_array.push(story["_id"])
-end
-puts "msmd stories"
-puts msmd_story_id_array
+# stories_to_delete = [BSON::ObjectId.from_string("54a936ad64617400b5020000"),BSON::ObjectId.from_string("53814358d4615dfffa00007f"),BSON::ObjectId.from_string("542a6799454c61e96400065b"),BSON::ObjectId.from_string("54902e1014aa8e2015000c41")]
+# test_remakes.update({story_id: {"$in" => stories_to_delete}}, {"$set" => {status:5}}, {multi:true})
 
 
-test_remakes.update({story_id: {"$in" => msmd_story_id_array}}, {"$set" => {is_public: true, grade: 1}}, {multi:true})
+# msmd_campaign = BSON::ObjectId.from_string("54919516454c61f4080000e5")
+# msmd_stories = test_stories.find({campaign_id: msmd_campaign})
+
+# msmd_story_id_array = []
+# for story in msmd_stories do
+# 	puts "rafi"
+# 	msmd_story_id_array.push(story["_id"])
+# end
+# puts "msmd stories"
+# puts msmd_story_id_array
+
+
+# test_remakes.update({story_id: {"$in" => msmd_story_id_array}}, {"$set" => {is_public: true, grade: 1}}, {multi:true})
 
 # msmd_stories = test_stories.find({campaign_id:BSON::ObjectId.from_string("54919516454c61f4080000e5")})
 # for story in msmd_stories
