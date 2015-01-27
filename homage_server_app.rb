@@ -642,77 +642,7 @@ subdomain settings.play_subdomain do
 	end
 end
 
-def getVideoPlayerForEntity(entity_id)
-	remakes = settings.db.collection("Remakes")
-	users   = settings.db.collection("Users")
-	shares  = settings.db.collection("Shares")
-	stories = settings.db.collection("Stories")
-	@config = getConfigDictionary();
 
-	@share  = shares.find_one(entity_id)
-	if @share == nil then
-		@remake = remakes.find_one(entity_id)
-		@originating_share_id = ""
-	else 
-		remake_id = @share["remake_id"]
-		@remake = remakes.find_one(remake_id)
-		@originating_share_id = @share["_id"]
-		shares.update({_id: @originating_share_id},{"$set" => {share_status: true}})
-	end
-
-	story_id = @remake["story_id"]
-	logger.debug "story_id" + story_id.to_s
-	campaign_id = settings.db.collection("Stories").find_one({_id: story_id})["campaign_id"]
-	logger.debug "campaign_id: " + campaign_id.to_s
-	@campaign = settings.db.collection("Campaigns").find_one({_id: campaign_id})
-	campaign_id = @campaign["_id"]
-	@stories = settings.db.collection("Stories").find({active:true, campaign_id: campaign_id})
-
-	if BSON::ObjectId.legal?(@remake["user_id"]) then
-		@user = users.find_one(@remake["user_id"])
-	else
-		@user = users.find_one({_id: @remake["user_id"]})
-	end
-
-	@story = stories.find_one(@remake["story_id"])
-
-	info = Hash.new
-	info["reason"] = "remake_share"
-	info["campaign_id"] = campaign_id
-	settings.mixpanel.track("12345", "MinisiteView", info) if settings.respond_to?(:mixpanel)
-	erb :minisiteV1
-end
-
-get '/:entity_id' do
-	entity_id = BSON::ObjectId.from_string(params[:entity_id])
-	getVideoPlayerForEntity(entity_id)
-end
-
-def getMinisiteForCampaign(host_name)
-	@config = getConfigDictionary();
-	host_name = host_name.split('.localhost')[0]
-	puts "host_name: " + host_name.to_s
-	@campaign = settings.db.collection("Campaigns").find_one({http_host: host_name})
-	campaign_id = @campaign["_id"]
-	@stories = settings.db.collection("Stories").find({active:true, campaign_id: campaign_id})
-	info = Hash.new
-	info["reason"] = "campaign_gallery"
-	info["campaign_id"] = campaign_id
-	settings.mixpanel.track("12345", "MinisiteView", info) if settings.respond_to?(:mixpanel)	
-	erb :minisiteV1
-end
-
-get '/campaign/:campaign_name' do
-	@config = getConfigDictionary();
-	@campaign = settings.db.collection("Campaigns").find_one({name: /^#{params[:campaign_name]}$/i})
-	campaign_id = @campaign["_id"]
-	@stories = settings.db.collection("Stories").find({active:true, campaign_id: campaign_id})
-	info = Hash.new
-	info["reason"] = "campaign_gallery"
-	info["campaign_id"] = campaign_id
-	settings.mixpanel.track("12345", "MinisiteView", info) if settings.respond_to?(:mixpanel)	
-	erb :minisiteV1
-end
 
 ###################
 # All Other Routes
@@ -2604,5 +2534,77 @@ end
 
 get '/privacy' do
 	erb :privacy_policy
+end
+
+def getVideoPlayerForEntity(entity_id)
+	remakes = settings.db.collection("Remakes")
+	users   = settings.db.collection("Users")
+	shares  = settings.db.collection("Shares")
+	stories = settings.db.collection("Stories")
+	@config = getConfigDictionary();
+
+	@share  = shares.find_one(entity_id)
+	if @share == nil then
+		@remake = remakes.find_one(entity_id)
+		@originating_share_id = ""
+	else 
+		remake_id = @share["remake_id"]
+		@remake = remakes.find_one(remake_id)
+		@originating_share_id = @share["_id"]
+		shares.update({_id: @originating_share_id},{"$set" => {share_status: true}})
+	end
+
+	story_id = @remake["story_id"]
+	logger.debug "story_id" + story_id.to_s
+	campaign_id = settings.db.collection("Stories").find_one({_id: story_id})["campaign_id"]
+	logger.debug "campaign_id: " + campaign_id.to_s
+	@campaign = settings.db.collection("Campaigns").find_one({_id: campaign_id})
+	campaign_id = @campaign["_id"]
+	@stories = settings.db.collection("Stories").find({active:true, campaign_id: campaign_id})
+
+	if BSON::ObjectId.legal?(@remake["user_id"]) then
+		@user = users.find_one(@remake["user_id"])
+	else
+		@user = users.find_one({_id: @remake["user_id"]})
+	end
+
+	@story = stories.find_one(@remake["story_id"])
+
+	info = Hash.new
+	info["reason"] = "remake_share"
+	info["campaign_id"] = campaign_id
+	settings.mixpanel.track("12345", "MinisiteView", info) if settings.respond_to?(:mixpanel)
+	erb :minisiteV1
+end
+
+get '/:entity_id' do
+	entity_id = BSON::ObjectId.from_string(params[:entity_id])
+	getVideoPlayerForEntity(entity_id)
+end
+
+def getMinisiteForCampaign(host_name)
+	@config = getConfigDictionary();
+	host_name = host_name.split('.localhost')[0]
+	puts "host_name: " + host_name.to_s
+	@campaign = settings.db.collection("Campaigns").find_one({http_host: host_name})
+	campaign_id = @campaign["_id"]
+	@stories = settings.db.collection("Stories").find({active:true, campaign_id: campaign_id})
+	info = Hash.new
+	info["reason"] = "campaign_gallery"
+	info["campaign_id"] = campaign_id
+	settings.mixpanel.track("12345", "MinisiteView", info) if settings.respond_to?(:mixpanel)	
+	erb :minisiteV1
+end
+
+get '/campaign/:campaign_name' do
+	@config = getConfigDictionary();
+	@campaign = settings.db.collection("Campaigns").find_one({name: /^#{params[:campaign_name]}$/i})
+	campaign_id = @campaign["_id"]
+	@stories = settings.db.collection("Stories").find({active:true, campaign_id: campaign_id})
+	info = Hash.new
+	info["reason"] = "campaign_gallery"
+	info["campaign_id"] = campaign_id
+	settings.mixpanel.track("12345", "MinisiteView", info) if settings.respond_to?(:mixpanel)	
+	erb :minisiteV1
 end
 
