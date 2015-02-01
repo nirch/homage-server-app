@@ -9,13 +9,14 @@ db = prod_db
 remakes_collection = db.collection("Remakes")
 users_collection = db.collection("Users")
 
-NUM_OF_REMAKES_THRESHOLD = 10
+NUM_OF_REMAKES_THRESHOLD = ARGV[0].to_i
 
 launch_date = Time.parse("20140430Z")
 
 grouped_users_by_remakes = remakes_collection.aggregate(
 	[
-		{ "$match" => {"status" => {"$in" => [3, 5]} } },
+		#{ "$match" => {"status" => {"$in" => [3, 5]} } },
+		{ "$match" => {"share_link" => {"$exists" => true} } },
 		{ "$group" => {"_id" => {"user_id" => "$user_id"}, "remakes" => {"$sum" => 1} } },
 		{ "$sort" => {"remakes" => -1} }
 	]
