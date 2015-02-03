@@ -97,6 +97,9 @@ configure :production do
 	set :mixpanel_token, "7d575048f24cb2424cd5c9799bbb49b1"
 	set :mixpanel, Mixpanel::Tracker.new(settings.mixpanel_token)
 
+	#this is a fix for getting a bad background "unlocked" version
+    set :allow_footage_on_bad_bg, true
+
 	# AWS S3
 	s3 = AWS::S3.new
 	set :bucket, s3.buckets['homageapp']
@@ -2534,6 +2537,10 @@ end
 
 get '/privacy' do
 	erb :privacy_policy
+end
+
+get '/terms_of_service' do
+	erb :terms_of_service
 end
 
 def getVideoPlayerForEntity(entity_id)
