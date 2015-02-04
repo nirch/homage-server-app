@@ -97,6 +97,9 @@ configure :production do
 	set :mixpanel_token, "7d575048f24cb2424cd5c9799bbb49b1"
 	set :mixpanel, Mixpanel::Tracker.new(settings.mixpanel_token)
 
+	#this is a fix for getting a bad background "unlocked" version
+    set :allow_footage_on_bad_bg, true
+
 	# AWS S3
 	s3 = AWS::S3.new
 	set :bucket, s3.buckets['homageapp']
@@ -249,6 +252,10 @@ module RemakesSaveToDevice
 	Premium  = 2
 end
 
+get '/' do
+	host_name = request.env["HTTP_HOST"]
+	getMinisiteForCampaign(host_name)
+end
 
 get '/test/cgi' do
 	x = "Don't bla bla cgi"
@@ -358,13 +365,23 @@ get '/ios' do
 	origin_id = params[:origin_id] if params[:origin_id]
 	campaign_id = params[:campaign_id] if params[:campaign_id]
 
+	if request.env["HTTP_HOST"] then
+		host_name = request.env["HTTP_HOST"].split('.localhost')[0]
+		campaign = settings.db.collection("Campaigns").find_one({http_host: host_name})
+		if !campaign then
+			logger.error "did not find campaign matching host name: " + host_name.to_s
+			return
+		end
+		campaign_id = campaign["_id"].to_s
+	end
+
 	info = Hash.new
 	info["shared_from"] = shared_from
 	info["origin_id"] = origin_id if origin_id
 	info["campaign_id"] = campaign_id if campaign_id
 
 	settings.mixpanel.track("12345", "InstalliOS", info) if settings.respond_to?(:mixpanel)	
-	redirect "https://itunes.apple.com/us/app/id851746600", 302
+	redirect campaign["appstore_link"], 302
 end
 
 get '/android' do
@@ -373,13 +390,23 @@ get '/android' do
 	origin_id = params[:origin_id] if params[:origin_id]
 	campaign_id = params[:campaign_id] if params[:campaign_id]
 
+	if request.env["HTTP_HOST"] then
+		host_name = request.env["HTTP_HOST"].split('.localhost')[0]
+		campaign = settings.db.collection("Campaigns").find_one({http_host: host_name})
+		if !campaign then
+			logger.error "did not find campaign matching host name: " + host_name.to_s
+			return
+		end
+		campaign_id = campaign["_id"].to_s
+	end
+
 	info = Hash.new
 	info["shared_from"] = shared_from
 	info["origin_id"] = origin_id if origin_id
 	info["campaign_id"] = campaign_id if campaign_id
 
 	settings.mixpanel.track("12345", "InstallAndroid", info) if settings.respond_to?(:mixpanel)	
-	redirect "https://play.google.com/store/apps/details?id=com.homage.app", 302
+	redirect campaign["playstore_link"], 302
 end
 
 # get '/raw/date/:from_date' do
@@ -605,18 +632,6 @@ subdomain settings.play_subdomain do
 		erb :new_minisite
 	end
 
-	get '/campaign/:campaign_name' do
-		@config = getConfigDictionary();
-		@campaign = settings.db.collection("Campaigns").find_one({name: /^#{params[:campaign_name]}$/i})
-		campaign_id = @campaign["_id"]
-		@stories = settings.db.collection("Stories").find({active:true, campaign_id: campaign_id})
-		info = Hash.new
-		info["reason"] = "campaign_gallery"
-		info["campaign_id"] = campaign_id
-		settings.mixpanel.track("12345", "MinisiteView", info) if settings.respond_to?(:mixpanel)	
-		erb :minisiteV1
-	end
-
 	get '/masonryTest/:campaign_name' do
 		@config = getConfigDictionary();
 		@campaign = settings.db.collection("Campaigns").find_one({name: params[:campaign_name]})
@@ -628,49 +643,9 @@ subdomain settings.play_subdomain do
 		settings.mixpanel.track("12345", "MinisiteView", info) if settings.respond_to?(:mixpanel)	
 		erb :msonrytest
 	end
-
-	get '/:entity_id' do
-		remakes = settings.db.collection("Remakes")
-		users   = settings.db.collection("Users")
-		shares  = settings.db.collection("Shares")
-		stories = settings.db.collection("Stories")
-		@config = getConfigDictionary();
-
-		entity_id = BSON::ObjectId.from_string(params[:entity_id])
-		@share  = shares.find_one(entity_id)
-		if @share == nil then
-			@remake = remakes.find_one(entity_id)
-			@originating_share_id = ""
-		else 
-			remake_id = @share["remake_id"]
-			@remake = remakes.find_one(remake_id)
-			@originating_share_id = @share["_id"]
-			shares.update({_id: @originating_share_id},{"$set" => {share_status: true}})
-		end
-
-		story_id = @remake["story_id"]
-		logger.debug "story_id" + story_id.to_s
-		campaign_id = settings.db.collection("Stories").find_one({_id: story_id})["campaign_id"]
-		logger.debug "campaign_id: " + campaign_id.to_s
-		@campaign = settings.db.collection("Campaigns").find_one({_id: campaign_id})
-		campaign_id = @campaign["_id"]
-		@stories = settings.db.collection("Stories").find({active:true, campaign_id: campaign_id})
-	
-		if BSON::ObjectId.legal?(@remake["user_id"]) then
-			@user = users.find_one(@remake["user_id"])
-		else
-			@user = users.find_one({_id: @remake["user_id"]})
-		end
-
-		@story = stories.find_one(@remake["story_id"])
-
-		info = Hash.new
-		info["reason"] = "remake_share"
-		info["campaign_id"] = campaign_id
-		settings.mixpanel.track("12345", "MinisiteView", info) if settings.respond_to?(:mixpanel)
-		erb :minisiteV1
-	end
 end
+
+
 
 ###################
 # All Other Routes
@@ -2562,5 +2537,81 @@ end
 
 get '/privacy' do
 	erb :privacy_policy
+end
+
+get '/terms_of_service' do
+	erb :terms_of_service
+end
+
+def getVideoPlayerForEntity(entity_id)
+	remakes = settings.db.collection("Remakes")
+	users   = settings.db.collection("Users")
+	shares  = settings.db.collection("Shares")
+	stories = settings.db.collection("Stories")
+	@config = getConfigDictionary();
+
+	@share  = shares.find_one(entity_id)
+	if @share == nil then
+		@remake = remakes.find_one(entity_id)
+		@originating_share_id = ""
+	else 
+		remake_id = @share["remake_id"]
+		@remake = remakes.find_one(remake_id)
+		@originating_share_id = @share["_id"]
+		shares.update({_id: @originating_share_id},{"$set" => {share_status: true}})
+	end
+
+	story_id = @remake["story_id"]
+	logger.debug "story_id" + story_id.to_s
+	campaign_id = settings.db.collection("Stories").find_one({_id: story_id})["campaign_id"]
+	logger.debug "campaign_id: " + campaign_id.to_s
+	@campaign = settings.db.collection("Campaigns").find_one({_id: campaign_id})
+	campaign_id = @campaign["_id"]
+	@stories = settings.db.collection("Stories").find({active:true, campaign_id: campaign_id})
+
+	if BSON::ObjectId.legal?(@remake["user_id"]) then
+		@user = users.find_one(@remake["user_id"])
+	else
+		@user = users.find_one({_id: @remake["user_id"]})
+	end
+
+	@story = stories.find_one(@remake["story_id"])
+
+	info = Hash.new
+	info["reason"] = "remake_share"
+	info["campaign_id"] = campaign_id
+	settings.mixpanel.track("12345", "MinisiteView", info) if settings.respond_to?(:mixpanel)
+	erb :minisiteV1
+end
+
+get '/:entity_id' do
+	entity_id = BSON::ObjectId.from_string(params[:entity_id])
+	getVideoPlayerForEntity(entity_id)
+end
+
+def getMinisiteForCampaign(host_name)
+	@config = getConfigDictionary();
+	host_name = host_name.split('.localhost')[0]
+	puts "host_name: " + host_name.to_s
+	@campaign = settings.db.collection("Campaigns").find_one({http_host: host_name})
+	campaign_id = @campaign["_id"]
+	@stories = settings.db.collection("Stories").find({active:true, campaign_id: campaign_id})
+	info = Hash.new
+	info["reason"] = "campaign_gallery"
+	info["campaign_id"] = campaign_id
+	settings.mixpanel.track("12345", "MinisiteView", info) if settings.respond_to?(:mixpanel)	
+	erb :minisiteV1
+end
+
+get '/campaign/:campaign_name' do
+	@config = getConfigDictionary();
+	@campaign = settings.db.collection("Campaigns").find_one({name: /^#{params[:campaign_name]}$/i})
+	campaign_id = @campaign["_id"]
+	@stories = settings.db.collection("Stories").find({active:true, campaign_id: campaign_id})
+	info = Hash.new
+	info["reason"] = "campaign_gallery"
+	info["campaign_id"] = campaign_id
+	settings.mixpanel.track("12345", "MinisiteView", info) if settings.respond_to?(:mixpanel)	
+	erb :minisiteV1
 end
 

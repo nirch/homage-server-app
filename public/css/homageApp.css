@@ -545,6 +545,10 @@ html {
   left: 0;
   z-index: 20000;
 }
+.footer .clickable-link {
+  font-size: 12px;
+  padding-top: 13px;
+}
 .footer-right,
 .footer-left {
   height: 100%;
