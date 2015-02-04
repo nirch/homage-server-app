@@ -157,6 +157,8 @@
 					<button id="downloadbutton" class="btn btn-lg btn-warning" onclick="DownloadRemake(this,'<%= remake["_id"].to_s %>')">Download</button>
 
 					<button id="userinfobutton" class="btn btn-lg btn-warning" onclick="getuserinfo(event,this,'<%= remake["created_at"] %>','<%= remake["_id"] %>')">+</button>
+					
+					<button id="remakebutton" class="btn btn-lg btn-warning" onclick="showRemake(this,'<%= remake["_id"].to_s %>')">Open</button>
 					<!-- <button type="button" onclick="DownloadRemake('<%= remake["_id"].to_s %>')">Download Remake</button> -->
 			</div>
 			<!-- ListObjectsFromS3() -->

@@ -177,6 +177,13 @@ function showmessage(event, text){
 	message.innerHTML = '<button id="closemessage" onclick="closemessage()" class="closebutton">X</button>' + '<code><pre>' + text + '</pre></code>';
 }
 
+function showRemake(event, remake_id){
+
+	url = "/" + remake_id;
+	var win = window.open(url, '_blank');
+  	win.focus();
+}
+
 function closevideoplayer(){
 	var videoplayer = document.getElementById('videoplayer');
 	videoplayer.style.visibility='hidden';
