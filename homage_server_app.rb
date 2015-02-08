@@ -1827,12 +1827,14 @@ end
 
 put '/remake/share' do
 	share_id  = BSON::ObjectId.from_string(params[:share_id])
-	success   = params[:success]
+	success   = params[:success] if params[:success]
 	share_method = params[:share_method].to_i if params[:share_method]
+	share_application = params[:application].to_s if params[:application]
 
 	shares = settings.db.collection("Shares")
 	set_dict = {share_status: success}
 	set_dict["share_method"] = share_method if share_method
+	set_dict["share_application"] = share_application if share_application
 
 	shares.update({_id: share_id},{"$set" => set_dict})
 end
