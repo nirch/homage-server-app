@@ -1795,7 +1795,7 @@ post '/remake/share' do
 	origin_id  = BSON::ObjectId.from_string(params[:origin_id]) if params[:origin_id]
 	share_link = params[:share_link].to_s if params[:share_link]
 	share_status = params[:share_status] if params[:share_status] 
-	share_application = params[:application].to_i if params[:application]
+	share_application = params[:application].to_s if params[:application]
 
 	#if share link is not shared from client (old clients)
 	if !share_link then
