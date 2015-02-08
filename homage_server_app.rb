@@ -278,7 +278,7 @@ get '/remakes' do
 		
 		story_names = params[:stories] if params[:stories];
 		story_id_array = Array.new
-		story_find_condition = {active: true}
+		story_find_condition = {active: true, active_users:{"$exists"=>false}}
 
 		if story_names then
 			for name in story_names do
@@ -364,12 +364,14 @@ get '/ios' do
 	shared_from = params[:src] if params[:src]
 	origin_id = params[:origin_id] if params[:origin_id]
 	campaign_id = params[:campaign_id] if params[:campaign_id]
+	hmg_camapign = settings.db.collection("Campaigns").find_one({name: /^homageapp$/i})
 
 	if request.env["HTTP_HOST"] then
 		host_name = request.env["HTTP_HOST"].split('.localhost')[0]
 		campaign = settings.db.collection("Campaigns").find_one({http_host: host_name})
 		if !campaign then
 			logger.error "did not find campaign matching host name: " + host_name.to_s
+			campaign = hmg_camapign
 			return
 		end
 		campaign_id = campaign["_id"].to_s
@@ -380,8 +382,9 @@ get '/ios' do
 	info["origin_id"] = origin_id if origin_id
 	info["campaign_id"] = campaign_id if campaign_id
 
-	settings.mixpanel.track("12345", "InstalliOS", info) if settings.respond_to?(:mixpanel)	
-	redirect campaign["appstore_link"], 302
+	settings.mixpanel.track("12345", "InstalliOS", info) if settings.respond_to?(:mixpanel)		
+	appstore_link = campaign["appstore_link"] ? campaign["appstore_link"] : hmg_camapign["appstore_link"]
+	redirect appstore_link, 302
 end
 
 get '/android' do
@@ -389,12 +392,14 @@ get '/android' do
 	shared_from = params[:src] if params[:src]
 	origin_id = params[:origin_id] if params[:origin_id]
 	campaign_id = params[:campaign_id] if params[:campaign_id]
+	hmg_camapign = settings.db.collection("Campaigns").find_one({name: /^homageapp$/i})
 
 	if request.env["HTTP_HOST"] then
 		host_name = request.env["HTTP_HOST"].split('.localhost')[0]
 		campaign = settings.db.collection("Campaigns").find_one({http_host: host_name})
 		if !campaign then
 			logger.error "did not find campaign matching host name: " + host_name.to_s
+			campaign = hmg_camapign
 			return
 		end
 		campaign_id = campaign["_id"].to_s
@@ -406,7 +411,8 @@ get '/android' do
 	info["campaign_id"] = campaign_id if campaign_id
 
 	settings.mixpanel.track("12345", "InstallAndroid", info) if settings.respond_to?(:mixpanel)	
-	redirect campaign["playstore_link"], 302
+	playstore_link = campaign["playstore_link"] ? campaign["playstore_link"] : hmg_camapign["playstore_link"]
+	redirect playstore_link, 302
 end
 
 # get '/raw/date/:from_date' do
@@ -1789,6 +1795,7 @@ post '/remake/share' do
 	origin_id  = BSON::ObjectId.from_string(params[:origin_id]) if params[:origin_id]
 	share_link = params[:share_link].to_s if params[:share_link]
 	share_status = params[:share_status] if params[:share_status] 
+	share_application = params[:application].to_i if params[:application]
 
 	#if share link is not shared from client (old clients)
 	if !share_link then
@@ -1805,6 +1812,7 @@ post '/remake/share' do
 	share["share_method"] = share_method if share_method
 	share["share_link"] = share_link if share_link
 	share["share_status"] = share_status if share_status
+	share["share_application"] = share_application if share_application
 
 	share_objectId = shares.save(share)
 
@@ -2595,7 +2603,7 @@ def getMinisiteForCampaign(host_name)
 	puts "host_name: " + host_name.to_s
 	@campaign = settings.db.collection("Campaigns").find_one({http_host: host_name})
 	campaign_id = @campaign["_id"]
-	@stories = settings.db.collection("Stories").find({active:true, campaign_id: campaign_id})
+	@stories = settings.db.collection("Stories").find({active:true, active_users: {"$exists"=>false}, campaign_id: campaign_id})
 	info = Hash.new
 	info["reason"] = "campaign_gallery"
 	info["campaign_id"] = campaign_id
@@ -2603,15 +2611,4 @@ def getMinisiteForCampaign(host_name)
 	erb :minisiteV1
 end
 
-get '/campaign/:campaign_name' do
-	@config = getConfigDictionary();
-	@campaign = settings.db.collection("Campaigns").find_one({name: /^#{params[:campaign_name]}$/i})
-	campaign_id = @campaign["_id"]
-	@stories = settings.db.collection("Stories").find({active:true, campaign_id: campaign_id})
-	info = Hash.new
-	info["reason"] = "campaign_gallery"
-	info["campaign_id"] = campaign_id
-	settings.mixpanel.track("12345", "MinisiteView", info) if settings.respond_to?(:mixpanel)	
-	erb :minisiteV1
-end
 
