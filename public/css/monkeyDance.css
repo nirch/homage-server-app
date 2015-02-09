@@ -37,7 +37,6 @@ html {
 }
 .clickable-link {
   text-decoration: none;
-  font-family: "jilkyway";
   text-transform: uppercase;
   color: #c96b21;
   height: 100%;
@@ -214,6 +213,9 @@ html {
   list-style-type: none;
   height: 100%;
 }
+.filter-left .clickable-link {
+  font-family: "jilkyway";
+}
 .filter-left .clickable-link:hover,
 .filter-left .clickable-link:focus,
 .filter-left .clickable-link:active,
@@ -235,6 +237,9 @@ html {
 .filter-right > .open:focus {
   background-color: #363636;
   color: #f0f0f0;
+}
+.filter-right .clickable-link {
+  font-family: "jilkyway";
 }
 .campaign-stories-col {
   padding: 0px;

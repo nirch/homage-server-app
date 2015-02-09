@@ -37,7 +37,6 @@ html {
 }
 .clickable-link {
   text-decoration: none;
-  font-family: "proxima-nova";
   text-transform: uppercase;
   color: #707070;
   height: 100%;
@@ -204,6 +203,9 @@ html {
   list-style-type: none;
   height: 100%;
 }
+.filter-left .clickable-link {
+  font-family: "proxima-nova";
+}
 .filter-left .clickable-link:hover,
 .filter-left .clickable-link:focus,
 .filter-left .clickable-link:active,
@@ -225,6 +227,9 @@ html {
 .filter-right > .open:focus {
   background-color: #363636;
   color: #f0f0f0;
+}
+.filter-right .clickable-link {
+  font-family: "proxima-nova";
 }
 .campaign-stories-col {
   padding: 0px;
