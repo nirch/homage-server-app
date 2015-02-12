@@ -344,6 +344,7 @@ html {
   width: 100%;
   font-size: 30px;
   padding-bottom: 10px;
+  display: none;
 }
 @media (max-width: 767px) {
   .campaign-info {
