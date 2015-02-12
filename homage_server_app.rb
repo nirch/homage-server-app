@@ -362,7 +362,7 @@ end
 get '/ios' do
  	shared_from = "Undefined"
 	shared_from = params[:src] if params[:src]
-	origin_id = params[:origin_id] if params[:origin_id]
+	origin_id = BSON::ObjectId.from_string(params[:origin_id]) if params[:origin_id]
 	campaign_id = params[:campaign_id] if params[:campaign_id]
 	hmg_camapign = settings.db.collection("Campaigns").find_one({name: /^homageapp$/i})
 
@@ -390,7 +390,7 @@ end
 get '/android' do
 	shared_from = "Undefined"
 	shared_from = params[:src] if params[:src]
-	origin_id = params[:origin_id] if params[:origin_id]
+	origin_id = BSON::ObjectId.from_string(params[:origin_id]) if params[:origin_id]
 	campaign_id = params[:campaign_id] if params[:campaign_id]
 	hmg_camapign = settings.db.collection("Campaigns").find_one({name: /^homageapp$/i})
 
@@ -1842,8 +1842,8 @@ end
 post '/campaign_site/share' do
 	info = Hash.new
 	info["share_method"] = params[:share_method].to_i if params[:share_method]
-	info["campaign_id"] = params[:campaign_id] if params[:campaign_id]
-	info["origin_id"] = params[:origin_id].to_s if params[:origin_id]
+	info["campaign_id"] = BSON::ObjectId.from_string(params[:campaign_id].to_s) if params[:campaign_id].to_s
+	info["origin_id"] = BSON::ObjectId.from_string(params[:origin_id].to_s) if params[:origin_id]
 	settings.mixpanel.track("12345", "campaign_site_share", info) if settings.respond_to?(:mixpanel)
 end
 

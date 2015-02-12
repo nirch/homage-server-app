@@ -430,9 +430,10 @@ html
 .campaign-info
 {
 	height: 100%;
-	float: right;
+	float: left;
 	text-align: center;
 	margin-right: 50px;
+	margin-left:120px;
 }
 
 .campaign-logo {
@@ -465,12 +466,11 @@ html
 // +++++ campaign video element ++++++
 
 .campaign-video-container {
-  	height:180px;
-  	width: 320px;
-  	position:relative;
-  	margin-left: 50px;
+  	position: relative;
+  	float:right;
+  	margin-right: 100px;
  	@media(max-width:767px){
-		margin: 0 auto;
+		margin: 0px auto ;
 	}
 }
 
@@ -489,8 +489,9 @@ html
 @media(max-width:767px){
 	.campaign-info {
 		float: none;
-		margin-right:0px !important;
+		//margin-right:0px !important;
 		margin-bottom: 40px;
+		margin: 0px auto !important;
 	}
 
 	.campaign-logo {

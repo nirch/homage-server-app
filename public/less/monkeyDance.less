@@ -2,9 +2,10 @@
 @main-text-color: #F0F0F0;
 
 @bright-filter-color: #C96B21;
-@medium-filter-color: #363636;
+@medium-filter-color: #321914;
 @dark-filter-color: #75391B;
 
+@gray-color: #363636;
 @header-color: #321914;
 @footer-color: #321914;
 
@@ -114,12 +115,11 @@ html
 	{
 		padding-right:30px;
 		padding-left: 30px;
-		height: 100%
+		height: 100%;
 	}
 	.app-icon
 	{
-		padding-top: 7px
-
+		padding-top: 12px;
 	}
 }
 
@@ -150,18 +150,36 @@ html
 	height: 68px;
 	margin-left: 0px;
 	padding-left:0px;
-	display: none;
+	//display: none;
 }
 
-#hmg-logo-mobile:before
+#hmg-logo-mobile
 {
-	content:url("/resources/minisite/HomageLogoMobile.png")
+	background: url("/resources/minisite/monkeyDance/monkeyDanceLogo.png") no-repeat;
+	background-size: contain;
+	height: 80px;
+	width:80px;
+	display:block;
 }
 
-#hmg-appstore-link:before
+#hmg-appstore-link
 {
-	content:url("/resources/minisite/monkeyDance/appStoreIcon.png");
+	background:url("/resources/minisite/monkeyDance/appStoreIcon.png") no-repeat left center;
+	// content:url("/resources/minisite/monkeyDance/appStoreIcon.png");
+	height: 40px;
+	width:120px;
+	background-size: contain;
+	display: block;
+	margin: 0px auto;
 }
+
+// #hmg-appstore-link:before
+// {
+// 	background:url("/resources/minisite/monkeyDance/appStoreIcon.png") no-repeat left center;
+// 	// content:url("/resources/minisite/monkeyDance/appStoreIcon.png");
+// 	height: 100px;
+// 	width:100px;
+// }
 
 #hmg-playstore-link:before
 {
@@ -328,8 +346,8 @@ html
 
 .filter-right > .dropdown > .dropdown-menu > li > a {
 	background-color: transparent;
-	color: @bright-filter-color;
-	font-family: @main-font;
+	color: @main-theme-color;
+	// font-family: @main-font;
   	font-size: 14px;
 }
 
@@ -350,6 +368,14 @@ html
 .filter-right .clickable-link
 {
 	font-family: @main-font;
+}
+
+.filter-right .clickable-link:hover,
+.filter-right .clickable-link:focus,
+.filter-right .clickable-link:active,
+.filter-right .clickable-link.selected,
+{
+	color: @main-theme-color;
 }
 
 .campaign-stories-col
@@ -408,16 +434,34 @@ html
 	.banner 
 	{
 		padding-top: 60px;
+		.left
+		{
+			.campaign-video-container
+			{
+				//display: none;
+			}
+		}
 		.left-image
 		{
+			display: none;
 			padding-left: 30px;
 			span:before
 			{
-
-				content: url('/resources/minisite/monkeyDance/monkey.png');
+				content: url('/resources/minisite/monkeyDance/monkeyAndLogo.png');
 				height: 300px;
 				width: 300px;
 				background-size: contain;
+			}
+		}
+		.left
+		{
+			.campaign-info
+			{
+				height: 100%;
+				float: left;
+				text-align: center;
+				margin-left: 100px;
+				//display: none;
 			}
 		}
 
@@ -453,17 +497,12 @@ html
 
 // +++++ campaign info (button and logo) ++++++
 
-.campaign-info
-{
-	height: 100%;
-	float: right;
-	text-align: center;
-	margin-right: 50px;
-}
+
 
 .campaign-logo {
-  background: url('/resources/minisite/monkeyDance/monkeyDanceLogo.png') no-repeat center;
-  min-height: 130px;
+  background: url('/resources/minisite/monkeyDance/monkeyAndLogo.png') no-repeat center;
+  min-height: 380px;
+  min-width: 380px;
   margin-bottom: 30px;
   background-size: contain;
 }
@@ -493,11 +532,13 @@ html
 // +++++ campaign video element ++++++
 
 .campaign-video-container {
-	display: none;
-  	height:180px;
-  	width: 320px;
-  	position:relative;
-  	margin-left: 50px;
+  	// height:180px;
+  	// width: 320px;
+  	// position:relative;
+  	//margin-left: 50px;
+  	float:right;
+  	margin-right: 100px;
+  	padding-top: 35px;
  	@media(max-width:767px){
 		margin: 0 auto;
 	}
@@ -513,6 +554,7 @@ html
   width:100%;
   font-size: 30px;
   padding-bottom: 10px;
+  display:none;
 }
 
 @media(max-width:767px){
@@ -523,7 +565,7 @@ html
 	}
 
 	.campaign-logo {
-		background: url('/resources/minisite/monkeyDance/monkeyDanceLogo.png') no-repeat center;
+		background: url('/resources/minisite/monkeyDance/monkeyLogo.png') no-repeat center;
 		margin-bottom: 0px;
 		margin-top: 0px;
 		background-size: contain;
@@ -780,7 +822,7 @@ html
 
 .spinner-cell
 {
-	border: 2px solid @medium-filter-color;
+	border: 2px solid @gray-color;
 	border-radius: 10px;
 }
 
@@ -832,6 +874,14 @@ html
 	{
 		font-size: 16px;
 	}
+	.tumblr-label
+	{
+		display:none;
+	}
+	.twitter-label
+	{
+		display:none;
+	}
 }
 
 .footer-left
@@ -862,14 +912,19 @@ html
 .hmg-customer-footer-info
 {
 	text-align: center;
-	padding-top: 5px;
+	padding-top: 10px;
 	.logo
 	{
-		span:before
+		span
 		{
-			content: url('/resources/minisite/monkeyDance/smartoonzLogo.png')
-		}
+			background: url('/resources/minisite/monkeyDance/smartoonzLogo.png') no-repeat left center;
+			display: block;
+			height: 35px;
+			width:200px;
+			background-size: contain;
+			margin: 0 auto;
 
+		}
 	}
 	.textinfo
 	{
@@ -1030,7 +1085,7 @@ html
 .mobile-social-counters-column
 {
 	width:100%;
-	border-bottom: 2px solid @medium-filter-color;
+	border-bottom: 2px solid @gray-color;
 }
 
 .general-mobile-overlay-container
@@ -1051,7 +1106,7 @@ html
 {
 	height:40px;
 	margin-top:10px;
-	border-bottom: 2px solid @medium-filter-color;
+	border-bottom: 2px solid @gray-color;
 	.like
 	{
 		margin-right: 15px;
@@ -1145,7 +1200,7 @@ html
 	position:absolute;
 	top: 20%;
 	padding-bottom: 15px;
-	border-bottom: 2px solid @medium-filter-color;
+	border-bottom: 2px solid @gray-color;
 	width:70%;
 	text-align: center;
 	margin-right:15%;
@@ -1206,7 +1261,7 @@ html
 		position:absolute;
 		top: 10%;
 		padding-bottom: 0px;
-		border-bottom: 2px solid @medium-filter-color;
+		border-bottom: 2px solid @gray-color;
 		width:100%;
 		text-align: center;
 		margin-right:0%;

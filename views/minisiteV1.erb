@@ -38,7 +38,7 @@
     <!-- VIDEO JS -->
     <link href="http://vjs.zencdn.net/4.8/video-js.css" rel="stylesheet">
     <script src="http://vjs.zencdn.net/4.8/video.js"></script>
-    <!--<script src="/js/youtube.js"></script>-->
+    <script src="/js/youtube.js"></script>
 
     <!-- REMAKE GALLERY -->
     <!-- <link href="/css/jquery.galereya.css" rel="stylesheet"/> -->
@@ -94,7 +94,7 @@
       <button type="button" class="navbar-toggle collapsed" id="hmg-navbar-toggle-menu" data-toggle="collapse" data-target="#hmg-nav-bar-collapse">
         <i class="fa fa-bars"> </i>
       </button>
-      <a class="navbar-brand" id="hmg-header-logo" href="#">
+      <a class="navbar-brand hidden-lg hidden-md" id="hmg-header-logo" href="#">
         <span id="hmg-logo-mobile"/>
       </a>
     </div>
@@ -176,7 +176,7 @@
       <div class="col-sm-6 tbs-col campaign-stories-col">
         <ul class="filter-right">
           <li class="dropdown filter-label">
-            <a href="#" class="dropdown-toggle hmg-dropdown-toggle-stories clickable-link" data-toggle="dropdown">Select A story<span class="caret"></span></a>
+            <a href="#" class="dropdown-toggle hmg-dropdown-toggle-stories clickable-link" data-toggle="dropdown">Select By<span class="caret"></span></a>
             <ul class="dropdown-menu campaign-stories-dropdown" role="menu">
               <li><a class="all-stories" href="#">All</a></li>
               <% for story in @stories do %>
@@ -189,7 +189,23 @@
     </div>  
 
     <div class="row tbs-row banner">
-      <div class="col-sm-6 col-xs-12 col-sm-push-6 tbs-col">
+      <div class="right col-sm-6 col-xs-12 col-sm-push-6 tbs-col">
+        <div class="campaign-video-container">
+          <span class="campaign-video-play-button-container">
+           <i class="fa fa-play"> </i>
+          </span>
+          <div class="videocontent">
+                <!-- <video id="campaign_video_player" class="video-js vjs-default-skin" width="320" height="180" poster="" controls="controls"  
+                data-setup="{}">
+                <source src="" type="video/mp4"/>
+                </video> -->
+                <video id='campaign_video_player' src='' class='video-js vjs-default-skin' controls ytcontrols="true" autoplay='autoplay' preload='auto' width='320' height='180'>
+                </video>
+          </div>
+        </div>
+      </div> 
+
+      <div class="left col-sm-6 col-xs-12 hidden-sm hidden-xs col-sm-pull-6 tbs-col">
         <div class="campaign-info">
           <div class="campaign-logo">
 
@@ -197,26 +213,10 @@
 
           <a class="bold-font-label campaign-button" href="http://homage.it/" target="_blank" >Go to Homage web site 
           </a>
-        </div>
-      </div> 
-
-      <div class="col-sm-6 col-xs-12 col-sm-pull-6 tbs-col">
-        <div class="campaign-video-container">
-          <span class="campaign-video-play-button-container">
-           <i class="fa fa-play"> </i>
-          </span>
-          <div class="videocontent">
-              <video id="campaign_video_player" class="video-js vjs-default-skin" width="320" height="180" poster="" controls="controls"  
-              data-setup="{}">
-              <source src="" type="video/mp4"/>
-            </video>
-          </div> 
         </div> 
-        <div class="left-image">
-          <span>
-        </div>  
       </div>
     </div>
+    
     <div class="row tbs-row gallery">
       <div id="masonry-gallery-container">
 
@@ -232,7 +232,7 @@
 <div class="row footer tbs-row hidden-xs">
   <div class="col-xs-4 tbs-col">
     <ul class="footer-left">
-        <li class="footer-label"><a class="clickable-link hmg-footer-text">Fueled With</a></li>
+        <li class="footer-label"><a class="clickable-link hmg-footer-text">Powered With</a></li>
         <li class="footer-label"><a class="clickable-link" href="http://www.homage.it" target="_blank">
           <span id="hmg-footer-logo"/>
         </a>
@@ -255,22 +255,22 @@
 
   <div class="col-xs-4 tbs-col">
     <ul class="footer-right">
-      <li class="footer-label hmg-social-link">
+      <li class="footer-label fb-label hmg-social-link">
         <a class="hoverable-element" href='<%=@campaign["facebook_link"]%>' target="_blank">
           <i class="fa fa-facebook hmg-facebook"> </i>
         </a>
       </li>
-      <li class="footer-label hmg-social-link">
+      <li class="footer-label twitter-label hmg-social-link">
         <a class="hoverable-element" href='<%=@campaign["twitter_link"]%>' target="_blank">
           <i class="fa fa-twitter hmg-twitter"> </i>
         </a>
       </li>
-      <li class="footer-label hmg-social-link">
+      <li class="footer-label tumblr-label hmg-social-link">
         <a class="hoverable-element" href='<%=@campaign["tumblr_link"]%>' target="_blank">
           <i class="fa fa-tumblr hmg-tumblr"> </i>
         </a>
       </li>
-      <li class="footer-label hmg-social-link">
+      <li class="footer-label youtube-label hmg-social-link">
         <a class="hoverable-element" href='<%=@campaign["youtube_link"]%>' target="_blank">
           <i class="fa fa-youtube-play hmg-youtube"> </i>
         </a>
@@ -337,8 +337,8 @@
 
               <div class="movie-finished-overlay general-purpose-overlay-container"> 
                 <span class="movie-finished-text">
-                  <div class="movie-finished-text-header main-font-label general-overlay-label subject">Well Then,</div>
-                  <div class="movie-finished-text-content main-font-label general-overlay-label content">now THAT was some brilliant acting!</div>
+                  <div class="movie-finished-text-header main-font-label general-overlay-label subject"><%= @campaign["minisite_assets"]["video_overlay_finish_message_title"] %></div>
+                  <div class="movie-finished-text-content main-font-label general-overlay-label content"><%= @campaign["minisite_assets"]["video_overlay_finish_message_text"] %></div>
                 </span>
 
                 <span class="movie-finished-actions">
@@ -585,18 +585,19 @@
             gutter: 30
           });
 
+          $(container).masonry( 'on', 'layoutComplete' , function() {
             // msnry.on( 'layoutComplete', function() {
-            //   gallery_left_margin = parseInt($("#masonry-gallery-container").css('margin-left'))
-            //   gallery_right_margin = parseInt($("#masonry-gallery-container").css('margin-right'))
+              gallery_left_margin = parseInt($("#masonry-gallery-container").css('margin-left'))
+              gallery_right_margin = parseInt($("#masonry-gallery-container").css('margin-right'))
 
-            //   gallery_right_margin += 30;
-            //   $(".campaign-video-container").css('margin-left',gallery_left_margin + 'px')
-            //   $(".campaign-info").css('margin-right',gallery_right_margin + 'px');
-            // });
+              // gallery_right_margin += 30;
+              $(".campaign-info").css('margin-left',gallery_left_margin + 'px')
+              $(".campaign-video-container").css('margin-right',gallery_right_margin + 'px');
+            });
 
-            // imagesLoaded( container, function() {
-            //   msnry.masonry();
-            // });
+            imagesLoaded( container, function() {
+              msnry.masonry();
+            });
         }
 
         $.get('/remakes', remakes_cond , function(data, status, xhr){
@@ -800,18 +801,20 @@
   $('video').on('contextmenu', function(e) {e.preventDefault();});
 
   // campaign player
-  videojs('campaign_video_player').ready(function(){
+  videojs('campaign_video_player',
+    { 'techOrder': ['youtube', 'html5']}).ready(function(){
     var myPlayer = this;
     var campaign_id = '<%= @campaign["_id"].to_s %>'
     var campaign_video = '<%= @campaign["video"].to_s %>'
+    var campaign_video_type = '<%= @campaign["video_type"]%>'
     var campaign_thumbnail = '<%= @campaign["thumbnail"].to_s %>'
     var currentViewId;
     var first = true;
     var thresholdReported = false;
 
-    var myPlayer = this;
+    type = 'video/' + campaign_video_type
     myPlayer.poster(campaign_thumbnail);
-    myPlayer.src(campaign_video);
+    myPlayer.src({src: campaign_video, type: type});
     myPlayer.posterImage.show();
     //myPlayer.load();
 

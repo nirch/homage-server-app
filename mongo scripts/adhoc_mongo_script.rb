@@ -9,6 +9,7 @@ test_users = test_db.collection("Users")
 test_remakes = test_db.collection("Remakes")
 test_stories = test_db.collection("Stories")
 test_campaigns = test_db.collection("Campaigns")
+test_views = test_db.collection("Views")
 
 prod_db = Mongo::MongoClient.from_uri("mongodb://Homage:homageIt12@troup.mongohq.com:10057/Homage_Prod").db
 prod_users = prod_db.collection("Users")
@@ -17,6 +18,7 @@ prod_shares = prod_db.collection("Shares")
 prod_sessions = prod_db.collection("Sessions")
 prod_stories = prod_db.collection("Stories")
 prod_campaigns = prod_db.collection("Campaigns")
+prod_views = prod_db.collection("Views")
 
 # AWS Connection
 aws_config = {access_key_id: "AKIAJTPGKC25LGKJUCTA", secret_access_key: "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"}
@@ -27,6 +29,18 @@ s3_bucket = s3.buckets['homageapp']
 # stories_to_delete = [BSON::ObjectId.from_string("54a936ad64617400b5020000"),BSON::ObjectId.from_string("53814358d4615dfffa00007f"),BSON::ObjectId.from_string("542a6799454c61e96400065b"),BSON::ObjectId.from_string("54902e1014aa8e2015000c41")]
 # test_remakes.update({story_id: {"$in" => stories_to_delete}}, {"$set" => {status:5}}, {multi:true})
 
+# views = prod_views.find({origin_id:{"$exists"=>true}})
+# for view in views do
+# 	type = view["origin_id"].class
+# 	puts type.to_s
+# 	if view["origin_id"].kind_of?(String) && BSON::ObjectId.legal?(view["origin_id"]) then
+# 		puts "its a legal string"
+# 		prod_views.update({_id: view["_id"]},{"$set"=> {origin_id: BSON::ObjectId.from_string(view["origin_id"].to_s)}})
+# 	else 
+# 		puts view["origin_id"]
+# 		puts "it's NOTTTTTTT a string"
+# 	end
+# end
 
 # msmd_campaign = BSON::ObjectId.from_string("54919516454c61f4080000e5")
 # msmd_stories = test_stories.find({campaign_id: msmd_campaign})
