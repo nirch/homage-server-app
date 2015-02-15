@@ -6,7 +6,7 @@ test_db = Mongo::MongoClient.from_uri("mongodb://Homage:homageIt12@paulo.mongohq
 prod_db = Mongo::MongoClient.from_uri("mongodb://Homage:homageIt12@troup.mongohq.com:10057/Homage_Prod").db
 db = prod_db
 
-NUM_OF_REMAKES_THRESHOLD = 10
+NUM_OF_REMAKES_THRESHOLD = ARGV[0].to_i
 
 module ShareMethod
 	CopyUrlShareMethod = 0
