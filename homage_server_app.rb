@@ -632,12 +632,12 @@ subdomain settings.play_subdomain do
 		erb :HMGMiniSite
 	end
 
-	get '/gallery/:campaign_name' do
+	get 'test/gallery/:campaign_name' do
 		@config = getConfigDictionary();
 		@campaign = settings.db.collection("Campaigns").find_one({name: params[:campaign_name]})
 		campaign_id = @campaign["_id"]
 		@stories = settings.db.collection("Stories").find({active:true, campaign_id: campaign_id})
-		erb :new_minisite
+		erb :minisiteV1
 	end
 
 	get '/masonryTest/:campaign_name' do
@@ -2488,7 +2488,8 @@ get '/download/remake/:remake_id' do
 	return s3_object.public_url.to_s
 end
 
-get '/test/gallery/v1/:campaign_name' do
+get '/test/gallery/:campaign_name' do
+	puts "RAFI"
 	@config = getConfigDictionary();
 	@campaign = settings.db.collection("Campaigns").find_one({name: params[:campaign_name]})
 	campaign_id = @campaign["_id"]

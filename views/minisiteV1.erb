@@ -816,9 +816,9 @@
     var thresholdReported = false;
 
     type = 'video/' + campaign_video_type
-    myPlayer.poster(campaign_thumbnail);
+    //myPlayer.poster(campaign_thumbnail);
     myPlayer.src({src: campaign_video, type: type});
-    myPlayer.posterImage.show();
+    //myPlayer.posterImage.show();
     //myPlayer.load();
 
     var trackVideoStart = function(){
@@ -867,9 +867,9 @@
     myPlayer.on("ended", function() {
       first = true;
       trackVideoEnd();
-      myPlayer.posterImage.show();
-      $(".campaign-video-play-button-container").show()
-      myPlayer.controls(false);
+      //myPlayer.posterImage.show();
+      // $(".campaign-video-play-button-container").show()
+      //myPlayer.controls(false);
     });
   });
 
