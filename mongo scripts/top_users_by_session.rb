@@ -10,7 +10,7 @@ remakes_collection = db.collection("Remakes")
 sessions_collection = db.collection("Sessions")
 users_collection = db.collection("Users")
 
-NUM_OF_USERS_THRESHOLD = 10
+NUM_OF_USERS_THRESHOLD = ARGV[0].to_i
 
 launch_date = Time.parse("20140430Z")
 
