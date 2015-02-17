@@ -1754,7 +1754,16 @@ end
 
 def getConfigDictionary()
 	config = Hash.new 
-	config["share_link_prefix"] = settings.share_link_prefix;
+	# config["share_link_prefix"] = settings.share_link_prefix;
+	host_name = request.env["HTTP_HOST"]
+	if host_name 
+		host_name = host_name.split('.localhost')[0]
+		share_link_prefix = "http://" + host_name.to_s
+		config["share_link_prefix"] = share_link_prefix
+	else 
+		config["share_link_prefix"] = settings.share_link_prefix;
+	end
+
 	config["significant_view_pct_threshold"] = 0.5
 	config["mirror_selfie_silhouette"] = true
 	config["mixpanel_token"] = settings.mixpanel_token;
