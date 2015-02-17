@@ -199,7 +199,7 @@
                 data-setup="{}">
                 <source src="" type="video/mp4"/>
                 </video> -->
-                <video id='campaign_video_player' src='' class='video-js vjs-default-skin' autoplay='autoplay' preload='auto' width='320' height='180'>
+                <video id='campaign_video_player' src='' class='video-js vjs-default-skin' preload='auto' width='320' height='180'>
                 </video>
           </div>
         </div>
@@ -330,10 +330,11 @@
         <div class="row overlay-video-row"> 
           <div class="col-xs-12">
             <div class="videocontent">
-              <video id="remake_video_player" class="video-js vjs-default-skin" width="auto" height="  auto" poster="" controls="controls"  
-                  data-setup="{}">
-                  <source src="" type="video/mp4"/>
+              <video controls ytcontrols="true" id="remake_video_player" class="video-js vjs-default-skin" width="auto" height="auto">
               </video>
+              
+              <!-- <video id='vid1' src='' class='video-js vjs-default-skin' autoplay='autoplay' controls ytcontrols="true" preload='auto' width='640' height='360'>
+              </video> -->
 
               <div class="movie-finished-overlay general-purpose-overlay-container"> 
                 <span class="movie-finished-text">
@@ -802,7 +803,7 @@
 
   // campaign player
   videojs('campaign_video_player',
-    { 'techOrder': ['youtube', 'html5']}).ready(function(){
+    { 'techOrder': ['youtube','html5','flash']}).ready(function(){
     var myPlayer = this;
     var campaign_id = '<%= @campaign["_id"].to_s %>'
     var campaign_video = '<%= @campaign["video"].to_s %>'
@@ -870,7 +871,8 @@
     });
   });
 
-videojs('remake_video_player').ready(function() {
+videojs('remake_video_player',
+    { 'techOrder': ['html5']}).ready(function(){
     var myPlayer = this;
     var currentViewId;
     var first = true;
@@ -1172,7 +1174,7 @@ videojs('remake_video_player').ready(function() {
     }
   });
 
-  function showVideoPlayer(remake_id) {
+  function stopCampaignVideoPlaying() {
     campaign_video_player = videojs('campaign_video_player');
     if (!campaign_video_player.paused()) {
       campaign_video_player.pause();
@@ -1180,6 +1182,11 @@ videojs('remake_video_player').ready(function() {
       campaign_video_player.trigger('ended');
       // campaign_video_player.posterImage.show();
     }
+  }
+
+
+  function showVideoPlayer(remake_id) {
+    stopCampaignVideoPlaying();
 
     impressionId = new ObjectId().toString();
     impression_params = {"impression_id":impressionId, "remake_id":remake_id, "playback_event":0, "originating_screen":11, "cookie_id":$.cookie('homageCookieID')}
@@ -1228,10 +1235,10 @@ videojs('remake_video_player').ready(function() {
         var playReported = false;
 
         var myPlayer = videojs('remake_video_player');
-
         myPlayer.poster(thumbnail);
-        myPlayer.src(video);
+        myPlayer.src({src: video, type: 'video/mp4'});
         myPlayer.posterImage.show();
+        stopCampaignVideoPlaying();
         myPlayer.play();
         var overlay = $('video-overlay');
         $('.video-overlay').show();

@@ -254,7 +254,11 @@ end
 
 get '/' do
 	host_name = request.env["HTTP_HOST"]
-	getMinisiteForCampaign(host_name)
+	if host_name then 
+		getMinisiteForCampaign(host_name)
+	else 
+		logger.error "recieved null HTTP_HOST"
+	end
 end
 
 get '/test/cgi' do
@@ -381,8 +385,7 @@ get '/ios' do
 	info["shared_from"] = shared_from
 	info["origin_id"] = origin_id if origin_id
 	info["campaign_id"] = campaign_id if campaign_id
-
-	settings.mixpanel.track("12345", "InstalliOS", info) if settings.respond_to?(:mixpanel)		
+	reportToMixpanel("InstalliOS",info)		
 	appstore_link = campaign["appstore_link"] ? campaign["appstore_link"] : hmg_camapign["appstore_link"]
 	redirect appstore_link, 302
 end
@@ -409,8 +412,7 @@ get '/android' do
 	info["shared_from"] = shared_from
 	info["origin_id"] = origin_id if origin_id
 	info["campaign_id"] = campaign_id if campaign_id
-
-	settings.mixpanel.track("12345", "InstallAndroid", info) if settings.respond_to?(:mixpanel)	
+	reportToMixpanel("InstallAndroid",info)	
 	playstore_link = campaign["playstore_link"] ? campaign["playstore_link"] : hmg_camapign["playstore_link"]
 	redirect playstore_link, 302
 end
@@ -645,8 +647,8 @@ subdomain settings.play_subdomain do
 		@stories = settings.db.collection("Stories").find({active:true, campaign_id: campaign_id})
 		info = Hash.new
 		info["reason"] = "campaign_gallery"
-		info["campaign_id"] = campaign_id
-		settings.mixpanel.track("12345", "MinisiteView", info) if settings.respond_to?(:mixpanel)	
+		info["campaign_id"] = campaign_id	
+		reportToMixpanel("MinisiteView",info)
 		erb :msonrytest
 	end
 end
@@ -1844,7 +1846,7 @@ post '/campaign_site/share' do
 	info["share_method"] = params[:share_method].to_i if params[:share_method]
 	info["campaign_id"] = BSON::ObjectId.from_string(params[:campaign_id].to_s) if params[:campaign_id].to_s
 	info["origin_id"] = BSON::ObjectId.from_string(params[:origin_id].to_s) if params[:origin_id]
-	settings.mixpanel.track("12345", "campaign_site_share", info) if settings.respond_to?(:mixpanel)
+	reportToMixpanel("campaign_site_share",info)
 end
 
 #social routes
@@ -2590,27 +2592,38 @@ def getVideoPlayerForEntity(entity_id)
 	info = Hash.new
 	info["reason"] = "remake_share"
 	info["campaign_id"] = campaign_id
-	settings.mixpanel.track("12345", "MinisiteView", info) if settings.respond_to?(:mixpanel)
+	reportToMixpanel("MinisiteView",info)
 	erb :minisiteV1
 end
 
 get '/:entity_id' do
-	entity_id = BSON::ObjectId.from_string(params[:entity_id])
-	getVideoPlayerForEntity(entity_id)
+	entity_id = BSON::ObjectId.from_string(params[:entity_id]) if params[:entity_id]
+	if entity_id then
+		getVideoPlayerForEntity(entity_id)
+	end
 end
 
 def getMinisiteForCampaign(host_name)
 	@config = getConfigDictionary();
 	host_name = host_name.split('.localhost')[0]
-	puts "host_name: " + host_name.to_s
+	logger.info "host_name: " + host_name.to_s
 	@campaign = settings.db.collection("Campaigns").find_one({http_host: host_name})
 	campaign_id = @campaign["_id"]
 	@stories = settings.db.collection("Stories").find({active:true, active_users: {"$exists"=>false}, campaign_id: campaign_id})
 	info = Hash.new
 	info["reason"] = "campaign_gallery"
 	info["campaign_id"] = campaign_id
-	settings.mixpanel.track("12345", "MinisiteView", info) if settings.respond_to?(:mixpanel)	
+	reportToMixpanel("MinisiteView",info)	
 	erb :minisiteV1
+end
+
+def reportToMixpanel(event_name,info)
+	begin
+		# settings.mixpanel.track("12345", event_name, info) if settings.respond_to?(:mixpanel)
+		raise "Rafi"
+	rescue => error
+		logger.error "mixpanel error: " + error.to_s
+	end
 end
 
 
