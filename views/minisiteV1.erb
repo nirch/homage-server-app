@@ -199,8 +199,10 @@
                 data-setup="{}">
                 <source src="" type="video/mp4"/>
                 </video> -->
-                <video id='campaign_video_player' src='' class='video-js vjs-default-skin' preload='auto' width='320' height='180'>
+                <video controls ytcontrols="true" id='campaign_video_player' class='video-js vjs-default-skin' width='320' height='180'>
                 </video>
+                <!-- <video controls ytcontrols="true" id="remake_video_player" class="video-js vjs-default-skin" width="auto" height="auto">
+              </video> -->
           </div>
         </div>
       </div> 
@@ -803,7 +805,7 @@
 
   // campaign player
   videojs('campaign_video_player',
-    { 'techOrder': ['youtube','html5','flash']}).ready(function(){
+    { 'techOrder': ['html5','flash','youtube']}).ready(function(){
     var myPlayer = this;
     var campaign_id = '<%= @campaign["_id"].to_s %>'
     var campaign_video = '<%= @campaign["video"].to_s %>'
