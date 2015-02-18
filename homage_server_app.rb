@@ -1772,20 +1772,20 @@ def getConfigDictionary()
 	end
 
 	campaign_id = request.env["HTTP_CAMPAIGN_ID"].to_s if request.env["HTTP_CAMPAIGN_ID"]
-	# puts "campaign_id: " + campaign_id.to_s
+	logger.debug "campaign_id: " + campaign_id.to_s
 	# campaign_id = "54919516454c61f4080000e5"
 	if campaign_id then
 		campaign_bson_id = BSON::ObjectId.from_string(campaign_id)
 		campaign = settings.db.collection("Campaigns").find_one({_id:campaign_bson_id})
-		# puts "campaign"
-		# puts campaign
+		logger.debug "campaign:"
+		logger.debug campaign
 		config["user_save_remakes_policy"] = campaign["user_save_remakes_policy"] if campaign["user_save_remakes_policy"]
 		if campaign["user_save_remakes_policy"] == RemakesSaveToDevice::Premium then
 			config["user_save_remakes_policy_premium_id"] = campaign["user_save_remakes_policy_premium_id"]
 		end
 	end
-	# puts "config:"
-	# puts config
+	logger.debug "config:"
+	logger.debug config
 	return config
 end
 
