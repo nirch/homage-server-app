@@ -1784,7 +1784,7 @@ def getConfigDictionary()
 		if campaign["user_save_remakes_policy"] == RemakesSaveToDevice::Premium then
 			config["user_save_remakes_policy_premium_id"] = campaign["user_save_remakes_policy_premium_id"]
 		end
-		config["share_link_prefix"] = campaign["http_host"]
+		config["share_link_prefix"] = "http://" + campaign["http_host"].to_s
 	else
 		host_name = request.env["HTTP_HOST"]
 		if host_name 
