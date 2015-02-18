@@ -1754,6 +1754,7 @@ end
 
 def getConfigDictionary()
 	config = Hash.new 
+	
 	# config["share_link_prefix"] = settings.share_link_prefix;
 	host_name = request.env["HTTP_HOST"]
 	if host_name 
@@ -1783,7 +1784,18 @@ def getConfigDictionary()
 		if campaign["user_save_remakes_policy"] == RemakesSaveToDevice::Premium then
 			config["user_save_remakes_policy_premium_id"] = campaign["user_save_remakes_policy_premium_id"]
 		end
+		config["share_link_prefix"] = campaign["http_host"]
+	else
+		host_name = request.env["HTTP_HOST"]
+		if host_name 
+			host_name = host_name.split('.localhost')[0]
+			share_link_prefix = "http://" + host_name.to_s
+			config["share_link_prefix"] = share_link_prefix
+		else 
+			config["share_link_prefix"] = settings.share_link_prefix
+		end
 	end
+
 	logger.debug "config:"
 	logger.debug config
 	return config
