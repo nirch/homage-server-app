@@ -97,8 +97,8 @@ configure :production do
 	set :mixpanel_token, "7d575048f24cb2424cd5c9799bbb49b1"
 	set :mixpanel, Mixpanel::Tracker.new(settings.mixpanel_token)
 
-	#this is a fix for getting a bad background "unlocked" version
-    set :allow_footage_on_bad_bg, true
+	# #this is a fix for getting a bad background "unlocked" version
+ #    set :allow_footage_on_bad_bg, true
 
 	# AWS S3
 	s3 = AWS::S3.new
@@ -133,7 +133,7 @@ configure :test do
     set :render_queue, AWS::SQS.new.queues[render_queue_url]
 
     #this is a fix for getting a bad background "unlocked" version
-    set :allow_footage_on_bad_bg, true
+    # set :allow_footage_on_bad_bg, true
 
 	# Test AE server connection
 	set :homage_server_foreground_uri, URI.parse("http://54.83.32.172:4567/footage")
