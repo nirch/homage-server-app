@@ -727,23 +727,23 @@ get '/stories' do
 
 		# fix for stories with audio before version 1.9.0
 		# this will remove audio fields from all story scenes
-		if request.env["HTTP_APP_VERSION_INFO"] then
-			app_version = request.env["HTTP_APP_VERSION_INFO"].to_s
-			app_version.gsub! /"/, ''
-			if  Gem::Version.new(app_version) < Gem::Version.new('1.9.0') then 
-				logger.debug "version number: " + app_version + "is smaller then 1.9.0"
-				logger.debug "removing audio fields"
-				scenes = story["scenes"]
-				scenes_wo_audio = Array.new
-				for scene in scenes
-					scene.delete("direction_audio")
-					scene.delete("scene_audio")
-					scene.delete("post_scene_audio")
-					scenes_wo_audio.push(scene)
-				end
-				story["scenes"] = scenes_wo_audio
-			end
-		end
+		# if request.env["HTTP_APP_VERSION_INFO"] then
+		# 	app_version = request.env["HTTP_APP_VERSION_INFO"].to_s
+		# 	app_version.gsub! /"/, ''
+		# 	if  Gem::Version.new(app_version) < Gem::Version.new('1.9.0') then 
+		# 		logger.debug "version number: " + app_version + "is smaller then 1.9.0"
+		# 		logger.debug "removing audio fields"
+		# 		scenes = story["scenes"]
+		# 		scenes_wo_audio = Array.new
+		# 		for scene in scenes
+		# 			scene.delete("direction_audio")
+		# 			scene.delete("scene_audio")
+		# 			scene.delete("post_scene_audio")
+		# 			scenes_wo_audio.push(scene)
+		# 		end
+		# 		story[:scenes] = scenes_wo_audio
+		# 	end
+		# end
 
 		stories_json_array.push(story.to_json) if allow_story
 	end
