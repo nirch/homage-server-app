@@ -520,6 +520,8 @@ subdomain settings.play_subdomain do
 			elsif params[:grade] != nil && params[:grade] != 'all'
 	 			remake_hash["grade"] = {"$in"=>[params[:grade].to_i]}
 				@lastgrade = params[:grade].to_i
+			else
+				remake_hash["grade"] = -1
 			end
 			
 
@@ -550,6 +552,9 @@ subdomain settings.play_subdomain do
 	            if @remakes.count == 0
 	            	share = settings.db.collection("Shares").find_one(userremakeid)
 	            	@remakes = settings.db.collection("Remakes").find(_id:share["remake_id"])	
+	            else
+	            	@remakes = nil
+	            	@heading += "No Remake with that id found..."
 	            end
 	        	@grade = true
 	        else

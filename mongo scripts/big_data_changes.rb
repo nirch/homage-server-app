@@ -22,6 +22,6 @@ puts stories_array.count
 for story in stories_array do
 	puts story["_id"].to_s + " " + story["name"] + " " + story["sharing_video_allowed"].to_s
 
-	# stories.update({ _id: story["_id"] },{"$set" => {sharing_video_allowed: true}})
+	# stories.update({ _id: story["_id"] },{"$set" => {sharing_video_allowed: false}})
 
 end
