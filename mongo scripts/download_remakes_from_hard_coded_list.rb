@@ -3,12 +3,17 @@ require File.expand_path '../aws_helper.rb', __FILE__
 require 'fileutils'
 require 'open-uri'
 require 'logger'
-log = Logger.new('D:/homage/others/log.txt') 
+
+puts "Set up logging"
+
+main_folder = "/Users/dangal/Documents/homage/crashes/"
+
+log = Logger.new(main_folder + 'log.txt') 
 log.debug "Log file created"
 
 # input
 #remake_id = BSON::ObjectId.from_string("5380834b0be044412f000039")
-#download_folder = "C:/Development/Homage/Remakes/" + remake_id.to_s + "/"
+
 
 # if !ARGV[0] || !ARGV[1] || !ARGV[2] then 
 # 	puts "usage: download_remakes p|t <remake_id>|<YYYYMMDD> <destination_folder>"
@@ -31,11 +36,9 @@ end
 		
 #remake_id_str = ARGV[1]
 
-puts
-
 
     puts "Downloading remakes from list: " 
-    remake_ids_array = ["54538db90be0441e75000007","54538d4c0be0442095000005","54538bef0be0441e75000005","54538c670be0441e75000006","54538b1d0be0442095000002","54538b570be0442095000003","54538ade0be0442095000001","54538a2e0be0441e75000004","545387b80be044093b000007","5453875e0be044093b000006","5445b0ee0be0446f62000012","53fc69490be04410d0000002"]
+    remake_ids_array = ["54e9277afb9b8b72a9000003","54e9277afb9b8b72a9000003","54e5d908fb9b8b1e64000007","54e32ee8fb9b8b2703000003","54e2315ffb9b8b19f8000004","54e1e8b1fb9b8b698c00000a","54e1ab54fb9b8b4d89000003"]
     puts "before uniq " + remake_ids_array.count.to_s + " remakes..." 
     remake_ids_array = remake_ids_array.uniq
     puts "after uniq " + remake_ids_array.count.to_s + " remakes..." #end
@@ -64,7 +67,7 @@ for remake_id_str in remake_ids_array do
 
 		puts
 
-		input_root_download_folder = "D:/homage/others/" #ARGV[2]
+		input_root_download_folder = main_folder#ARGV[2]
 		if input_root_download_folder.length > 0 then
 			folder_chomped = input_root_download_folder.tr('"', '').chomp
 			root_download_folder = folder_chomped.gsub /\\+/, '/'
