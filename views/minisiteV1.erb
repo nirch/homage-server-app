@@ -41,19 +41,18 @@
     <script src="/js/youtube.js"></script>
 
     <!-- REMAKE GALLERY -->
-    <!-- <link href="/css/jquery.galereya.css" rel="stylesheet"/> -->
-    <!-- <script src="/js/jquery.galereya.js"></script> -->
     <script src="/js/masonry.pkgd.js"></script>
     <script src="/js/imagesloaded.pkgd.js"></script>
     
     <!-- LESS -->
     <link rel="stylesheet/less" type="text/css" href="/less/<%= @campaign["name"] %>.less">
+
     <script src="/js/less.js" type="text/javascript"></script>
     <script type="text/javascript">
       less.watch();
     </script>
 
-    <!-- UNTIL MORE ROBUST SOLUTION - NEED TO COMPILE MANUALLY B4 GOING TO PRODUCTION  -->
+    <!-- UNTIL MORE ROBUST SOLUTION - YOU NEED TO COMPILE MANUALLY B4 GOING TO PRODUCTION WITH LESSC -->
     <link href="/css/<%= @campaign["name"] %>.css" rel="stylesheet"/>
 
     <!-- UTILS -->

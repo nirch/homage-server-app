@@ -1,0 +1,219 @@
+.form-control::-moz-placeholder {
+  color: #FFFFFF;
+}
+.form-control:-ms-input-placeholder {
+  color: #FFFFFF;
+}
+.form-control::-webkit-input-placeholder {
+  color: #FFFFFF;
+}
+html,
+body {
+  height: 100%;
+  overflow-x: hidden;
+}
+.page-container {
+  height: 100%;
+  overflow-x: hidden;
+}
+.header {
+  height: 4%;
+  background-color: #ace74e;
+}
+.main-banner {
+  height: 68%;
+  position: relative;
+}
+@media (max-width: 767px) {
+  .main-banner {
+    height: 40%;
+  }
+}
+.main-banner .emu-logo {
+  position: relative;
+  top: -20px;
+  left: 20px;
+  background-image: url("/resources/emu/emuLogo.png");
+  background-size: 100%;
+  height: 83px;
+  width: 68px;
+}
+@media (max-width: 767px) {
+  .main-banner .emu-logo {
+    top: -27px;
+    left: 0px;
+    margin: 0 auto;
+  }
+}
+.main-banner .background-pic {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background-image: url("/resources/emu/bannerBG.png");
+  background-size: cover;
+  z-index: -10;
+  height: 100%;
+  width: 100%;
+}
+.main-banner .background-pic-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: -9;
+  height: 100%;
+  width: 100%;
+  border: 1px solid #979797;
+  opacity: 0.5;
+  background: #000000;
+}
+.main-banner .banner-bottom {
+  position: absolute;
+  margin-left: 10px;
+  bottom: 0;
+  left: 0;
+  /* Rectangle 4: */
+  /* Rectangle 5: */
+  /* SHIP IT: */
+}
+.main-banner .banner-bottom .title {
+  font-family: AbadiMT-CondensedExtraBold;
+  font-size: 62px;
+  color: #FFFFFF;
+  text-transform: uppercase;
+  line-height: 55px;
+  margin-bottom: 2px;
+}
+.main-banner .banner-bottom .subtitle {
+  font-size: 20px;
+  color: #FFFFFF;
+  line-height: 23px;
+}
+@media (max-width: 767px) {
+  .main-banner .banner-bottom .subtitle {
+    display: none;
+  }
+}
+@media (max-width: 767px) {
+  .main-banner .banner-bottom {
+    position: inherit;
+    width: 60%;
+    margin: 0 auto;
+    text-align: center;
+  }
+}
+.signup-container {
+  width: 100%;
+  display: inline-block;
+  height: 35px;
+  position: relative;
+}
+.signup-container .form-control {
+  background: rgba(0, 0, 0, 0.33);
+  border: 1px solid #FFFFFF;
+  box-shadow: inset 0px 1px 3px 0px rgba(0, 0, 0, 0.5);
+  border-radius: 6px;
+  width: 70%;
+  display: inline-block;
+  height: 100%;
+  color: #FFFFFF;
+  float: left;
+}
+.signup-container .campaign-button {
+  background-image: linear-gradient(-180deg, #8cd609 0%, #88ca3e 100%);
+  border: 1px solid #429321;
+  border-radius: 6px;
+  width: 22%;
+  display: inline-block;
+  color: #FFFFFF;
+  font-size: 20px;
+  height: 100%;
+  float: left;
+  line-height: 30px;
+  text-align: center;
+  margin-left: 10px;
+  cursor: pointer;
+}
+.page-bottom {
+  position: relative;
+  height: 20%;
+  display: inline-block;
+  padding-left: 10px;
+  padding-top: 10px;
+  width: 100%;
+}
+@media (max-width: 767px) {
+  .page-bottom {
+    height: 60%;
+    text-align: center;
+  }
+}
+.page-bottom p {
+  margin-left: 0px;
+  font-size: 18px;
+  color: #4A4A4A;
+  line-height: 21px;
+}
+.page-bottom .hmg-appstore-link {
+  display: block;
+  position: absolute;
+  left: 1%;
+  bottom: 6%;
+  background-image: url("/resources/emu/appStore.png");
+  background-size: cover;
+  width: 148px;
+  height: 49px;
+  cursor: pointer;
+}
+@media (max-width: 767px) {
+  .page-bottom .hmg-appstore-link {
+    position: relative;
+    left: 0;
+    top: 5%;
+    margin: 0 auto;
+  }
+}
+.footer {
+  height: 8%;
+  background-image: linear-gradient(0deg, #b4ec51 0%, #429321 100%);
+  position: relative;
+}
+@media (max-width: 767px) {
+  .footer {
+    height: 50%;
+  }
+}
+.footer .homage-logo {
+  position: relative;
+  top: 25%;
+  left: 20px;
+  background-image: url("/resources/emu/homageLogoWhite.png");
+  background-size: cover;
+  width: 107px;
+  height: 33px;
+  cursor: pointer;
+  display: block;
+}
+@media (max-width: 767px) {
+  .footer .homage-logo {
+    top: 80%;
+    margin: 0 auto;
+    left: 0px;
+  }
+}
+.big-phone {
+  position: absolute;
+  bottom: 3%;
+  right: -1%;
+  z-index: 100000000;
+  background: url("/resources/emu/bigIphoneEmu.png") no-repeat;
+  background-size: 100%;
+  height: 648px;
+  width: 347px;
+}
+@media (max-width: 767px) {
+  .big-phone {
+    position: relative;
+    top: 60px;
+    margin: 0 auto;
+  }
+}

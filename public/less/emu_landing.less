@@ -1,0 +1,262 @@
+@header-color: #ACE74E;
+
+.form-control::-moz-placeholder {
+  color: #FFFFFF;
+}
+.form-control:-ms-input-placeholder {
+  color: #FFFFFF;
+}
+.form-control::-webkit-input-placeholder {
+  color: #FFFFFF;
+}
+
+html, body
+{
+    height: 100%;
+    overflow-x: hidden;
+}
+
+.page-container
+{
+	height: 100%;
+	overflow-x: hidden;
+	// position: relative;
+}
+
+.header
+{
+	height:4%;
+	background-color: @header-color;
+}
+
+.main-banner
+{
+	height:68%;
+	position: relative;
+	@media(max-width:767px){
+		height:40%;
+	}
+
+	.emu-logo
+	{
+		position: relative;
+		top: -20px;
+		left: 20px;
+		background-image: url("/resources/emu/emuLogo.png");
+		background-size: 100%;
+		height: 83px;
+		width: 68px;
+		@media(max-width:767px){
+			top:-27px;
+			left: 0px;
+			margin: 0 auto;
+		}
+	}
+	.background-pic
+	{
+		position: absolute;
+		top: 0;
+		left: 0;
+		background-image: url("/resources/emu/bannerBG.png");
+		background-size: cover;
+		z-index: -10;
+		height: 100%;
+		width:100%;
+	}
+	.background-pic-overlay
+	{
+		position: absolute;
+		top: 0;
+		left: 0;
+		z-index: -9;
+		height: 100%;
+		width:100%;
+		border: 1px solid #979797;
+		opacity: 0.5;
+		background: #000000;
+	}
+	
+	.banner-bottom
+	{
+		position: absolute;
+		margin-left: 10px;
+		bottom:0;
+		left:0;
+		// /* OMG, a Personal Vide: */
+		// font-family: .HelveticaNeueDeskInterface-Regular;
+		// font-size: 19.31px;
+		// color: #FFFFFF;
+		// line-height: 23px;
+		// /* EMU HAS: */
+		// font-family: AbadiMT-CondensedExtraBold;
+		// font-size: 62.93px;
+		// color: #FFFFFF;
+		// line-height: 55px;
+		.title
+		{
+			font-family: AbadiMT-CondensedExtraBold;
+			font-size: 62px;
+			color: #FFFFFF;
+			text-transform: uppercase;
+			line-height: 55px;
+			margin-bottom: 2px;
+		}
+
+		.subtitle
+		{
+			// font-family: Aileron-Bold;
+			font-size: 20px;
+			color: #FFFFFF;
+			line-height: 23px;
+			@media(max-width:767px){
+				display: none;
+			}
+		}
+		
+		@media(max-width:767px){
+			position: inherit;
+			width:60%;
+			margin: 0 auto;
+			text-align: center;
+		}
+		/* Rectangle 4: */
+// /* Sign up for EMU upda: */
+// font-family: .HelveticaNeueDeskInterface-Regular;
+// font-size: 19px;
+// color: #FFFFFF;
+// line-height: 22px;
+/* Rectangle 5: */
+// 
+/* SHIP IT: */
+// font-family: .HelveticaNeueDeskInterface-Regular;
+// font-size: 19px;
+// color: #FFFFFF;
+// line-height: 22px;
+	}
+}
+
+.signup-container
+{
+	width:100%;
+	display: inline-block;
+	height:35px;
+	position: relative;
+
+	.form-control
+	{
+		background: rgba(0,0,0,0.33);
+		border: 1px solid #FFFFFF;
+		box-shadow: inset 0px 1px 3px 0px rgba(0,0,0,0.50);
+		border-radius: 6px;
+		width:70%;
+		display: inline-block;
+		height: 100%;
+		color: #FFFFFF;
+		float: left;
+	}
+	.campaign-button
+	{
+		background-image: linear-gradient(-180deg, #8CD609 0%, #88CA3E 100%);
+		border: 1px solid #429321;
+		border-radius: 6px;
+		width:22%;
+		display: inline-block;
+		color: #FFFFFF;
+		font-size: 20px;
+		height:100%;
+		float: left;
+		line-height: 30px;
+		text-align: center;
+		margin-left: 10px;
+		cursor: pointer;
+	}
+
+}
+
+.page-bottom
+{
+	position: relative;
+	height: 20%;
+	display: inline-block;
+	padding-left: 10px;
+	padding-top: 10px;
+	width:100%;
+	@media(max-width:767px){
+		height:60%;
+		text-align: center;
+	}
+	p
+	{
+		margin-left: 0px;
+		// font-family: Aileron-light;
+		font-size: 18px;
+		color: #4A4A4A;
+		line-height: 21px;
+	}
+	.hmg-appstore-link
+	{
+		display: block;
+		position: absolute;
+		left:1%;
+		bottom:6%;
+		background-image: url("/resources/emu/appStore.png");
+		background-size: cover;
+		width:148px;
+		height:49px;
+		cursor: pointer;
+		@media(max-width:767px){
+			position: relative;
+			left:0;
+			top:5%;
+			margin:0 auto;
+		}
+	}
+}
+
+.footer
+{
+	height: 8%;
+	// background-color: @header-color;
+	background-image: linear-gradient(0deg, #B4EC51 0%, #429321 100%);
+	// display: inline-block;
+	// border-radius: 8px;
+	position: relative;
+	@media(max-width:767px){
+		height: 50%;
+	}
+	.homage-logo
+	{
+		position: relative;
+		// display: inline-flex;
+		top:25%;
+		left:20px;
+		background-image: url("/resources/emu/homageLogoWhite.png");
+		background-size: cover;
+		width:107px;
+		height:33px;
+		cursor: pointer;
+		display: block;
+		@media(max-width:767px){
+			top: 80%;
+			margin: 0 auto;
+			left: 0px;
+		}
+	}
+}
+
+.big-phone
+{
+	position: absolute;
+	bottom:3%;
+	right: -1%;
+	z-index: 100000000;
+	background: url("/resources/emu/bigIphoneEmu.png") no-repeat;
+	background-size: 100%;
+	height:648px;
+	width:347px;
+	@media(max-width:767px){
+		position:relative;
+		top: 60px;
+		margin: 0 auto;
+	}
+}

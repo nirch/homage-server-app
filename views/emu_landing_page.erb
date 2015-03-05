@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>The Emu Is Loose!</title>
+    <link rel="icon" href='' type="image/x-icon">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimum-scale=1.0, maximum-scale=1.0">
+
+    <!-- BOOTSTRAP AND JQUERY -->
+    <link rel="stylesheet" type="text/css" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">  
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script type="text/javascript" src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+
+    <!-- LESS -->
+    <link rel="stylesheet/less" type="text/css" href="/less/emu_landing.less">
+
+    <script src="/js/less.js" type="text/javascript"></script>
+    <script type="text/javascript">
+      less.watch();
+    </script>
+
+    <!-- UNTIL MORE ROBUST SOLUTION - YOU NEED TO COMPILE MANUALLY B4 GOING TO PRODUCTION WITH LESSC -->
+    <link href="/css/emu_landing.css" rel="stylesheet"/>
+ </head>
+
+ <body>
+ 	<div class="container-fluid page-container">
+ 		<div class="row header">
+
+ 		</div>
+ 		<div class="row main-banner">
+ 			<div class="emu-logo">
+
+ 			</div>
+
+            <div class="background-pic">
+
+            </div>
+            <div class="background-pic-overlay">
+
+            </div>
+
+ 			<div class="banner-bottom">
+ 				<p class="title"> Emu Has Broken Loose!!</p>
+	 			<p class="subtitle"> A Personal Selfie Sticker Creator at the speed of an Ostrich</p>
+	 			<div class="signup-container hidden-xs">
+	 				<input type="text" class="form-control" id="email_text_field" placeholder="Sign Up For EMU updates"></input>
+	 				 <span class="bold-font-label campaign-button" href="http://homage.it/" target="_blank" >Join the bird</a>
+	 			</div>
+
+	 		</div>	
+ 		</div>
+ 		<div class="row page-bottom">
+			<p> Emu is a fun free keyboard app for iOS. <br> In just seonds you can create your own personal video stickers!<br> Emu  - because you are what you send.
+			</p>
+            <div class="signup-container visible-xs">
+                    <input type="text" class="form-control" id="email_text_field_mobile" placeholder="Sign Up For EMU updates"></input>
+                     <span class="bold-font-label campaign-button" href="http://homage.it/" target="_blank" >Join</a>
+            </div>
+			<span class="hmg-appstore-link"></span>
+            <div class="big-phone visible-xs"></div>
+ 		</div>	
+ 		<div class="row footer">
+            <a class="homage-logo" href="http://homage.it/" target="_blank"></a>
+ 		</div>
+ 	</div>
+    <div class="big-phone hidden-xs"></div>
+
+    <script type="text/javascript">
+        $('.campaign-button').on('click' , function() {
+            current_email = $("#email_text_field").val();
+            if (current_email == "")
+            {
+                current_email = $("#email_text_field_mobile").val();
+            }
+            console.log(current_email);
+            if (current_email != "") 
+            {
+                params = {"email_address":current_email};
+                $.post('/emu/sign_up', params , function(data,status){
+                     alert("Emu says: Thanks for joining!");
+                     $("#email_text_field").val("");
+                     $("#email_text_field_mobile").val("");
+                });
+            } else {
+                alert("why U no put email?!");
+            }
+        })
+    </script>
+ </body>

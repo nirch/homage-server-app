@@ -72,6 +72,10 @@ configure :production do
 	db_connection = Mongo::MongoClient.from_uri("mongodb://Homage:homageIt12@troup.mongohq.com:10057/Homage_Prod")
 	set :db, db_connection.db()
 
+	#emu db connection
+	emu_db_connection = Mongo::MongoClient.from_uri("mongodb://Homage:homageIt12@dogen.mongohq.com:10005/emu-prod")
+	set :emu_db, emu_db_connection.db()
+
 	# Push notification certificate
 	APN = Houston::Client.production
 	APN.certificate = File.read(File.expand_path("../certificates/homage_push_notification_prod.pem", __FILE__))
@@ -115,6 +119,9 @@ configure :test do
 	# Test DB connection
 	db_connection = Mongo::MongoClient.from_uri("mongodb://Homage:homageIt12@paulo.mongohq.com:10008/Homage")
 	set :db, db_connection.db()
+
+	emu_db_connection = Mongo::MongoClient.from_uri("mongodb://Homage:homageIt12@dogen.mongohq.com:10073/emu-test")
+	set :emu_db, emu_db_connection.db()
 
 	# Push notification certificate
 	APN = Houston::Client.development
@@ -254,10 +261,12 @@ end
 
 get '/' do
 	host_name = request.env["HTTP_HOST"]
-	if host_name then 
+	if (host_name =~ /emu.im/i) then 
+		erb :emu_landing_page
+	elsif host_name then
 		getMinisiteForCampaign(host_name)
 	else 
-		logger.error "recieved null HTTP_HOST"
+		logger.error "received null HTTP_HOST"
 	end
 end
 
@@ -724,26 +733,6 @@ get '/stories' do
 			story_remakes = settings.db.collection("Remakes").find({story_id:story["_id"], status: RemakeStatus::Done, user_id:{"$in" => public_users}, grade:{"$ne" => -1}}).sort(grade:-1).limit(remakes_num);
 			story[:remakes] = story_remakes.to_a
 		end
-
-		# fix for stories with audio before version 1.9.0
-		# this will remove audio fields from all story scenes
-		# if request.env["HTTP_APP_VERSION_INFO"] then
-		# 	app_version = request.env["HTTP_APP_VERSION_INFO"].to_s
-		# 	app_version.gsub! /"/, ''
-		# 	if  Gem::Version.new(app_version) < Gem::Version.new('1.9.0') then 
-		# 		logger.debug "version number: " + app_version + "is smaller then 1.9.0"
-		# 		logger.debug "removing audio fields"
-		# 		scenes = story["scenes"]
-		# 		scenes_wo_audio = Array.new
-		# 		for scene in scenes
-		# 			scene.delete("direction_audio")
-		# 			scene.delete("scene_audio")
-		# 			scene.delete("post_scene_audio")
-		# 			scenes_wo_audio.push(scene)
-		# 		end
-		# 		story[:scenes] = scenes_wo_audio
-		# 	end
-		# end
 
 		stories_json_array.push(story.to_json) if allow_story
 	end
@@ -1830,6 +1819,23 @@ get '/config' do
 	return config.to_json
 end
 
+post '/emu/sign_up' do
+	if !params["email_address"] then 
+	 	return
+	end
+	email_address = params["email_address"]
+	user = {email: email_address}
+	emu_lpusers = settings.emu_db.collection("LPusers")
+	previous_user = emu_lpusers.find_one({email: email_address});
+	if !previous_user then
+		emu_lpusers.save(user);
+		logger.info "user saved succesfully to mailing list"
+	else
+		logger.info("user already signed up in the past")
+	end
+	
+end 	
+
 #analytics routes
 post '/remake/share' do
 	share_id = BSON::ObjectId.from_string(params[:share_id]) if params[:share_id]
@@ -2537,7 +2543,6 @@ get '/download/remake/:remake_id' do
 end
 
 get '/test/gallery/:campaign_name' do
-	puts "RAFI"
 	@config = getConfigDictionary();
 	@campaign = settings.db.collection("Campaigns").find_one({name: params[:campaign_name]})
 	campaign_id = @campaign["_id"]
@@ -2545,55 +2550,8 @@ get '/test/gallery/:campaign_name' do
 	erb :minisiteV1
 end
 
-get '/test/masonryGallery/:campaign_name' do
-	@campaign = settings.db.collection("Campaigns").find_one({name: params[:campaign_name]})
-	campaign_id = @campaign["_id"]
-	erb :masonryGalleryTest
-end
-
-get '/test/videojs/YoutubePOC' do
-	erb :videojsyoutubepoc
-end
-
-
-get '/test/:entity_id' do
-	remakes = settings.db.collection("Remakes")
-	users   = settings.db.collection("Users")
-	shares  = settings.db.collection("Shares")
-	stories = settings.db.collection("Stories")
-	@config = getConfigDictionary();
-
-	entity_id = BSON::ObjectId.from_string(params[:entity_id])
-	@share  = shares.find_one(entity_id)
-	if @share == nil then
-		@remake = remakes.find_one(entity_id)
-		@originating_share_id = ""
-	else 
-		remake_id = @share["remake_id"]
-		@remake = remakes.find_one(remake_id)
-		@originating_share_id = @share["_id"]
-		shares.update({_id: @originating_share_id},{"$set" => {share_status: true}})
-	end
-
-	story_id = @remake["story_id"]
-	logger.debug "story_id" + story_id.to_s
-	campaign_id = settings.db.collection("Stories").find_one({_id: story_id})["campaign_id"]
-	logger.debug "campaign_id: " + campaign_id.to_s
-	@campaign = settings.db.collection("Campaigns").find_one({_id: campaign_id})
-	campaign_id = @campaign["_id"]
-	@stories = settings.db.collection("Stories").find({active:true, campaign_id: campaign_id})
-	
-	if BSON::ObjectId.legal?(@remake["user_id"]) then
-		@user = users.find_one(@remake["user_id"])
-	else
-		@user = users.find_one({_id: @remake["user_id"]})
-	end
-
-	@story = stories.find_one(@remake["story_id"])
-
-	# erb :new_minisite
-	#erb :HMGVideoPlayer
-	erb :minisiteV1
+get '/testing/emu' do
+	erb :emu_landing_page
 end
 
 get '/privacy' do
