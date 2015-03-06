@@ -460,23 +460,23 @@ function aggregateStoryViews(start_date,end_date,data_series) {
 		single_story_obj = data_series[story_id_key];
 
 		for (date_key in single_story_obj) {
-
 			single_story_data_for_date = single_story_obj[date_key];
-			
-			if (single_story_data_for_date.hasOwnProperty("remake_views"))
-			 aggregated_data_series[date_key]["remake_views"] += single_story_data_for_date["remake_views"];
-			if (single_story_data_for_date.hasOwnProperty("story_views"))
-			 aggregated_data_series[date_key]["story_views"] += single_story_data_for_date["story_views"];
-			if (single_story_data_for_date.hasOwnProperty(ViewSourceIos))
-			 aggregated_data_series[date_key][ViewSourceIos] += single_story_data_for_date[ViewSourceIos];
-			if (single_story_data_for_date.hasOwnProperty(ViewSourceAndroid))
-			 aggregated_data_series[date_key][ViewSourceAndroid] += single_story_data_for_date[ViewSourceAndroid];
-			/*if (single_story_data_for_date.hasOwnProperty(ViewSourceWeb))
-			 aggregated_data_series[date_key][ViewSourceWeb] += single_story_data_for_date[ViewSourceWeb];*/
-			if (single_story_data_for_date.hasOwnProperty(ViewSourceDesktop))
-			 aggregated_data_series[date_key][ViewSourceDesktop] += single_story_data_for_date[ViewSourceDesktop];
-			if (single_story_data_for_date.hasOwnProperty(viewSourceMobile))
-			 aggregated_data_series[date_key][viewSourceMobile] += single_story_data_for_date[viewSourceMobile];
+			if(aggregated_data_series.hasOwnProperty(date_key)){
+				if (single_story_data_for_date.hasOwnProperty("remake_views") && aggregated_data_series[date_key].hasOwnProperty("remake_views"))
+				 aggregated_data_series[date_key]["remake_views"] += single_story_data_for_date["remake_views"];
+				if (single_story_data_for_date.hasOwnProperty("story_views") && aggregated_data_series[date_key].hasOwnProperty("story_views"))
+				 aggregated_data_series[date_key]["story_views"] += single_story_data_for_date["story_views"];
+				if (single_story_data_for_date.hasOwnProperty(ViewSourceIos) && aggregated_data_series[date_key].hasOwnProperty(ViewSourceIos))
+				 aggregated_data_series[date_key][ViewSourceIos] += single_story_data_for_date[ViewSourceIos];
+				if (single_story_data_for_date.hasOwnProperty(ViewSourceAndroid) && aggregated_data_series[date_key].hasOwnProperty(ViewSourceAndroid))
+				 aggregated_data_series[date_key][ViewSourceAndroid] += single_story_data_for_date[ViewSourceAndroid];
+				/*if (single_story_data_for_date.hasOwnProperty(ViewSourceWeb))
+				 aggregated_data_series[date_key][ViewSourceWeb] += single_story_data_for_date[ViewSourceWeb];*/
+				if (single_story_data_for_date.hasOwnProperty(ViewSourceDesktop) && aggregated_data_series[date_key].hasOwnProperty(ViewSourceDesktop))
+				 aggregated_data_series[date_key][ViewSourceDesktop] += single_story_data_for_date[ViewSourceDesktop];
+				if (single_story_data_for_date.hasOwnProperty(viewSourceMobile) && aggregated_data_series[date_key].hasOwnProperty(viewSourceMobile))
+				 aggregated_data_series[date_key][viewSourceMobile] += single_story_data_for_date[viewSourceMobile];
+			}
 		}
 	}
 
