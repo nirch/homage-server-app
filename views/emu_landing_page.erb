@@ -3,7 +3,7 @@
 <head>
 	<title>The Emu Is Loose!</title>
     <link rel="icon" href='/resources/emu/favicon.ico' type="image/x-icon">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimum-scale=1.0, maximum-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <!-- BOOTSTRAP AND JQUERY -->
     <link rel="stylesheet" type="text/css" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">  
@@ -11,7 +11,8 @@
     <script type="text/javascript" src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
 
     <!-- LESS -->
-    <link rel="stylesheet/less" type="text/css" href="/less/emu_landing.less">
+    <link rel="stylesheet" type="text/css" href="/css/emu_landing.css">
+    <!-- <link rel="stylesheet/less" type="text/css" href="/less/emu_landing.less"> -->
 
     <script src="/js/less.js" type="text/javascript"></script>
     <script type="text/javascript">
@@ -23,7 +24,7 @@
  </head>
 
  <body>
- 	<div class="container-fluid page-container">
+ 	<div class="container page-container">
  		<div class="row header">
 
  		</div>
@@ -40,23 +41,26 @@
             </div>
 
  			<div class="banner-bottom">
- 				<p class="title"> Emu Has Broken Loose!!</p>
+                
+ 				<p class="title" id="responsive_headline"> Emu Has Broken Loose!! </p>
 	 			<p class="subtitle"> A Personal Selfie Sticker Creator at the speed of an Ostrich</p>
+                
 	 			<div class="signup-container hidden-xs">
 	 				<input type="text" class="form-control" id="email_text_field" placeholder="Sign Up For EMU updates"></input>
 	 				 <span class="bold-font-label campaign-button" href="http://homage.it/" target="_blank" >Join the bird</a>
 	 			</div>
-
 	 		</div>	
  		</div>
  		<div class="row page-bottom">
-			<p> Emu is a fun free keyboard app for iOS. <br> In just seonds you can create your own personal video stickers!<br> Emu  - because you are what you send.
+			<p> Emu is a fun free keyboard app for iOS. 
+                <br> Create your own personal video stickers!
+                <br> Emu - because you are what you send.
 			</p>
             <div class="signup-container visible-xs">
                     <input type="text" class="form-control" id="email_text_field_mobile" placeholder="Sign Up For EMU updates"></input>
                      <span class="bold-font-label campaign-button" href="http://homage.it/" target="_blank" >Join</a>
             </div>
-			<span class="hmg-appstore-link"></span>
+			<div class="hmg-appstore-link"></div>
             <div class="big-phone visible-xs"></div>
  		</div>	
  		<div class="row footer">
@@ -64,6 +68,12 @@
  		</div>
  	</div>
     <div class="big-phone hidden-xs"></div>
+
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+    <script src="js/jquery.fittext.js"></script>
+    <script>
+      jQuery("#responsive_headline").fitText();
+    </script>
 
     <script type="text/javascript">
         $('.campaign-button').on('click' , function() {

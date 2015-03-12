@@ -270,6 +270,10 @@ get '/' do
 	end
 end
 
+# get '/danemu' do
+# 	erb :emu_landing_page
+# end
+
 get '/test/cgi' do
 	x = "Don't bla bla cgi"
 	y = CGI::escapeHTML(x)
