@@ -262,7 +262,7 @@ end
 get '/' do
 	host_name = request.env["HTTP_HOST"]
 	if (host_name =~ /emu.im/i) then 
-		erb :emu_landing_page
+		erb :emu_landing_page_d
 	elsif host_name then
 		getMinisiteForCampaign(host_name)
 	else 
@@ -270,9 +270,9 @@ get '/' do
 	end
 end
 
-# get '/danemu' do
-# 	erb :emu_landing_page
-# end
+get '/danemu' do
+	erb :emu_landing_page_d
+end
 
 get '/test/cgi' do
 	x = "Don't bla bla cgi"

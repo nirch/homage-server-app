@@ -17,8 +17,12 @@ body {
   overflow-x: hidden;
 }
 .header {
-  height: 4%;
-  background-color: #ace74e;
+  height: 8%;
+  background: -webkit-linear-gradient(#7cc139, #ace74e); /* For Safari 5.1 to 6.0 */
+  background: -o-linear-gradient(#7cc139, #ace74e); /* For Opera 11.1 to 12.0 */
+  background: -moz-linear-gradient(#7cc139, #ace74e); /* For Firefox 3.6 to 15 */
+  background: linear-gradient(#7cc139, #ace74e); /* Standard syntax */
+  /*background-color: #ace74e;*/
 }
 .main-banner {
   height: 68%;
@@ -26,9 +30,10 @@ body {
 }
 @media (max-width: 767px) {
   .main-banner {
-    height: 40%;
+    height: 20%;
   }
 }
+
 .main-banner .emu-logo {
   position: relative;
   top: -20px;
@@ -45,23 +50,31 @@ body {
     margin: 0 auto;
   }
 }
-.main-banner .background-pic {
+.background-pic {
   position: absolute;
   top: 0;
   left: 0;
-  background-image: url("/resources/emu/bannerBG.png");
+  background-image: url("/resources/emu/bannerBG.jpg");
   background-size: cover;
   z-index: -10;
-  height: 100%;
   width: 100%;
 }
+@media (min-width: 768px) {
+  .background-pic {
+    height:100%;
+  }
+}
+@media (max-width: 767px) {
+  .background-pic {
+    height:130%;
+  }
+}
 
-.main-banner .background-pic-overlay {
+.background-pic-overlay {
   position: absolute;
   top: 0;
   left: 0;
   z-index: -9;
-  height: 100%;
   width: 100%;
   border: 1px solid #979797;
   
@@ -69,12 +82,14 @@ body {
 }
 
 @media (min-width: 768px) {
-  .main-banner .background-pic-overlay {
+  .background-pic-overlay {
+    height:100%;
     opacity: 0.5;
   }
 }
 @media (max-width: 767px) {
   .main-banner .background-pic-overlay {
+    height:130%;
     opacity: 0.3;
   }
 }
@@ -83,6 +98,7 @@ body {
   position: absolute;
   bottom: 0;
   left: 0;
+  text-align: center;
   /* Rectangle 4: */
   /* Rectangle 5: */
   /* SHIP IT: */
@@ -98,12 +114,14 @@ body {
 @media (min-width: 768px) {
   .title {
     font-size: 62px;
-    width: 100%;
+    width: 400px;
   }
 }
 @media (max-width: 767px) {
   .title {
-    width: 100%;
+    font-size: 42px;
+    width: 275px;
+    margin: 0 auto;
   }
 }
 .main-banner .banner-bottom .subtitle {
@@ -154,10 +172,10 @@ body {
   text-align: center;
   margin-left: 10px;
   cursor: pointer;
+  padding-bottom: 20px;
 }
 .page-bottom {
   position: relative;
-  height: 20%;
   display: inline-block;
   padding: 10px;
   width: 100%;
@@ -165,8 +183,14 @@ body {
 }
 @media (max-width: 767px) {
   .page-bottom {
-    height: 60%;
+    height: 20%;
+  }
+}
+@media (max-width: 767px) {
+  .page-bottom {
+    height: 100%;
     text-align: center;
+    overflow: visible;
   }
 }
 .page-bottom p {
@@ -175,39 +199,43 @@ body {
   color: #4A4A4A;
   line-height: 21px;
 }
-.page-bottom .hmg-appstore-link {
+
+.footer {
+  height: 8%;
+  background-image: linear-gradient(0deg, #b4ec51 0%, #429321 100%);
+  bottom: 0%;
+}
+@media (max-width: 767px) {
+  .footer {
+    position: relative;
+    height: 110%;
+    bottom: -1px;
+    text-align: center;
+  }
+}
+.hmg-appstore-link {
   display: block;
   position: absolute;
-  left: 1%;
-  bottom: 6%;
   background-image: url("/resources/emu/appStore.png");
   background-size: cover;
   width: 148px;
   height: 49px;
   cursor: pointer;
 }
+@media (min-width: 768px) {
+  .hmg-appstore-link {
+    left: 1%;
+    bottom: 6%;
+  }
+}
 @media (max-width: 767px) {
-  .page-bottom .hmg-appstore-link {
+  .hmg-appstore-link {
     position: relative;
-    left: 0;
-    top: 5%;
+    top: 75%;
     margin: 0 auto;
   }
 }
-.footer {
-  height: 8%;
-  background-image: linear-gradient(0deg, #b4ec51 0%, #429321 100%);
-  position: relative;
-}
-@media (max-width: 767px) {
-  .footer {
-    height: 50%;
-  }
-}
-.footer .homage-logo {
-  position: relative;
-  top: 25%;
-  left: 20px;
+.homage-logo {
   background-image: url("/resources/emu/homageLogoWhite.png");
   background-size: cover;
   width: 107px;
@@ -215,27 +243,37 @@ body {
   cursor: pointer;
   display: block;
 }
+@media (min-width: 768px) {
+  .homage-logo {
+    left: 20px;
+    position: relative;
+  }
+}
 @media (max-width: 767px) {
-  .footer .homage-logo {
+  .homage-logo {
+    position: relative;
     top: 80%;
     margin: 0 auto;
-    left: 0px;
   }
 }
 .big-phone {
-  position: absolute;
-  bottom: 3%;
-  right: -1%;
   z-index: 100000000;
   background: url("/resources/emu/bigIphoneEmu.png") no-repeat;
   background-size: 100%;
   height: 648px;
   width: 347px;
 }
+@media (min-width: 768px) {
+  .big-phone {
+    position: absolute;
+    right: -1%;
+    bottom: 3%;
+    margin-top: 20px;
+  }
+}
 @media (max-width: 767px) {
   .big-phone {
     position: relative;
-    top: 60px;
     margin: 0 auto;
   }
 }

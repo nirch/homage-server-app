@@ -11,7 +11,7 @@
     <script type="text/javascript" src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
 
     <!-- LESS -->
-    <link rel="stylesheet" type="text/css" href="/css/emu_landing.css">
+    <link rel="stylesheet" type="text/css" href="/css/emu_landing_page.css">
     <!-- <link rel="stylesheet/less" type="text/css" href="/less/emu_landing.less"> -->
 
     <script src="/js/less.js" type="text/javascript"></script>
@@ -39,12 +39,9 @@
             <div class="background-pic-overlay">
 
             </div>
-
  			<div class="banner-bottom">
-                
- 				<p class="title" id="responsive_headline"> Emu Has Broken Loose!! </p>
-	 			<p class="subtitle"> A Personal Selfie Sticker Creator at the speed of an Ostrich</p>
-                
+                <p class="title"> Emu Has Broken Loose!! </p>
+                <p class="subtitle"> A Personal Selfie Sticker Creator at the speed of an Ostrich</p>
 	 			<div class="signup-container hidden-xs">
 	 				<input type="text" class="form-control" id="email_text_field" placeholder="Sign Up For EMU updates"></input>
 	 				 <span class="bold-font-label campaign-button" href="http://homage.it/" target="_blank" >Join the bird</a>
@@ -52,48 +49,33 @@
 	 		</div>	
  		</div>
  		<div class="row page-bottom">
+            
 			<p> Emu is a fun free keyboard app for iOS. 
                 <br> Create your own personal video stickers!
-                <br> Emu - because you are what you send.
 			</p>
+            <br>
+            <br>
+            
             <div class="signup-container visible-xs">
                     <input type="text" class="form-control" id="email_text_field_mobile" placeholder="Sign Up For EMU updates"></input>
                      <span class="bold-font-label campaign-button" href="http://homage.it/" target="_blank" >Join</a>
             </div>
-			<div class="hmg-appstore-link"></div>
+            <br>
+            <br>
+            <div class="hmg-appstore-link hidden-xs"></div>
             <div class="big-phone visible-xs"></div>
  		</div>	
+        
  		<div class="row footer">
-            <a class="homage-logo" href="http://homage.it/" target="_blank"></a>
+            
+            <div class="hmg-appstore-link visible-xs"></div>
+            <div class="homage-logo">
+                <a  href="http://homage.it/" target="_blank"></a>
+            </div>
  		</div>
  	</div>
     <div class="big-phone hidden-xs"></div>
 
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
-    <script src="js/jquery.fittext.js"></script>
-    <script>
-      jQuery("#responsive_headline").fitText();
-    </script>
-
-    <script type="text/javascript">
-        $('.campaign-button').on('click' , function() {
-            current_email = $("#email_text_field").val();
-            if (current_email == "")
-            {
-                current_email = $("#email_text_field_mobile").val();
-            }
-            console.log(current_email);
-            if (current_email != "") 
-            {
-                params = {"email_address":current_email};
-                $.post('/emu/sign_up', params , function(data,status){
-                     alert("Emu says: Thanks for joining!");
-                     $("#email_text_field").val("");
-                     $("#email_text_field_mobile").val("");
-                });
-            } else {
-                alert("why U no put email?!");
-            }
-        })
-    </script>
+    <script src="/js/emu_landing_page.js"></script>
  </body>
