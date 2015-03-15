@@ -26,35 +26,12 @@ h6 {
 }
 
 .header {
-  height: 8%;
+  height: 4em;
   background: -webkit-linear-gradient(#7cc139, #ace74e); /* For Safari 5.1 to 6.0 */
   background: -o-linear-gradient(#7cc139, #ace74e); /* For Opera 11.1 to 12.0 */
   background: -moz-linear-gradient(#7cc139, #ace74e); /* For Firefox 3.6 to 15 */
   background: linear-gradient(#7cc139, #ace74e); /* Standard syntax */
   /*background-color: #ace74e;*/
-}
-
-.zindexten {
-    z-index: 10;
-}
-.zindextwenty {
-    z-index: 20;
-}
-
-.footer-lg {
-  position: relative;
-    height: 80px;
-  background-image: linear-gradient(0deg, #b4ec51 0%, #429321 100%);
-  bottom: 80px;
-  z-index: 1;
-}
-
-.footer-xs {
-  position: relative;
-    height: 300px;
-  background-image: linear-gradient(0deg, #b4ec51 0%, #429321 100%);
-  bottom: 300px;
-  z-index: 1;
 }
 
 .description {
@@ -80,7 +57,6 @@ li > a {
 .intro-header {
     padding-top: 50px;  If you're making other pages, make sure there is 50px of padding to make sure the navbar doesn't overlap content! 
     padding-bottom: 50px;
-    text-align: center;
     color: #f8f8f8;
     background: url("/resources/emu/bannerBG_overlay.jpg") no-repeat center center;
     background-size: cover;
@@ -209,9 +185,43 @@ li > a {
     }
 }
 
+.bottom-row {
+    padding-bottom: 80px;
+}
+
 footer {
     padding: 50px 0;
     background-color: #f8f8f8;
+}
+
+.zindexten {
+    z-index: 10;
+}
+
+.zindexone {
+    z-index: -1;
+}
+
+
+
+.footer-lg {
+  position: relative;
+    height: 80px;
+  background-image: linear-gradient(0deg, #b4ec51 0%, #429321 100%);
+  bottom: 80px;
+  z-index: 1;
+}
+
+.footer-xs {
+  position: relative;
+    height: 300px;
+  background-image: linear-gradient(0deg, #b4ec51 0%, #429321 100%);
+  bottom: 300px;
+  z-index: 1;
+}
+
+.footer-homage {
+    
 }
 
 p.copyright {
