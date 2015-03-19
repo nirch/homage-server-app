@@ -262,7 +262,10 @@ end
 get '/' do
 	host_name = request.env["HTTP_HOST"]
 	if (host_name =~ /emu.im/i) then 
-		erb :emu_landing_page_d
+		info = Hash.new
+		info["EMU_ENTERED"] = "production"
+		reportToMixpanel("EmuLandingPageView",info)
+		erb :emu_landing_page
 	elsif host_name then
 		getMinisiteForCampaign(host_name)
 	else 
@@ -271,7 +274,10 @@ get '/' do
 end
 
 get '/danemu' do
-	erb :emu_landing_page_d
+	info = Hash.new
+	info["EMU_ENTERED"] = "production"
+	reportToMixpanel("EmuLandingPageView",info)
+	erb :emu_landing_page
 end
 
 get '/test/cgi' do
@@ -2559,9 +2565,9 @@ get '/test/gallery/:campaign_name' do
 	erb :minisiteV1
 end
 
-get '/testing/emu' do
-	erb :emu_landing_page
-end
+# get '/testing/emu' do
+# 	erb :emu_landing_page
+# end
 
 get '/privacy' do
 	erb :privacy_policy

@@ -1,279 +1,203 @@
-.form-control::-moz-placeholder {
-  color: #FFFFFF;
+/*!
+ * Start Bootstrap - Landing Page Bootstrap Theme (http://startbootstrap.com)
+ * Code licensed under the Apache License v2.0.
+ * For details, see http://www.apache.org/licenses/LICENSE-2.0.
+ */
+
+body,
+html {
+    width: 100%;
+    height: 100%;
 }
-.form-control:-ms-input-placeholder {
-  color: #FFFFFF;
+
+body{
+    /*padding-top: 50px;*/
 }
-.form-control::-webkit-input-placeholder {
-  color: #FFFFFF;
+
+body,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-family: "Lato","Helvetica Neue",Helvetica,Arial,sans-serif;
+    font-weight: 700;
 }
-html,
-body {
-  height: 100%;
-  overflow-x: hidden;
+
+#wrapper {
+    min-height:100%;
+    position:relative;
+    margin:0;
+    padding: 0;
+    
 }
-.page-container {
-  height: 100%;
-  overflow-x: hidden;
+#header {
+    
 }
+#content {
+    height:100%;
+
+    /*padding:10px;*/
+    /*padding-bottom:80px; */  /* Height of the footer element */
+}
+
+
 .header {
-  height: 8%;
+  height: 50px;
   background: -webkit-linear-gradient(#7cc139, #ace74e); /* For Safari 5.1 to 6.0 */
   background: -o-linear-gradient(#7cc139, #ace74e); /* For Opera 11.1 to 12.0 */
   background: -moz-linear-gradient(#7cc139, #ace74e); /* For Firefox 3.6 to 15 */
   background: linear-gradient(#7cc139, #ace74e); /* Standard syntax */
   /*background-color: #ace74e;*/
 }
-.main-banner {
-  height: 68%;
-  position: relative;
-}
-@media (max-width: 767px) {
-  .main-banner {
-    height: 20%;
-  }
-}
 
-.main-banner .emu-logo {
-  position: relative;
-  top: -20px;
-  left: 20px;
-  background-image: url("/resources/emu/emuLogo.png");
-  background-size: 100%;
-  height: 83px;
-  width: 68px;
-}
-@media (max-width: 767px) {
-  .main-banner .emu-logo {
-    top: -27px;
-    left: 0px;
-    margin: 0 auto;
-  }
-}
-.background-pic {
-  position: absolute;
-  top: 0;
-  left: 0;
-  background-image: url("/resources/emu/bannerBG.jpg");
-  background-size: cover;
-  z-index: -10;
-  width: 100%;
-}
-@media (min-width: 768px) {
-  .background-pic {
-    height:100%;
-  }
-}
-@media (max-width: 767px) {
-  .background-pic {
-    height:130%;
-  }
-}
-
-.background-pic-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: -9;
-  width: 100%;
-  border: 1px solid #979797;
-  
-  background: #000000;
-}
-
-@media (min-width: 768px) {
-  .background-pic-overlay {
-    height:100%;
-    opacity: 0.5;
-  }
-}
-@media (max-width: 767px) {
-  .main-banner .background-pic-overlay {
-    height:130%;
-    opacity: 0.3;
-  }
-}
-
-.main-banner .banner-bottom {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  text-align: center;
-  /* Rectangle 4: */
-  /* Rectangle 5: */
-  /* SHIP IT: */
-}
-.main-banner .banner-bottom .title {
-  font-family: AbadiMT-CondensedExtraBold;
-  color: #FFFFFF;
-  text-transform: uppercase;
-  line-height: 55px;
-  margin-bottom: 2px;
-}
-
-@media (min-width: 768px) {
-  .title {
-    font-size: 62px;
-    width: 400px;
-  }
-}
-@media (max-width: 767px) {
-  .title {
-    font-size: 42px;
-    width: 275px;
-    margin: 0 auto;
-  }
-}
-.main-banner .banner-bottom .subtitle {
-  font-size: 20px;
-  color: #FFFFFF;
-  line-height: 23px;
-}
-@media (max-width: 767px) {
-  .banner-bottom .subtitle {
-    display: none;
-  }
-}
-@media (max-width: 767px) {
-  .main-banner .banner-bottom {
-    position: inherit;
-    margin: 0 auto;
-    text-align: center;
-  }
-}
-.signup-container {
-  width: 100%;
-  display: inline-block;
-  height: 35px;
-  position: relative;
-}
-.signup-container .form-control {
-  background: rgba(0, 0, 0, 0.33);
-  border: 1px solid #FFFFFF;
-  box-shadow: inset 0px 1px 3px 0px rgba(0, 0, 0, 0.5);
-  border-radius: 6px;
-  width: 70%;
-  display: inline-block;
-  height: 100%;
-  color: #FFFFFF;
-  float: left;
-}
-.signup-container .campaign-button {
-  background-image: linear-gradient(-180deg, #8cd609 0%, #88ca3e 100%);
-  border: 1px solid #429321;
-  border-radius: 6px;
-  width: 22%;
-  display: inline-block;
-  color: #FFFFFF;
-  font-size: 20px;
-  height: 100%;
-  float: left;
-  line-height: 30px;
-  text-align: center;
-  margin-left: 10px;
-  cursor: pointer;
-  padding-bottom: 20px;
-}
-.page-bottom {
-  position: relative;
-  display: inline-block;
-  padding: 10px;
-  width: 100%;
-  text-align: center;
-}
-@media (max-width: 767px) {
-  .page-bottom {
-    height: 20%;
-  }
-}
-@media (max-width: 767px) {
-  .page-bottom {
-    height: 100%;
-    text-align: center;
-    overflow: visible;
-  }
-}
-.page-bottom p {
+.description {
   margin-left: 0px;
   font-size: 18px;
   color: #4A4A4A;
   line-height: 21px;
 }
 
-.footer {
-  height: 8%;
-  background-image: linear-gradient(0deg, #b4ec51 0%, #429321 100%);
-  bottom: 0%;
+.topnav {
+    font-size: 14px; 
 }
-@media (max-width: 767px) {
-  .footer {
+
+li > a {
+    color: #ace74e;
+}
+
+.lead {
+    font-size: 18px;
+    font-weight: 400;
+}
+
+.intro-header {
+    /*padding-top: 50px;  If you're making other pages, make sure there is 50px of padding to make sure the navbar doesn't overlap content! 
+    padding-bottom: 50px;*/
+    color: #f8f8f8;
+    background: url("/resources/emu/bannerBG_overlay.jpg") no-repeat center center;
+    background-size: cover;
+    background-position: top;
+}
+
+.intro-message {
     position: relative;
-    height: 110%;
-    bottom: -1px;
-    text-align: center;
-  }
+    padding-top: 50px;
+    padding-bottom: 20px;
 }
-.hmg-appstore-link {
-  display: block;
-  position: absolute;
-  background-image: url("/resources/emu/appStore.png");
-  background-size: cover;
-  width: 148px;
-  height: 49px;
-  cursor: pointer;
+
+.intro-message > h1 {
+    margin: 0;
+    text-shadow: 2px 2px 3px rgba(0,0,0,0.6);
+    font-size: 5em;
 }
-@media (min-width: 768px) {
-  .hmg-appstore-link {
-    left: 1%;
-    bottom: 6%;
-  }
+
+.intro-divider {
+    width: 400px;
+    border-top: 1px solid #f8f8f8;
+    border-bottom: 1px solid rgba(0,0,0,0.2);
 }
-@media (max-width: 767px) {
-  .hmg-appstore-link {
+
+.intro-message > h3 {
+    text-shadow: 2px 2px 3px rgba(0,0,0,0.6);
+}
+
+@media(max-width:767px) {
+    .intro-message {
+        /*padding-bottom: 15%;*/
+    }
+
+    .intro-message > h1 {
+        font-size: 3em;
+    }
+
+    ul.intro-social-buttons > li {
+        display: block;
+        margin-bottom: 20px;
+        padding: 0;
+    }
+
+    ul.intro-social-buttons > li:last-child {
+        margin-bottom: 0;
+    }
+
+    .intro-divider {
+        width: 100%;
+    }
+}
+
+.network-name {
+    text-transform: uppercase;
+    font-size: 14px;
+    font-weight: 400;
+    letter-spacing: 2px;
+}
+
+.content-section-a {
+    background-color: #f8f8f8;
+}
+
+.section-heading {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.section-heading-spacer {
+    float: left;
+    width: 200px;
+    border-top: 3px solid #e7e7e7;
+}
+
+.bottom-row {
+    padding-bottom: 80px;
+}
+
+.zindexten {
+    z-index: 10;
+}
+
+.zindexone {
+    z-index: -1;
+}
+
+.bigphone-container {
     position: relative;
-    top: 75%;
-    margin: 0 auto;
-  }
+    float:right;
+    padding: 0;
+    margin:0;
 }
-.homage-logo {
-  background-image: url("/resources/emu/homageLogoWhite.png");
-  background-size: cover;
-  width: 107px;
-  height: 33px;
-  cursor: pointer;
-  display: block;
+
+.bigphone {
+    height:648px;
+    width:347px;
 }
-@media (min-width: 768px) {
-  .homage-logo {
-    left: 20px;
-    position: relative;
-  }
-}
-@media (max-width: 767px) {
-  .homage-logo {
-    position: relative;
-    top: 80%;
-    margin: 0 auto;
-  }
-}
-.big-phone {
-  z-index: 100000000;
-  background: url("/resources/emu/bigIphoneEmu.png") no-repeat;
-  background-size: 100%;
-  height: 648px;
-  width: 347px;
-}
-@media (min-width: 768px) {
-  .big-phone {
+
+.trt {
+    z-index: 9999999999999;
     position: absolute;
-    right: -1%;
-    bottom: 3%;
-    margin-top: 20px;
-  }
+    top: -640px;
+    right: 3px;
 }
-@media (max-width: 767px) {
-  .big-phone {
+
+.footer-lg {
     position: relative;
-    margin: 0 auto;
-  }
+    width:100%;
+    height: 80px;
+    background-image: linear-gradient(0deg, #b4ec51 0%, #429321 100%);
+    bottom: 0px;
+    left:0;
+    z-index: 1;
+    padding: 0;
+    margin:0;
+}
+
+.footer-xs {
+    position: absolute;
+    width:100%;
+    height: 300px;
+    background-image: linear-gradient(0deg, #b4ec51 0%, #429321 100%);
+    bottom: 0px;
+    left:0;
+    z-index: 1;
 }
