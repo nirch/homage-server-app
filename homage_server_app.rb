@@ -21,6 +21,9 @@ require 'zip'
 require File.expand_path '../mongo scripts/Analytics.rb', __FILE__
 # require 'erubis'
 
+# emu api related
+require_relative 'emuapi/emuapi'
+
 current_session_ID = nil
 HTML_ESCAPE	=	{ '&' => '&amp;', '>' => '&gt;', '<' => '&lt;', '"' => '&quot;', "'" => '&#39;' }
 # HACK ALERT! removing Chuku as it not working on facebook open graph scraping
@@ -72,10 +75,6 @@ configure :production do
 	db_connection = Mongo::MongoClient.from_uri("mongodb://Homage:homageIt12@troup.mongohq.com:10057/Homage_Prod")
 	set :db, db_connection.db()
 
-	#emu db connection
-	emu_db_connection = Mongo::MongoClient.from_uri("mongodb://Homage:homageIt12@dogen.mongohq.com:10005/emu-prod")
-	set :emu_db, emu_db_connection.db()
-
 	# Push notification certificate
 	APN = Houston::Client.production
 	APN.certificate = File.read(File.expand_path("../certificates/homage_push_notification_prod.pem", __FILE__))
@@ -119,9 +118,6 @@ configure :test do
 	# Test DB connection
 	db_connection = Mongo::MongoClient.from_uri("mongodb://Homage:homageIt12@paulo.mongohq.com:10008/Homage")
 	set :db, db_connection.db()
-
-	emu_db_connection = Mongo::MongoClient.from_uri("mongodb://Homage:homageIt12@dogen.mongohq.com:10073/emu-test")
-	set :emu_db, emu_db_connection.db()
 
 	# Push notification certificate
 	APN = Houston::Client.development
