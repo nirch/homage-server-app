@@ -258,34 +258,13 @@ end
 get '/' do
 	host_name = request.env["HTTP_HOST"]
 	if (host_name =~ /emu.im/i) then 
-		info = Hash.new
-		info["EMU_ENTERED"] = "production"
-		reportToMixpanel("EmuLandingPageView",info)
+		reportToMixpanel("EmuLandingPageView")
 		erb :emu_landing_page
 	elsif host_name then
 		getMinisiteForCampaign(host_name)
 	else 
 		logger.error "received null HTTP_HOST"
 	end
-end
-
-get '/danemu' do
-	info = Hash.new
-	info["EMU_ENTERED"] = "production"
-	reportToMixpanel("EmuLandingPageView",info)
-	erb :emu_landing_page
-end
-
-get '/test/cgi' do
-	x = "Don't bla bla cgi"
-	y = CGI::escapeHTML(x)
-	puts y
-end
-
-get '/test/rack' do
-	x = "Don't bla bla rack"
-	y = Rack::Utils.escape_html(x)
-	puts y
 end
 
 get '/remakes' do
@@ -2635,10 +2614,9 @@ def getMinisiteForCampaign(host_name)
 	erb :minisiteV1
 end
 
-def reportToMixpanel(event_name,info)
+def reportToMixpanel(event_name,info={})
 	begin
-		# settings.mixpanel.track("12345", event_name, info) if settings.respond_to?(:mixpanel)
-		raise "Rafi"
+		settings.mixpanel.track("12345", event_name, info) if settings.respond_to?(:mixpanel)
 	rescue => error
 		logger.error "mixpanel error: " + error.to_s
 	end
