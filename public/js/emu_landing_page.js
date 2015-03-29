@@ -7,17 +7,27 @@ $('.campaign-button').on('click' , function() {
             console.log(current_email);
             if (current_email != "") 
             {
-                params = {"email_address":current_email};
-                $.post('/emu/sign_up', params , function(data,status){
-                     alert("Emu says: Thanks for joining!");
-                     $("#email_text_field").val("");
-                     $("#email_text_field_mobile").val("");
-                });
+                if(validateEmail(current_email)){
+                    alert("Emu says: Thanks for joining!");
+                    
+                    params = {"email_address":current_email};
+                    $.post('/emu/sign_up', params , function(data,status){
+                         $("#email_text_field").val("");
+                         $("#email_text_field_mobile").val("");
+                    });
+                }
+                else{
+                    alert("Emu says: Not valid email address");
+                }
             } else {
                 alert("why U no put email?!");
             }
         })
 
+function validateEmail(email) {
+    var re = /^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i;
+    return re.test(email);
+}
 
 $(window).on("load",function(){
 

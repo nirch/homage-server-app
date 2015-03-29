@@ -21,9 +21,6 @@ require 'zip'
 require File.expand_path '../mongo scripts/Analytics.rb', __FILE__
 # require 'erubis'
 
-# emu api related
-require_relative 'emuapi/emuapi'
-
 current_session_ID = nil
 HTML_ESCAPE	=	{ '&' => '&amp;', '>' => '&gt;', '<' => '&lt;', '"' => '&quot;', "'" => '&#39;' }
 # HACK ALERT! removing Chuku as it not working on facebook open graph scraping
@@ -75,6 +72,10 @@ configure :production do
 	db_connection = Mongo::MongoClient.from_uri("mongodb://Homage:homageIt12@troup.mongohq.com:10057/Homage_Prod")
 	set :db, db_connection.db()
 
+	#emu db connection
+	emu_db_connection = Mongo::MongoClient.from_uri("mongodb://Homage:homageIt12@dogen.mongohq.com:10005/emu-prod")
+	set :emu_db, emu_db_connection.db()
+
 	# Push notification certificate
 	APN = Houston::Client.production
 	APN.certificate = File.read(File.expand_path("../certificates/homage_push_notification_prod.pem", __FILE__))
@@ -118,6 +119,9 @@ configure :test do
 	# Test DB connection
 	db_connection = Mongo::MongoClient.from_uri("mongodb://Homage:homageIt12@paulo.mongohq.com:10008/Homage")
 	set :db, db_connection.db()
+
+	emu_db_connection = Mongo::MongoClient.from_uri("mongodb://Homage:homageIt12@dogen.mongohq.com:10073/emu-test")
+	set :emu_db, emu_db_connection.db()
 
 	# Push notification certificate
 	APN = Houston::Client.development
@@ -258,13 +262,34 @@ end
 get '/' do
 	host_name = request.env["HTTP_HOST"]
 	if (host_name =~ /emu.im/i) then 
-		reportToMixpanel("EmuLandingPageView")
+		info = Hash.new
+		info["EMU_ENTERED"] = "production"
+		reportToMixpanel("EmuLandingPageView",info)
 		erb :emu_landing_page
 	elsif host_name then
 		getMinisiteForCampaign(host_name)
 	else 
 		logger.error "received null HTTP_HOST"
 	end
+end
+
+# get '/danemu' do
+# 	info = Hash.new
+# 	info["EMU_ENTERED"] = "production"
+# 	reportToMixpanel("EmuLandingPageView",info)
+# 	erb :emu_landing_page
+# end
+
+get '/test/cgi' do
+	x = "Don't bla bla cgi"
+	y = CGI::escapeHTML(x)
+	puts y
+end
+
+get '/test/rack' do
+	x = "Don't bla bla rack"
+	y = Rack::Utils.escape_html(x)
+	puts y
 end
 
 get '/remakes' do
@@ -1817,11 +1842,21 @@ post '/emu/sign_up' do
 	user = {email: email_address}
 	emu_lpusers = settings.emu_db.collection("LPusers")
 	previous_user = emu_lpusers.find_one({email: email_address});
-	if !previous_user then
-		emu_lpusers.save(user);
-		logger.info "user saved succesfully to mailing list"
+	@valid_address = "The email adress is not valid"
+
+	if email_address =~ /\A[^@]+@[^@]+\Z/
+	  
+		if !previous_user then
+			emu_lpusers.save(user);
+			logger.info "user saved succesfully to mailing list"
+			@valid_address = "Thanks for logging in"
+			# send_verification_to(email)
+		else
+			logger.info("user already signed up in the past")
+			@valid_address = "Already signed up"
+		end
 	else
-		logger.info("user already signed up in the past")
+	  @valid_address = "definately not valid"
 	end
 	
 end 	
@@ -2614,9 +2649,10 @@ def getMinisiteForCampaign(host_name)
 	erb :minisiteV1
 end
 
-def reportToMixpanel(event_name,info={})
+def reportToMixpanel(event_name,info)
 	begin
-		settings.mixpanel.track("12345", event_name, info) if settings.respond_to?(:mixpanel)
+		# settings.mixpanel.track("12345", event_name, info) if settings.respond_to?(:mixpanel)
+		raise "Rafi"
 	rescue => error
 		logger.error "mixpanel error: " + error.to_s
 	end
