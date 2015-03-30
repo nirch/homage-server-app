@@ -18,6 +18,7 @@ require "sinatra/basic_auth"
 require 'mixpanel-ruby'
 require 'mail'
 require 'zip'
+require File.expand_path '../public/resources/emu/binary_images.rb', __FILE__
 require File.expand_path '../mongo scripts/Analytics.rb', __FILE__
 # require 'erubis'
 
@@ -267,12 +268,12 @@ get '/' do
 	end
 end
 
-# get '/danemu' do
-# 	info = Hash.new
-# 	info["EMU_ENTERED"] = "production"
-# 	reportToMixpanel("EmuLandingPageView",info)
-# 	erb :emu_landing_page
-# end
+get '/danemu' do
+	info = Hash.new
+	info["EMU_ENTERED"] = "production"
+	reportToMixpanel("EmuLandingPageView",info)
+	erb :emu_landing_page
+end
 
 get '/test/cgi' do
 	x = "Don't bla bla cgi"
@@ -1849,6 +1850,17 @@ post '/emu/sign_up' do
 			logger.info("user already signed up in the past")
 			@valid_address = "Already signed up"
 		end
+
+		Mail.deliver do
+			  	to      email_address
+			  	from    'Tomer Harry <tomer@homage.it>'
+			  	subject 'Message from Emu Team'
+
+                content_type 'text/html; charset=UTF-8'
+body '<h3>You are on the waiting list for Emu Android
+updates!</h3><h3>Cheers from the Emu team!</h3><a href="http://www.emu.im"><img src="data:image/jpg;base64,' +
+get_emu_logo + '"></a>'
+end
 	else
 	  @valid_address = "definately not valid"
 	end
@@ -2418,12 +2430,15 @@ end
 
 get '/test/mail' do
 	Mail.deliver do
-	  from     'homage-server-app@homage.it'
-	  to       'nir@homage.it'
-	  subject  'Test Mail'
-	  body     'Test body...'
-	end
+	  	to      'dangalg@gmail.com'
+	  	from    'Tomer Harry <dan@homage.it>'
+	  	subject 'Message from Emu Team'
 
+	  	content_type 'text/html; charset=UTF-8'     
+	  	body '<h1>You are on
+		the waiting list for Android updates</h1><h3>Cheers from the Emu
+		team!</h3><img src="data:image/jpg;base64,' + get_emu_logo + '" />'
+	end
 	"Mail sent successfully"
 end
 
