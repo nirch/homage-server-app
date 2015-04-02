@@ -24,6 +24,7 @@ require File.expand_path '../mongo scripts/Analytics.rb', __FILE__
 
 # emu api related
 require_relative 'emuapi/emuapi'
+require_relative 'emuconsole/emuconsole'
 
 current_session_ID = nil
 HTML_ESCAPE	=	{ '&' => '&amp;', '>' => '&gt;', '<' => '&lt;', '"' => '&quot;', "'" => '&#39;' }
@@ -269,10 +270,10 @@ get '/' do
 end
 
 get '/danemu' do
-	info = Hash.new
-	info["EMU_ENTERED"] = "production"
-	reportToMixpanel("EmuLandingPageView",info)
-	erb :emu_landing_page
+	# info = Hash.new
+	# info["EMU_ENTERED"] = "production"
+	# reportToMixpanel("EmuLandingPageView",info)
+	erb :'emu/emuconsole'
 end
 
 get '/test/cgi' do

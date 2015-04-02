@@ -8,14 +8,14 @@ module HomageAWS
 			def test
 				homage_s3 = self.new
 				s3 = AWS::S3.new
-				homage_s3.bucket = s3.buckets['homagetest']
+				homage_s3.bucket = s3.buckets['homage_emu_test']
 				homage_s3
 			end
 
 			def production
 				homage_s3 = self.new
 				s3 = AWS::S3.new
-				homage_s3.bucket = s3.buckets['homageapp']
+				homage_s3.bucket = s3.buckets['homage_emu_prod']
 				homage_s3
 			end
 	    end
