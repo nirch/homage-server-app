@@ -54,6 +54,15 @@
                         <div class="choice">
                             <button type="button" class="btn btn-default">+ (add new)</button>
                         </div>
+                        <div>
+                        <h1>Upload New Algorithm Version</h1>
+
+                        <!-- Upload form. Note enctype attribute! -->
+                        <form action="/emuconsole/upload" method="POST" enctype="multipart/form-data">
+                            <input type="file" name="file">
+                            <input type="submit" value="Upload image">
+                        </form>
+                    </div>
                     </div>
                 </div>
                 <!-- DISPLAY AREA -->
