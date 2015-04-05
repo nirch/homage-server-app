@@ -45,18 +45,17 @@ def createNewPackage(first_published_on,last_update,name,label,duration,frames_c
 	last_update, :icon_name => icon_name, :name  => name, :label => label, :active => active,  :dev_only =>
 	dev_only, :emuticons_defaults => emuticons_defaults_hash })
 
-	if icons_list != nil
-		for icon_hash in icons_list
-			upload_icon(package.name, icon_name, icon_hash["multiplier"], icon_hash["ext"], icon_hash["filepath"],"image/png")
+	if icons_files_list != nil
+		for icon_hash in icons_files_list
+			# Upload to S3
+			upload_icon(package.name, icon_hash["filename"], icon_hash["filepath"], "image/png")
 		end
 	end
-	
-
 	return package.id
 end
 
-def upload_icon(icon_name, multiplier, extention, filepath, content_type)
-	s3_key = 'Packages/' + pack_name + '/' + icon_name + multiplier + extention
+def upload_icon(pack_name, filename, filepath, content_type)
+	s3_key = 'Packages/' + pack_name + '/' + filename
 	s3_object = upload(filepath, s3_key, :public_read, content_type)
 	if s3_object != nil && s3_object.public_url != nil
 		return true
@@ -103,7 +102,7 @@ def updatePackage(package_id, first_published_on,last_update,icon_name,name,labe
 	end
 	if icons_list != nil
 		for icon_hash in icons_list
-			upload_icon(package.name, package.icon_name, icon_hash["multiplier"], icon_hash["ext"], icon_hash["filepath"],"image/png")
+			upload_icon(package.name, icon_hash["filename"], icon_hash["filepath"],"image/png")
 		end
 	end
 end
