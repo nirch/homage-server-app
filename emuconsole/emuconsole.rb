@@ -12,7 +12,13 @@ get '/emuconsole/test' do
 	icons_files_list = [{"filename" => "party_icon@2x.png","filepath" => "/Users/dangal/Downloads/server/party_icon@2x.png"},
 						{"filename" => "party_icon@3x.png","filepath" => "/Users/dangal/Downloads/server/party_icon@3x.png"}]
 
-	createNewPackage(nil,Time.now,"aligator","hamat",24,23,3,nil,false,true,icons_files_list)
+	# createNewPackage(nil,Time.now,"aligator","al barbur",25,23,3,nil,false,true,icons_files_list)
+	createNewPackage(nil,nil,"aligator",nil,25,nil,nil,nil,false,true,nil)
+
+	# upload_file("/Users/dangal/Downloads/party_icon@3x.png", "party_icon@3x.png")
+	# upload_file("/Users/dangal/Downloads/party_icon@2x.png", "party_icon@2x.png")
+
+	# addEmuticon(getPackageIDByName("aligator"),"crocs","celebration-bg.gif","/Users/dangal/Downloads/celebration-bg.gif","celebration-fg.gif","/Users/dangal/Downloads/celebration-fg.gif",nil,nil,nil,nil,"croc",false)
 
 	puts "emoticon updated"
 

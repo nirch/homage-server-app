@@ -4,8 +4,8 @@ require_relative '../model/package'
 require_relative '../../utils/aws/aws_manager'
 require 'byebug'
 
-def getEmuticonByName(package_id,name)
-	package = getPackageById(package_id)
+def getEmuticonByName(package_name,name)
+	package = getPackageByName(package_name)
 	emuticons = package.emuticons
 	for emuticon in emuticons
 		if emuticon.name == name
@@ -19,8 +19,8 @@ def getEmuticonByName(package_id,name)
 	end
 end
 
-def addEmuticon(package_id,name,source_back_layer,source_back_layer_filepath,source_front_layer,source_front_layer_filepath,source_user_layer_mask,source_user_layer_mask_filepath,palette,patched_on,tags,use_for_preview)
-	package = getPackageById(package_id)
+def addEmuticon(package_name,name,source_back_layer,source_back_layer_filepath,source_front_layer,source_front_layer_filepath,source_user_layer_mask,source_user_layer_mask_filepath,palette,patched_on,tags,use_for_preview)
+	package = getPackageByName(package_name)
 
 	if source_back_layer != nil
 		if upload_gif(package.name, source_back_layer, source_back_layer_filepath, "image/gif")
@@ -53,14 +53,14 @@ def addEmuticon(package_id,name,source_back_layer,source_back_layer_filepath,sou
 	package.save
 end
 
-def removeEmuticon(package_id,name)
-	package = getPackageById(package_id)
+def removeEmuticon(package_name,name)
+	package = getPackageByName(package_name)
 	package.emuticons.delete_if {|emuticon| emuticon.name == name}
 	package.save
 end
 
-def updateEmuticon(package_id,name,source_back_layer,source_back_layer_filepath,source_front_layer,source_front_layer_filepath,source_user_layer_mask,source_user_layer_mask_filepath,palette,patched_on,tags,use_for_preview)
-	emuticon = getEmuticonByName(package_id,name)
+def updateEmuticon(package_name,name,source_back_layer,source_back_layer_filepath,source_front_layer,source_front_layer_filepath,source_user_layer_mask,source_user_layer_mask_filepath,palette,patched_on,tags,use_for_preview)
+	emuticon = getEmuticonByName(package_name,name)
 	if emuticon != nil
 		if(source_back_layer != nil)
 			# only update mongo if file was uploaded successfully
@@ -94,7 +94,7 @@ def updateEmuticon(package_id,name,source_back_layer,source_back_layer_filepath,
 		end
 		emuticon.save
 	else
-		addEmuticon(package_id,name,source_back_layer,source_front_layer,source_user_layer_mask)
+		addEmuticon(package_name,name,source_back_layer,source_front_layer,source_user_layer_mask)
 	end
 end
 
