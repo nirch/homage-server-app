@@ -53,7 +53,7 @@ module AWSManager
 			s3_object = @bucket.objects[s3_key]
 			AWSManager.logger.info 'Uploading the file <' + file.to_s + '> to S3 path <' + s3_object.key + '>'
 			s3_file = s3_object.write(:file => file)
-    		s3_file.acl = :public_read
+    		s3_file.acl = acl
 			AWSManager.logger.info "Uploaded successfully to S3, url is: " + s3_object.public_url.to_s
 			return s3_object
 		end

@@ -45,11 +45,11 @@ def createNewPackage(first_published_on,last_update,name,label,duration,frames_c
 	dev_only, :emuticons_defaults => emuticons_defaults_hash })
 
 	if icon_2x != nil
-		upload_icon(package.name, icon_2x[:filename], icon_2x[:tempfile], icon_2x[:type])
+		upload_icon(package.name, icon_2x)
 	end
 
 	if icon_3x != nil
-		upload_icon(package.name, icon_3x[:filename], icon_3x[:tempfile], icon_3x[:type])
+		upload_icon(package.name, icon_3x)
 	end
 
 	return package.id
@@ -92,19 +92,19 @@ def updatePackage(first_published_on,last_update,name,label,duration,frames_coun
 	icon_name = name + "_icon"
 
 	if icon_2x != nil
-		upload_icon(package.name, icon_2x[:filename], icon_2x[:tempfile], icon_2x[:type])
+		upload_icon(package.name, icon_2x)
 	end
 
 	if icon_3x != nil
-		upload_icon(package.name, icon_3x[:filename], icon_3x[:tempfile], icon_3x[:type])
+		upload_icon(package.name, icon_3x)
 	end
 
 	package.save
 end
 
-def upload_icon(pack_name, filename, file, content_type)
-	s3_key = 'packages/' + pack_name + '/' + filename
-	s3_object = settings.emu_s3_test.upload_file(file, s3_key, :public_read)
+def upload_icon(pack_name, file)
+	s3_key = 'packages/' + pack_name + '/' + file[:filename]
+	s3_object = settings.emu_s3_test.upload(file[:tempfile].path, s3_key, :public_read, file[:type])
 	if s3_object != nil && s3_object.public_url != nil
 		return true
 	else

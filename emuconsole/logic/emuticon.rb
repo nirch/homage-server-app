@@ -19,28 +19,31 @@ def getEmuticonByName(package_name,name)
 	end
 end
 
-def addEmuticon(package_name,name,source_back_layer,source_back_layer_filepath,source_front_layer,source_front_layer_filepath,source_user_layer_mask,source_user_layer_mask_filepath,palette,patched_on,tags,use_for_preview)
+def addEmuticon(package_name,name,source_back_layer,source_front_layer,source_user_layer_mask,palette,patched_on,tags,use_for_preview)
 	package = getPackageByName(package_name)
 
 	if source_back_layer != nil
-		if upload_gif(package.name, source_back_layer, source_back_layer_filepath, "image/gif")
+		if upload_gif(package.name, source_back_layer)
 			# Success
+			source_back_layer = source_back_layer[:filename]
 		else
 			# do not fill in this layer because the object wasn't uploaded successfully
 			source_back_layer = nil
 		end
 	end
 	if source_front_layer != nil
-		if upload_gif(package.name,source_front_layer, source_front_layer_filepath, "image/gif")
+		if upload_gif(package.name,source_front_layer)
 			# Success
+			source_front_layer = source_front_layer[:filename]
 		else
 			# do not fill in this layer because the object wasn't uploaded successfully
 			source_front_layer = nil
 		end
 	end
 	if source_user_layer_mask != nil
-		if upload_gif(package.name,source_user_layer_mask, source_user_layer_mask_filepath, "image/jpeg")
+		if upload_gif(package.name,source_user_layer_mask)
 			# Success
+			source_user_layer_mask = source_user_layer_mask[:filename]
 		else
 			# do not fill in this layer because the object wasn't uploaded successfully
 			source_user_layer_mask = nil
@@ -59,25 +62,25 @@ def removeEmuticon(package_name,name)
 	package.save
 end
 
-def updateEmuticon(package_name,name,source_back_layer,source_back_layer_filepath,source_front_layer,source_front_layer_filepath,source_user_layer_mask,source_user_layer_mask_filepath,palette,patched_on,tags,use_for_preview)
+def updateEmuticon(package_name,name,source_back_layer,source_front_layer,source_user_layer_mask,palette,patched_on,tags,use_for_preview)
 	emuticon = getEmuticonByName(package_name,name)
 	if emuticon != nil
 		if(source_back_layer != nil)
 			# only update mongo if file was uploaded successfully
-			if upload_gif(package.name,source_back_layer, source_back_layer_filepath, "image/gif")
-				emuticon.source_back_layer = source_back_layer
+			if upload_gif(package.name,source_back_layer)
+				emuticon.source_back_layer = source_back_layer[:filename]
 			end
 		end
 		if(source_front_layer != nil)
 			# only update mongo if file was uploaded successfully
-			if upload_gif(package.name,source_front_layer, source_front_layer_filepath, "image/gif")
-				emuticon.source_front_layer = source_front_layer
+			if upload_gif(package.name,source_front_layer)
+				emuticon.source_front_layer = source_front_layer[:filename]
 			end
 		end
 		if(source_user_layer_mask != nil)
 			# only update mongo if file was uploaded successfully
-			if upload_gif(package.name,source_user_layer_mask, source_user_layer_mask_filepath, "image/jpeg")
-				emuticon.source_user_layer_mask = source_user_layer_mask
+			if upload_gif(package.name,source_user_layer_mask)
+				emuticon.source_user_layer_mask = source_user_layer_mask[:filename]
 			end
 		end
 		if(palette != nil)
@@ -94,13 +97,13 @@ def updateEmuticon(package_name,name,source_back_layer,source_back_layer_filepat
 		end
 		emuticon.save
 	else
-		addEmuticon(package_name,name,source_back_layer,source_front_layer,source_user_layer_mask)
+		addEmuticon(package_name,name,source_back_layer,source_front_layer,source_user_layer_mask,palette,patched_on,tags,use_for_preview)
 	end
 end
 
-def upload_gif(pack_name, gif_name, filepath, content_type)
-	s3_key = 'packages/' + pack_name + '/' + gif_name
-	s3_object = settings.emu_s3_test.upload(filepath, s3_key, :public_read, content_type)
+def upload_gif(pack_name,file)
+	s3_key = 'packages/' + pack_name + '/' + file[:filename]
+	s3_object = settings.emu_s3_test.upload(file[:tempfile].path, s3_key, :public_read, file[:type])
 	if s3_object != nil && s3_object.public_url != nil
 		return true
 	else
