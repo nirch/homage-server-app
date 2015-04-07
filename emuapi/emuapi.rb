@@ -1,7 +1,27 @@
 #encoding: utf-8
 require_relative 'emuapi_config'
 require_relative '../emuconsole/logic/package'
+require 'byebug'
 
+before do
+  use_scratchpad = request.env['HTTP_SCRATCHPAD'].to_s
+  puts "***************** before " +  use_scratchpad + " ***************"
+  if use_scratchpad == "true" and MongoMapper.connection.db().name != settings.emu_scrathpad.db().name then
+    MongoMapper.connection = settings.emu_scrathpad
+    MongoMapper.database = settings.emu_scrathpad.db().name
+    puts "***************** scratchpad " +  MongoMapper.connection.db().name + " ***************"
+  elsif use_scratchpad != "true"  and MongoMapper.connection.db().name != settings.emu_public.db().name then
+    MongoMapper.connection = settings.emu_public
+    MongoMapper.database = settings.emu_public.db().name
+    puts "***************** public " +  settings.emu_public.db().name + " ***************"
+  end
+  # else public
+end
+
+post '/dan/test' do
+  name = MongoMapper.connection.name
+  "name of current db = " + name.to_s
+end
 
 # just for testing.
 # GET route - test
@@ -28,14 +48,14 @@ get '/emuapi/packages/:verbosity' do
   end
 
   # Get the config information
-  config = settings.emu_db.collection("config").find({"client_name"=>"Emu iOS"}).to_a
+  config = settings.emu_public.db().collection("config").find({"client_name"=>"Emu iOS"}).to_a
   if (config.count != 1)
     return oops_500
   end
   config = config.to_a[0]
 
   # Get the packages
-  packages = settings.emu_db.collection("packages").find({}, {:fields=>fields_projection})
+  packages = settings.emu_public.db().collection("packages").find({}, {:fields=>fields_projection})
   packages = packages.to_a
 
   # Also include the config information with the result
