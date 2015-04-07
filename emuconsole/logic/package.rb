@@ -55,7 +55,7 @@ def createNewPackage(first_published_on,last_update,name,label,duration,frames_c
 	return package.id
 end
 
-def updatePackage(first_published_on,last_update,name,label,duration,frames_count,thumbnail_frame_index,source_user_layer_mask,active,dev_only,icons_files_list)
+def updatePackage(first_published_on,last_update,name,label,duration,frames_count,thumbnail_frame_index,source_user_layer_mask,active,dev_only,icon_2x,icon_3x)
 
 	package = getPackageByName(name)
 	if first_published_on != nil
