@@ -5,6 +5,21 @@ module AWSManager
 		attr_accessor :bucket
 
 		class << self
+
+			def emu_dev_test
+				s3_manager = self.new
+				s3 = AWS::S3.new
+				s3_manager.bucket = s3.buckets['homage-emu-dev-test']
+				s3_manager
+			end
+
+			def emu_dev_prod
+				s3_manager = self.new
+				s3 = AWS::S3.new
+				s3_manager.bucket = s3.buckets['homage-emu-dev-prod']
+				s3_manager
+			end
+
 			def emu_test
 				s3_manager = self.new
 				s3 = AWS::S3.new
@@ -33,9 +48,20 @@ module AWSManager
 		  	return object
 	    end
 
+
+		def upload_file(file, s3_key, acl)
+			s3_object = @bucket.objects[s3_key]
+			AWSManager.logger.info 'Uploading the file <' + file.to_s + '> to S3 path <' + s3_object.key + '>'
+			s3_file = s3_object.write(:file => file)
+    		s3_file.acl = :public_read
+			AWSManager.logger.info "Uploaded successfully to S3, url is: " + s3_object.public_url.to_s
+			return s3_object
+		end
+	    
+
 		def upload(file_path, s3_key, acl, content_type=nil, metadata=nil)
 			s3_object = @bucket.objects[s3_key]
-			AWSManager.logger.info 'Uploading the file <' + file_path + '> to S3 path <' + s3_object.key + '>'
+			AWSManager.logger.info 'Uploading the file <' + file_path.to_s + '> to S3 path <' + s3_object.key + '>'
 			s3_object.write(Pathname.new(file_path), {:acl => acl, :content_type => content_type, :metadata => metadata})
 			AWSManager.logger.info "Uploaded successfully to S3, url is: " + s3_object.public_url.to_s
 			return s3_object

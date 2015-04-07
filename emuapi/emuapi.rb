@@ -66,74 +66,100 @@ get '/emuapi/packages/:verbosity' do
   return result.to_json()
 end
 
-post '/emuapi/package' do
-  #  get params 
-  first_published_on = params[:first_published_on]
-  if(first_published_on) != nil
-    first_published_on = Time.now
-  end
-  last_update = params[:last_update]
-  if(last_update) != nil
-    last_update = Time.now
-  end
-  name = params[:name]
-  label = params[:label]
-  duration = params[:duration]
-  frames_count = params[:frames_count]
-  thumbnail_frame_index = params[:thumbnail_frame_index]
-  source_user_layer_mask = params[:source_user_layer_mask]
-  active = params[:active]
-  dev_only = params[:dev_only]
-  icons_files_list_html = params[:icons_files_list]
-  icons_files_list = parseIconsFilesListToJson(icons_files_list_html)
+protect do
+  post '/emuapi/package' do
+    #  get params 
 
-  # upload to s3 and save to mongo
-  createNewPackage(first_published_on,last_update,name,label,duration,frames_count,thumbnail_frame_index,source_user_layer_mask,active,dev_only,icons_files_list)
-  "finito bambino"
+    first_published_on = params[:first_published_on]
+    if(first_published_on) != nil
+      first_published_on = Time.now
+    end
+    last_update = params[:last_update]
+    if(last_update) != nil
+      last_update = Time.now
+    end
+    name = params[:name]
+    label = params[:label]
+    duration = params[:duration]
+    frames_count = params[:frames_count]
+    thumbnail_frame_index = params[:thumbnail_frame_index]
+    source_user_layer_mask = params[:source_user_layer_mask]
+    active = params[:active]
+    dev_only = params[:dev_only]
+    icon_2x = params[:icon_2x]
+    icon_3x = params[:icon_3x]
+
+    # upload to s3 and save to mongo
+    createNewPackage(first_published_on,last_update,name,label,duration,frames_count,thumbnail_frame_index,source_user_layer_mask,active,dev_only,icon_2x,icon_3x)
+    "finito bambino"
+  end
 end
 
-put '/emuapi/package' do
-  #  get params 
-  
-  first_published_on = params[:first_published_on]
-  if(first_published_on) != nil
-    first_published_on = Time.now
-  end
-  last_update = params[:last_update]
-  if(last_update) != nil
-    last_update = Time.now
-  end
-  name = params[:name]
-  label = params[:label]
-  duration = params[:duration]
-  frames_count = params[:frames_count]
-  thumbnail_frame_index = params[:thumbnail_frame_index]
-  source_user_layer_mask = params[:source_user_layer_mask]
-  active = params[:active]
-  dev_only = params[:dev_only]
-  icons_files_list_html = params[:icons_files_list]
-  icons_files_list = parseIconsFilesListToJson(icons_files_list_html)
+protect do
+  put '/emuapi/package' do
+    #  get params 
+    
+    first_published_on = params[:first_published_on]
+    if(first_published_on) != nil
+      first_published_on = Time.now
+    end
+    last_update = params[:last_update]
+    if(last_update) != nil
+      last_update = Time.now
+    end
+    name = params[:name]
+    label = params[:label]
+    duration = params[:duration]
+    frames_count = params[:frames_count]
+    thumbnail_frame_index = params[:thumbnail_frame_index]
+    source_user_layer_mask = params[:source_user_layer_mask]
+    active = params[:active]
+    dev_only = params[:dev_only]
+    icon_2x = params[:icon_2x]
+    icon_3x = params[:icon_3x]
 
-  # upload to s3 and save to mongo
-  updatePackage(first_published_on,last_update,name,label,duration,frames_count,thumbnail_frame_index,source_user_layer_mask,active,dev_only,icons_files_list)
-  "finito bambino"
+    # upload to s3 and save to mongo
+    updatePackage(first_published_on,last_update,name,label,duration,frames_count,thumbnail_frame_index,source_user_layer_mask,active,dev_only,icon_2x,icon_3x)
+    "finito bambino"
+  end
 end
 
-def parseIconsFilesListToJson(icons_files_list_html)
+protect do
+  post '/emuapi/emuticon' do
+    #  get params
+    package_name = params[:package_name]
+    name = params[:name]
+    source_back_layer = params[:source_back_layer]
+    source_front_layer = params[:source_front_layer]
+    source_user_layer_mask = params[:source_user_layer_mask]
+    palette = params[:palette]
+    patched_on = params[:patched_on]
+    tags = params[:tags]
+    use_for_preview = params[:use_for_preview]
 
-  icons_files_list = []
-
-  list_icon_files = icons_files_list_html.split('|')
-
-  for filename in list_icon_files do
-    icon_hash = Hash.new
-    icon_hash["filename"] = filename
-    icon_hash["filepath"] = "/Users/dangal/Downloads/server/" + filename
-    icons_files_list << icon_hash
+    # upload to s3 and save to mongo
+    addEmuticon(package_name,name,source_back_layer,source_front_layer,source_user_layer_mask,palette,patched_on,tags,use_for_preview)
+    "finito bambino"
   end
+end
 
-  return icons_files_list
+protect do
+  put '/emuapi/emuticon' do
+    #  get params
+    package_name = params[:package_name]
+    name = params[:name]
+    source_back_layer = params[:source_back_layer]
+    source_front_layer = params[:source_front_layer]
+    source_user_layer_mask = params[:source_user_layer_mask]
+    palette = params[:palette]
+    patched_on = params[:patched_on]
+    tags = params[:tags]
+    use_for_preview = params[:use_for_preview]
 
+    # upload to s3 and save to mongo
+    updateEmuticon(package_name,name,source_back_layer,source_front_layer,source_user_layer_mask,palette,patched_on,tags,use_for_preview)
+    "finito bambino"
+  end
 end
 
 
