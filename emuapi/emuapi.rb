@@ -5,15 +5,12 @@ require 'byebug'
 
 before do
   use_scratchpad = request.env['HTTP_SCRATCHPAD'].to_s
-  puts "***************** before " +  use_scratchpad + " ***************"
   if use_scratchpad == "true" and MongoMapper.connection.db().name != settings.emu_scrathpad.db().name then
     MongoMapper.connection = settings.emu_scrathpad
     MongoMapper.database = settings.emu_scrathpad.db().name
-    puts "***************** scratchpad " +  MongoMapper.connection.db().name + " ***************"
   elsif use_scratchpad != "true"  and MongoMapper.connection.db().name != settings.emu_public.db().name then
     MongoMapper.connection = settings.emu_public
     MongoMapper.database = settings.emu_public.db().name
-    puts "***************** public " +  settings.emu_public.db().name + " ***************"
   end
   # else public
 end
@@ -35,7 +32,6 @@ end
 #   full - the result will also include all emuticons information for every package
 #   metadata - the result will only include meta data about the packages (excluding emuticons info)
 get '/emuapi/packages/:verbosity' do
-
   # determine the verbosity of the result
   verbosity = params[:verbosity]
   case verbosity

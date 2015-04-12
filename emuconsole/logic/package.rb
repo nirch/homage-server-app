@@ -1,6 +1,7 @@
 # LOGIC
 require_relative '../model/package'
 require_relative '../../utils/aws/aws_manager'
+require 'byebug'
 
 def getPackageById(package_id)
 	Package.find_by_id(package_id)
@@ -11,8 +12,21 @@ def getPackageByName(package_name)
 	return package
 end
 
+def reconnect_database(database)
+	if MongoMapper.connection.db().name != database.db().name then
+	    MongoMapper.connection = database
+	    MongoMapper.database = database.db().name
+  	end
+end
+
+def get_all_packages(database)
+	reconnect_database(database)
+	return Package.all
+end
+
 def createNewPackage(first_published_on,last_update,name,label,duration,frames_count,thumbnail_frame_index,source_user_layer_mask,active,dev_only,icon_2x,icon_3x)
 	emuticons_defaults_hash = Hash.new("emuticons_defaults")
+	byebug
 	if duration != nil
 		emuticons_defaults_hash["duration"] = duration
 	else
@@ -45,11 +59,13 @@ def createNewPackage(first_published_on,last_update,name,label,duration,frames_c
 	dev_only, :emuticons_defaults => emuticons_defaults_hash })
 
 	if icon_2x != nil
-		upload_icon(package.name, icon_2x)
+		filename = make_icon_name(icon_name + "@2x", File.extname(icon_2x[:filename]), false)
+		upload_file_to_s3(package.name, icon_2x, filename)
 	end
 
 	if icon_3x != nil
-		upload_icon(package.name, icon_3x)
+		filename = make_icon_name(icon_name + "@3x", File.extname(icon_3x[:filename]), false)
+		upload_file_to_s3(package.name, icon_3x, filename)
 	end
 
 	return package.id
@@ -89,25 +105,58 @@ def updatePackage(first_published_on,last_update,name,label,duration,frames_coun
 		package.emuticons_defaults["dev_only"] = dev_only
 	end
 
-	icon_name = name + "_icon"
+
+	icon_name = package.icon_name
 
 	if icon_2x != nil
-		upload_icon(package.name, icon_2x)
+		filename = make_icon_name(icon_name + "@2x", File.extname(icon_2x[:filename]), true)
+		package.icon_name = filename.split('@')[0]
+		upload_file_to_s3(package.name, icon_2x, filename)
+		package.icon_name = filename.rpartition('@').first
 	end
 
 	if icon_3x != nil
-		upload_icon(package.name, icon_3x)
+		filename = make_icon_name(icon_name + "@3x", File.extname(icon_3x[:filename]), true)
+		package.icon_name = filename.split('@')[0]
+		upload_file_to_s3(package.name, icon_3x, filename)
+		package.icon_name = filename.rpartition('@').first
 	end
 
 	package.save
 end
 
-def upload_icon(pack_name, file)
-	s3_key = 'packages/' + pack_name + '/' + file[:filename]
+def upload_file_to_s3(pack_name, file, file_name)
+	s3_key = 'packages/' + pack_name + '/' + file_name
 	s3_object = settings.emu_s3_test.upload(file[:tempfile].path, s3_key, :public_read, file[:type])
 	if s3_object != nil && s3_object.public_url != nil
 		return true
 	else
 		return false
 	end
+	FileUtils.rm(file[:tempfile].path)
+end
+
+def make_icon_name(icon_name, ext, update)
+	filename = icon_name + ext
+	if update
+		filename = update_version_number(filename)
+	end
+	return filename
+end
+
+def update_version_number(filename)
+	endchar = '.'
+	if filename.include? "@"
+		endchar = '@'
+	end
+	if filename.rindex('-v') != nil
+		version = filename[filename.rindex('-v').. filename.rindex(endchar)-1]
+		version_number = filename[filename.rindex('-v')+2.. filename.rindex(endchar)-1]
+		version_number = version_number.to_i + 1
+		filename[version] = '-v' + version_number.to_s
+	else
+		filename[filename.rindex(endchar)] = "-v1" + endchar
+	end
+
+	return filename
 end

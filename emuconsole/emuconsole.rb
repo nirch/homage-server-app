@@ -26,7 +26,16 @@ get '/emuconsole/test' do
 end
 
 get '/emuconsole/display' do
+	@packs_scratchpad = get_all_packages(settings.emu_scrathpad)
+	@packs_public = get_all_packages(settings.emu_public)
 	erb :emuconsole
+end
+
+get '/emuconsole/upload' do
+	puts "*********************"
+	puts params
+	puts "*********************"
+	# upload_file
 end
 
 def upload_file(local_file_path, server_file_path)
