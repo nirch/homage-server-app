@@ -7,6 +7,7 @@ class Package
   	key :icon_name, String
     key :cms_icon_2x, String
     key :cms_icon_3x, String
+    key :cms_last_zip_file_name, String
   	key :name, String
   	key :label, String
   	key :active, Boolean, :default => true

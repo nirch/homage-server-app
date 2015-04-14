@@ -2,6 +2,7 @@ require_relative '../emuapi/emuapi_config'
 require_relative 'logic/emuticon'
 require_relative 'logic/package'
 require_relative 'emuzipper'
+require_relative 'emudeployer'
 
 # test
 # get '/emuconsole/test' do
@@ -36,6 +37,13 @@ protect do
 	post '/emuconsole/zip' do
 		package_name = params[:package_name]
 		zipEmuPackage(package_name)
+	end
+end
+
+protect do
+	post '/emuconsole/deploy' do
+		package_name = params[:package_name]
+		deployEmuPackage(package_name)
 	end
 end
 

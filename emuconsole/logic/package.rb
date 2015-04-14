@@ -17,7 +17,7 @@ def get_all_packages(database)
 	return Package.all
 end
 
-def createNewPackage(name,label,duration,frames_count,thumbnail_frame_index,source_user_layer_mask,active,dev_only,icon_2x,icon_3x)
+def createNewPackage(connection, name,label,duration,frames_count,thumbnail_frame_index,source_user_layer_mask,active,dev_only,icon_2x,icon_3x)
 	emuticons_defaults_hash = Hash.new("emuticons_defaults")
 	if duration != nil
 		emuticons_defaults_hash["duration"] = duration
@@ -65,20 +65,20 @@ def createNewPackage(name,label,duration,frames_count,thumbnail_frame_index,sour
 	icon2xName = ""
 	if icon_2x != nil
 		filename = make_icon_name(icon_name + "@2x", File.extname(icon_2x[:filename]), false, false)
-		upload_file_to_s3(name, icon_2x, filename)
+		upload_file_to_s3(name, icon_2x, filename, connection)
 		icon2xName = filename
 	end
 
 	icon3xName = ""
 	if icon_3x != nil
 		filename = make_icon_name(icon_name + "@3x", File.extname(icon_3x[:filename]), false, false)
-		upload_file_to_s3(name, icon_3x, filename)
+		upload_file_to_s3(name, icon_3x, filename, connection)
 		icon3xName = filename
 	end
 
 	if source_user_layer_mask != nil
 		filename = make_icon_name(name + "-mask", File.extname(source_user_layer_mask[:filename]), false, false)
-		upload_file_to_s3(name, source_user_layer_mask, filename)
+		upload_file_to_s3(name, source_user_layer_mask, filename, connection)
 	end
 
 	package = Package.create({ 
@@ -92,7 +92,7 @@ def createNewPackage(name,label,duration,frames_count,thumbnail_frame_index,sour
 	return package.id
 end
 
-def updatePackage(name,label,duration,frames_count,thumbnail_frame_index,source_user_layer_mask,active,dev_only,icon_2x,icon_3x)
+def updatePackage(connection, name,label,duration,frames_count,thumbnail_frame_index,source_user_layer_mask,active,dev_only,icon_2x,icon_3x)
 	package = getPackageByName(name)
 
 	updateResources = false
@@ -130,7 +130,7 @@ def updatePackage(name,label,duration,frames_count,thumbnail_frame_index,source_
 
 	if icon_2x != nil
 		filename = make_icon_name(icon_name + "@2x", File.extname(icon_2x[:filename]), true, false)
-		upload_file_to_s3(package.name, icon_2x, filename)
+		upload_file_to_s3(package.name, icon_2x, filename, connection)
 		package.icon_name = filename.rpartition('@').first
 		updateResources = true
 		package.cms_icon_2x = filename
@@ -138,7 +138,7 @@ def updatePackage(name,label,duration,frames_count,thumbnail_frame_index,source_
 
 	if icon_3x != nil
 		filename = make_icon_name(icon_name + "@3x", File.extname(icon_3x[:filename]), true, false)
-		upload_file_to_s3(package.name, icon_3x, filename)
+		upload_file_to_s3(package.name, icon_3x, filename, connection)
 		package.icon_name = filename.rpartition('@').first
 		updateResources = true
 		package.cms_icon_3x = filename
@@ -146,7 +146,7 @@ def updatePackage(name,label,duration,frames_count,thumbnail_frame_index,source_
 
 	if source_user_layer_mask != nil
 		filename = make_icon_name(name + "-mask", File.extname(source_user_layer_mask[:filename]), true, false)
-		upload_file_to_s3(package.name, source_user_layer_mask, filename)
+		upload_file_to_s3(package.name, source_user_layer_mask, filename, connection)
 		package.emuticons_defaults["source_user_layer_mask"] = filename
 		updateResources = true
 	end

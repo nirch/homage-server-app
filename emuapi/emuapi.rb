@@ -77,7 +77,7 @@ protect do
     icon_3x = params[:icon_3x]
 
     # upload to s3 and save to mongo
-    createNewPackage(name,label,duration,frames_count,thumbnail_frame_index,source_user_layer_mask,active,dev_only,icon_2x,icon_3x)
+    createNewPackage(settings.emu_s3_test, name,label,duration,frames_count,thumbnail_frame_index,source_user_layer_mask,active,dev_only,icon_2x,icon_3x)
     "finito bambino"
   end
 end
@@ -98,7 +98,7 @@ protect do
     icon_3x = params[:icon_3x]
 
     # upload to s3 and save to mongo
-    updatePackage(name,label,duration,frames_count,thumbnail_frame_index,source_user_layer_mask,active,dev_only,icon_2x,icon_3x)
+    updatePackage(settings.emu_s3_test, name,label,duration,frames_count,thumbnail_frame_index,source_user_layer_mask,active,dev_only,icon_2x,icon_3x)
     "finito bambino"
   end
 end
@@ -116,7 +116,7 @@ protect do
     use_for_preview = params[:use_for_preview]
 
     # upload to s3 and save to mongo
-    addEmuticon(package_name,name,source_back_layer,source_front_layer,source_user_layer_mask,palette,tags,use_for_preview)
+    addEmuticon(settings.emu_s3_test, package_name,name,source_back_layer,source_front_layer,source_user_layer_mask,palette,tags,use_for_preview)
     "finito bambino"
   end
 end
@@ -134,7 +134,7 @@ protect do
     use_for_preview = params[:use_for_preview]
 
     # upload to s3 and save to mongo
-    updateEmuticon(package_name,name,source_back_layer,source_front_layer,source_user_layer_mask,palette,tags,use_for_preview)
+    updateEmuticon(settings.emu_s3_test, package_name,name,source_back_layer,source_front_layer,source_user_layer_mask,palette,tags,use_for_preview)
     "finito bambino"
   end
 end

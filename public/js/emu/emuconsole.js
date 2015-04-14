@@ -368,9 +368,12 @@ function CreatePackageFields(method){
 
 	// END BUTTON SAVE
 
-	// BUTTON ZIP
+	
 
 	if(method == 'PUT'){
+
+		// BUTTON ZIP
+
 		var zipButton = document.createElement('button');
 		zipButton.className = "btn btn-default";
 		zipButton.type = "button";
@@ -379,9 +382,25 @@ function CreatePackageFields(method){
 		zipButton.onclick = function(){ zipPackage();};
 
 		parent_form.appendChild(zipButton);
+
+		// END BUTTON ZIP
+
+		// BUTTON DEPLOY
+
+		var deployButton = document.createElement('button');
+		deployButton.className = "btn btn-default";
+		deployButton.type = "button";
+		deployButton.innerHTML = "Deploy";
+		deployButton.id = "deployButton";
+		deployButton.onclick = function(){ deployPackage();};
+
+		parent_form.appendChild(deployButton);
+		
+
+		// END BUTTON DEPLOY
 	}
 
-	// END BUTTON ZIP
+	
 
 	display.appendChild(parent_form);
 
@@ -603,6 +622,47 @@ function zipPackage(){
 		  if (xmlHttp.readyState==4 && xmlHttp.status==200)
 		    {
 		    	alert("Zipped Package")
+		    	document.getElementById("display").innerHTML = "";
+		    }
+		  }
+
+		var USERNAME = 'homage';
+		var PASSWORD = 'homageit10';
+
+	    xmlHttp.open( 'POST', theUrl, true );
+	    xmlHttp.setRequestHeader("Authorization", "Basic " + btoa(USERNAME + ":" + PASSWORD));
+	    xmlHttp.setRequestHeader("SCRATCHPAD", "true");
+	    xmlHttp.send( null );
+	    // xmlHttp.send( null );
+
+	    return false;
+
+}
+
+function deployPackage(){
+
+	var query = "";
+	form = document.getElementById("parent_form");
+	deployButton = document.getElementById("deployButton");
+
+	var pack_name = document.getElementById("pack_name").innerHTML;
+
+	query = "?package_name=" + pack_name;
+
+	deployButton.disabled = true;
+	deployButton.innerHTML = "Deploying Please Fking wait..";
+
+	var theUrl = "/emuconsole/deploy" + query;
+
+	var xmlHttp = null;
+
+	    xmlHttp = new XMLHttpRequest();
+
+	    xmlHttp.onreadystatechange=function()
+		  {
+		  if (xmlHttp.readyState==4 && xmlHttp.status==200)
+		    {
+		    	alert("Deployed Package")
 		    	document.getElementById("display").innerHTML = "";
 		    }
 		  }
