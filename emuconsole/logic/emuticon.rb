@@ -3,7 +3,6 @@ require_relative '../model/emuticon'
 require_relative '../model/package'
 require_relative '../../utils/aws/aws_manager'
 require_relative 'helper'
-require 'byebug'
 
 def getEmuticonByName(package_name,name)
 	package = getPackageByName(package_name)

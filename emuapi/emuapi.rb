@@ -1,7 +1,6 @@
 #encoding: utf-8
 require_relative 'emuapi_config'
 require_relative '../emuconsole/logic/package'
-require 'byebug'
 
 before do
   use_scratchpad = request.env['HTTP_SCRATCHPAD'].to_s

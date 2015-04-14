@@ -2,7 +2,6 @@ require_relative '../emuapi/emuapi_config'
 require_relative 'logic/emuticon'
 require_relative 'logic/package'
 require_relative 'emuzipper'
-require 'byebug'
 
 # test
 # get '/emuconsole/test' do

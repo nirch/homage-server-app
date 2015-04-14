@@ -1,7 +1,6 @@
 #encoding: utf-8
 require 'mongo_mapper'
 require_relative '../utils/aws/aws_manager'
-require 'byebug'
 #
 # Emu test configurations
 #

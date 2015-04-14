@@ -2,7 +2,6 @@
 require_relative '../model/package'
 require_relative 'helper'
 require_relative '../../utils/aws/aws_manager'
-require 'byebug'
 
 def getPackageById(package_id)
 	Package.find_by_id(package_id)
