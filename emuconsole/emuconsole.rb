@@ -1,41 +1,40 @@
 require_relative '../emuapi/emuapi_config'
 require_relative 'logic/emuticon'
 require_relative 'logic/package'
+require_relative 'emuzipper'
 require 'byebug'
 
 # test
-get '/emuconsole/test' do
-	'Start Activity<br>'
+# get '/emuconsole/test' do
+# 	testhelper
+# end
 
-	upload_file("/Users/dangal/Downloads/party_icon@3x.png", "party_icon@3x.png")
-	upload_file("/Users/dangal/Downloads/party_icon@2x.png", "party_icon@2x.png")
-	icons_files_list = [{"filename" => "party_icon@2x.png","filepath" => "/Users/dangal/Downloads/server/party_icon@2x.png"},
-						{"filename" => "party_icon@3x.png","filepath" => "/Users/dangal/Downloads/server/party_icon@3x.png"}]
-
-	# createNewPackage(nil,Time.now,"aligator","al barbur",25,23,3,nil,false,true,icons_files_list)
-	createNewPackage(nil,nil,"aligator",nil,25,nil,nil,nil,false,true,nil)
-
-	# upload_file("/Users/dangal/Downloads/party_icon@3x.png", "party_icon@3x.png")
-	# upload_file("/Users/dangal/Downloads/party_icon@2x.png", "party_icon@2x.png")
-
-	# addEmuticon(getPackageIDByName("aligator"),"crocs","celebration-bg.gif","/Users/dangal/Downloads/celebration-bg.gif","celebration-fg.gif","/Users/dangal/Downloads/celebration-fg.gif",nil,nil,nil,nil,"croc",false)
-
-	puts "emoticon updated"
-
-  	"<br>End Activity"
+before do
+  use_scratchpad = request.env['HTTP_SCRATCHPAD'].to_s
+  if use_scratchpad == "true" and MongoMapper.connection.db().name != settings.emu_scrathpad.db().name then
+    MongoMapper.connection = settings.emu_scrathpad
+    MongoMapper.database = settings.emu_scrathpad.db().name
+  elsif use_scratchpad != "true"  and MongoMapper.connection.db().name != settings.emu_public.db().name then
+    MongoMapper.connection = settings.emu_public
+    MongoMapper.database = settings.emu_public.db().name
+  end
+  # else public
 end
 
-get '/emuconsole/display' do
-	@packs_scratchpad = get_all_packages(settings.emu_scrathpad)
-	@packs_public = get_all_packages(settings.emu_public)
-	erb :emuconsole
+protect do
+	get '/emuconsole/display' do
+
+		@packs_scratchpad = get_all_packages(settings.emu_scrathpad)
+		@packs_public = get_all_packages(settings.emu_public)
+		erb :emuconsole
+	end
 end
 
-get '/emuconsole/upload' do
-	puts "*********************"
-	puts params
-	puts "*********************"
-	# upload_file
+protect do
+	post '/emuconsole/zip' do
+		package_name = params[:package_name]
+		zipEmuPackage(package_name)
+	end
 end
 
 def upload_file(local_file_path, server_file_path)

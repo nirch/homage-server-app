@@ -1,8 +1,9 @@
 class Package
   include MongoMapper::Document
   	key :first_published_on, Date
-    key :created_at, Date
   	key :last_update, Date
+    key :meta_data_created_on, Date
+    key :meta_data_last_update, Date
   	key :icon_name, String
   	key :name, String
   	key :label, String

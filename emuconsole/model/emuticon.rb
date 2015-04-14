@@ -8,5 +8,4 @@ class Emuticon
 	key :patchedOn, Date
 	key :tags, String
 	key :use_for_preview, Boolean
-	timestamps!
 end
