@@ -1,5 +1,3 @@
-require 'byebug'
-
 module AWSManager
 	class S3Manager
 
