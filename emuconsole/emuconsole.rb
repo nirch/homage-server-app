@@ -23,7 +23,10 @@ end
 
 protect do
 	get '/emuconsole/display' do
-
+		@awspackageslink = "https://homage-emu-dev-test.s3.amazonaws.com/packages/"
+		if(settings.enviornment == "production")
+			@awspackageslink = "https://homage-emu-test.s3.amazonaws.com/packages/"
+		end
 		@packs_scratchpad = get_all_packages(settings.emu_scrathpad)
 		@packs_public = get_all_packages(settings.emu_public)
 		erb :emuconsole

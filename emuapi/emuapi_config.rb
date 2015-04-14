@@ -17,6 +17,8 @@ configure :test do
 
   set :emu_s3_test, AWSManager::S3Manager.emu_dev_test
   set :emu_s3_prod, AWSManager::S3Manager.emu_dev_prod
+
+  set :enviornment, "test"
 end
 
 #
@@ -34,4 +36,6 @@ configure :production do
 
   set :emu_s3_test, AWSManager::S3Manager.emu_test
   set :emu_s3_prod, AWSManager::S3Manager.emu_prod
+
+  set :enviornment, "production"
 end

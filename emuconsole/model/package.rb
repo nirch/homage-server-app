@@ -5,6 +5,8 @@ class Package
     key :meta_data_created_on, Date
     key :meta_data_last_update, Date
   	key :icon_name, String
+    key :cms_icon_2x, String
+    key :cms_icon_3x, String
   	key :name, String
   	key :label, String
   	key :active, Boolean, :default => true

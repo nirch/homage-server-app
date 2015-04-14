@@ -32,9 +32,9 @@ end
 def getFileNamesFromPackage(package)
 	input_files = []
 
-	icon2x = package.icon_name + "@2x.gif"
+	icon2x = package.cms_icon_2x
 	input_files.push icon2x
-	icon3x = package.icon_name + "@3x.gif"
+	icon3x = package.cms_icon_3x
 	input_files.push icon3x
 
 	source_user_layer_mask = package.emuticons_defaults["source_user_layer_mask"]

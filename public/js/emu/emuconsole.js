@@ -6,6 +6,12 @@ $(window).on("load",function(){
         $('.leftbackground').height(winheight);  
     });
 
+var awsfolder = "";
+
+function setAwsFolder(awslink){
+	awsfolder = awslink;
+}
+
 $(document).on("ready", function(){
 
 	$("body").on("click", ".emuButton", function(){
@@ -21,11 +27,15 @@ $(document).on("ready", function(){
 
 	$("body").on("click", ".emuticonsButton", function(){
 			var pack = $(this).data("package");
+			var awslink = $("body").data("awslink");
+			setAwsFolder(awslink);
 			DisplayEmuticons(pack);
 	});
 
 	$("body").on("click", ".packButton", function(){
 			var pack = $(this).data("package");
+			var awslink = $("body").data("awslink");
+			setAwsFolder(awslink);
 			DisplayPackage(pack);
 	});
 
@@ -60,6 +70,9 @@ $(document).on("ready", function(){
  //        readURL(this);
  //    });
 });
+
+
+
 
 function readURL(input,imgid) {
         if (input.files && input.files[0]) {
@@ -407,12 +420,12 @@ function DisplayPackage(pack) {
 
 	// ICON2X
 	img2xname = document.getElementById("icon2ximg");
-	img2xname.src = "https://homage-emu-dev-test.s3.amazonaws.com/packages/" + pack.name + "/" + pack.icon_name + "%402x.gif";
+	img2xname.src = awsfolder + pack.name + "/" + pack.cms_icon_2x;
 	// END ICON2X
 
 	// ICON3X
 	img3xname = document.getElementById("icon3ximg");
-	img3xname.src = "https://homage-emu-dev-test.s3.amazonaws.com/packages/" + pack.name + "/" + pack.icon_name + "%403x.gif";
+	img3xname.src = awsfolder + pack.name + "/" + pack.cms_icon_3x;
 	// END ICON3X
 
   	// EMUTICON DEFAULTS
@@ -434,7 +447,7 @@ function DisplayPackage(pack) {
 
 	// ICON MASK
 	icon_maskimg = document.getElementById("icon_maskimg");
-	icon_maskimg.src = "https://homage-emu-dev-test.s3.amazonaws.com/packages/" + pack.name + "/" + pack.emuticons_defaults["source_user_layer_mask"];
+	icon_maskimg.src = awsfolder + pack.name + "/" + pack.emuticons_defaults["source_user_layer_mask"];
 	// END ICON MASK
 
 	// END EMUTICON DEFAULTS
@@ -673,17 +686,17 @@ function DisplayEmuticon(pack, emuticon) {
 
 	// source_back_layer
 	source_back_layer = document.getElementById("source_back_layer_img");
-	source_back_layer.src = "https://homage-emu-dev-test.s3.amazonaws.com/packages/" + pack.name + "/" + emuticon.source_back_layer;
+	source_back_layer.src = awsfolder + pack.name + "/" + emuticon.source_back_layer;
 	// END source_back_layer
 
 	// source_front_layer
 	source_front_layer = document.getElementById("source_front_layer_img");
-	source_front_layer.src = "https://homage-emu-dev-test.s3.amazonaws.com/packages/" + pack.name + "/" + emuticon.source_front_layer;
+	source_front_layer.src = awsfolder + pack.name + "/" + emuticon.source_front_layer;
 	// END source_front_layer
 
 	// source_user_layer_mask
 	source_user_layer_mask = document.getElementById("source_user_layer_mask_img");
-	source_user_layer_mask.src = "https://homage-emu-dev-test.s3.amazonaws.com/packages/" + pack.name + "/" + emuticon.source_user_layer_mask;
+	source_user_layer_mask.src = awsfolder + pack.name + "/" + emuticon.source_user_layer_mask;
 	// END source_user_layer_mask
 
 	// palette
