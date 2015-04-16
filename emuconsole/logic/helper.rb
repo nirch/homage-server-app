@@ -32,10 +32,10 @@ end
 def getResourcesFromPackage(package)
 	input_files = []
 
-	icon2x = package.cms_icon_2x
-	input_files.push icon2x
-	icon3x = package.cms_icon_3x
-	input_files.push icon3x
+	# icon2x = package.cms_icon_2x
+	# input_files.push icon2x
+	# icon3x = package.cms_icon_3x
+	# input_files.push icon3x
 
 	source_user_layer_mask = package.emuticons_defaults["source_user_layer_mask"]
 	if source_user_layer_mask != nil && source_user_layer_mask != ""
