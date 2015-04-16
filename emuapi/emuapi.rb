@@ -35,7 +35,7 @@ get '/emuapi/packages/:verbosity' do
   connection = settings.emu_public
   use_scratchpad = request.env['HTTP_SCRATCHPAD'].to_s
   if use_scratchpad == "true"
-    connection = settings.emu_scratchpad
+    connection = settings.emu_test
   end
 
 
