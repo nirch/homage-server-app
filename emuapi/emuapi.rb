@@ -4,9 +4,9 @@ require_relative '../emuconsole/logic/package'
 
 before do
   use_scratchpad = request.env['HTTP_SCRATCHPAD'].to_s
-  if use_scratchpad == "true" and MongoMapper.connection.db().name != settings.emu_scrathpad.db().name then
-    MongoMapper.connection = settings.emu_scrathpad
-    MongoMapper.database = settings.emu_scrathpad.db().name
+  if use_scratchpad == "true" and MongoMapper.connection.db().name != settings.emu_scratchpad.db().name then
+    MongoMapper.connection = settings.emu_scratchpad
+    MongoMapper.database = settings.emu_scratchpad.db().name
   elsif use_scratchpad != "true"  and MongoMapper.connection.db().name != settings.emu_public.db().name then
     MongoMapper.connection = settings.emu_public
     MongoMapper.database = settings.emu_public.db().name
@@ -21,9 +21,9 @@ end
 
 # just for testing.
 # GET route - test
-get '/emuapi/test' do
-  "Hello emu world! The time is " + Time.now.strftime("%d/%m/%Y %H:%M:%S")
-end
+# get '/emuapi/test' do
+#   "Hello emu world! The time is " + Time.now.strftime("%d/%m/%Y %H:%M:%S")
+# end
 
 
 # GET all available packages info
@@ -32,6 +32,13 @@ end
 #   metadata - the result will only include meta data about the packages (excluding emuticons info)
 get '/emuapi/packages/:verbosity' do
   # determine the verbosity of the result
+  connection = settings.emu_public
+  use_scratchpad = request.env['HTTP_SCRATCHPAD'].to_s
+  if use_scratchpad == "true"
+    connection = settings.emu_scratchpad
+  end
+
+
   verbosity = params[:verbosity]
   case verbosity
     when "meta"
@@ -43,14 +50,14 @@ get '/emuapi/packages/:verbosity' do
   end
 
   # Get the config information
-  config = settings.emu_public.db().collection("config").find({"client_name"=>"Emu iOS"}).to_a
+  config = connection.db().collection("config").find({"client_name"=>"Emu iOS"}).to_a
   if (config.count != 1)
     return oops_500
   end
   config = config.to_a[0]
 
   # Get the packages
-  packages = settings.emu_public.db().collection("packages").find({}, {:fields=>fields_projection})
+  packages = connection.db().collection("packages").find({}, {:fields=>fields_projection})
   packages = packages.to_a
 
   # Also include the config information with the result

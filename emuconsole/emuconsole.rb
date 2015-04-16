@@ -11,9 +11,9 @@ require_relative 'emudeployer'
 
 before do
   use_scratchpad = request.env['HTTP_SCRATCHPAD'].to_s
-  if use_scratchpad == "true" and MongoMapper.connection.db().name != settings.emu_scrathpad.db().name then
-    MongoMapper.connection = settings.emu_scrathpad
-    MongoMapper.database = settings.emu_scrathpad.db().name
+  if use_scratchpad == "true" and MongoMapper.connection.db().name != settings.emu_scratchpad.db().name then
+    MongoMapper.connection = settings.emu_scratchpad
+    MongoMapper.database = settings.emu_scratchpad.db().name
   elsif use_scratchpad != "true"  and MongoMapper.connection.db().name != settings.emu_public.db().name then
     MongoMapper.connection = settings.emu_public
     MongoMapper.database = settings.emu_public.db().name
@@ -27,10 +27,16 @@ protect do
 		if(settings.enviornment == "production")
 			@awspackageslink = "https://homage-emu-test.s3.amazonaws.com/packages/"
 		end
-		@packs_scratchpad = get_all_packages(settings.emu_scrathpad)
+		@packs_scratchpad = get_all_packages(settings.emu_scratchpad)
 		@packs_public = get_all_packages(settings.emu_public)
 		erb :emuconsole
 	end
+end
+
+
+get '/emuconsole/test' do
+	packs_scratchpad = get_all_packages(settings.emu_scratchpad)
+	return packs_scratchpad.to_json
 end
 
 protect do
