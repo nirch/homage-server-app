@@ -7,9 +7,16 @@ $(window).on("load",function(){
     });
 
 var awsfolder = "";
+var packs_scratchpad = "";
+var packs_public = "";
 
 function setAwsFolder(awslink){
 	awsfolder = awslink;
+}
+
+function setAllPacks(p_scratchpad, p_public){
+	packs_scratchpad = p_scratchpad;
+	packs_public = p_public;
 }
 
 $(document).on("ready", function(){
@@ -37,6 +44,30 @@ $(document).on("ready", function(){
 			var awslink = $("body").data("awslink");
 			setAwsFolder(awslink);
 			DisplayPackage(pack);
+	});
+
+	$("body").on("click", "#zipButton", function(){
+			var pack = $("body").data("package");
+			var p_scratchpad = $("body").data("pscratchpad");
+			var p_public = $("body").data("ppublic");
+			setAllPacks(p_scratchpad, p_public);
+			zipPackage(pack,p_scratchpad,p_public);
+	});
+
+	$("body").on("click", "#deployButton", function(){
+			var pack = $("body").data("package");
+			var p_scratchpad = $("body").data("pscratchpad");
+			var p_public = $("body").data("ppublic");
+			setAllPacks(p_scratchpad, p_public);
+			deployPackage(pack,p_scratchpad,p_public);
+	});saveButton.setAttribute("data-method", method);
+
+	$("body").on("click", "#saveButton", function(){
+			var pack = $("body").data("package");
+			var p_scratchpad = $("body").data("pscratchpad");
+			var p_public = $("body").data("ppublic");
+			setAllPacks(p_scratchpad, p_public);
+			deployPackage(pack,p_scratchpad,p_public);
 	});
 
 	$("body").on("change", ".input_file", function(){
@@ -86,9 +117,57 @@ function readURL(input,imgid) {
         }
     }
 
+function createInputOrLabelRowElementDiv(method, label, element_id, element_type, input_type, cantChangeOnUpdate, isFile, content_type, classname){
+	var rownamediv = document.createElement('div');
+	rownamediv.className = "row";
+
+	var labelnamecoldiv = document.createElement('div');
+	labelnamecoldiv.className = "col-sm-1";
+	labelnamecoldiv.innerHTML = label + ":"
+
+	var inputnamecoldiv = document.createElement('div');
+	labelnamecoldiv.className = "col-sm-3";
+
+	if(isFile){
+		var imgname = document.createElement('img');
+		imgname.id = element_id + "img"
+		imgname.className = "input_img"
+		var inputname = document.createElement(element_type);
+		inputname.id = element_id + "file";
+		inputname.type = input_type;
+		inputname.accept = content_type;
+		inputname.name = element_id
+		inputname.className = classname
+		inputnamecoldiv.appendChild(imgname);
+	}else{
+		var inputname = null;
+		if(cantChangeOnUpdate){
+			if(method == 'PUT'){
+				inputname = document.createElement('label');
+			}else{
+				inputname = document.createElement('input');
+				inputname.type = input_type
+			}
+		}
+		else{
+			inputname = document.createElement(element_type);
+			inputname.type = input_type
+		}
+		inputname.id = element_id;
+	}
+
+	
+
+	inputnamecoldiv.appendChild(inputname);
+	rownamediv.appendChild(labelnamecoldiv);
+	rownamediv.appendChild(inputnamecoldiv);
+
+	return rownamediv;
+}
+
 // PACKAGE
 
-function CreatePackageFields(method){
+function CreatePackageFields(method, pack){
 
 	var display = document.getElementById("display");
 
@@ -103,114 +182,23 @@ function CreatePackageFields(method){
 	parent_form.enctype = "multipart/form-data";
 
 	// NAME
-	var rownamediv = document.createElement('div');
-	rownamediv.className = "row";
-
-	var labelnamecoldiv = document.createElement('div');
-	labelnamecoldiv.className = "col-sm-1";
-	labelnamecoldiv.innerHTML = "Name:"
-
-	var inputnamecoldiv = document.createElement('div');
-	labelnamecoldiv.className = "col-sm-3";
-
-	var labelname = null;
-	if(method == 'PUT'){
-		labelname = document.createElement('label');
-		labelname.id = "pack_name";
-	}else{
-		labelname = document.createElement('input');
-		labelname.id = "pack_name";
-		labelname.type = "text"
-	}
-
-	inputnamecoldiv.appendChild(labelname);
-	rownamediv.appendChild(labelnamecoldiv);
-	rownamediv.appendChild(inputnamecoldiv);
-	parent_form.appendChild(rownamediv);
-
+	parent_form.appendChild(createInputOrLabelRowElementDiv(method, "Name", "pack_name", "input", "text", true, false, "", ""));
+	
 	// END NAME
 
 	// LABEL
-	var rownamediv = document.createElement('div');
-	rownamediv.className = "row";
-
-	var labelnamecoldiv = document.createElement('div');
-	labelnamecoldiv.className = "col-sm-1";
-	labelnamecoldiv.innerHTML = "Label:"
-
-	var inputnamecoldiv = document.createElement('div');
-	labelnamecoldiv.className = "col-sm-3";
-
-	var inputname = document.createElement('input');
-	inputname.id = "pack_label";
-	inputname.type = "text";
-
-	inputnamecoldiv.appendChild(inputname);
-	rownamediv.appendChild(labelnamecoldiv);
-	rownamediv.appendChild(inputnamecoldiv);
-	parent_form.appendChild(rownamediv);
+	parent_form.appendChild(createInputOrLabelRowElementDiv(method, "Label", "pack_label", "input", "text", false, false, "", ""));
 
 	// END LABEL
 
 	// ICON2X
-	var rownamediv = document.createElement('div');
-	rownamediv.className = "row";
 
-	var labelnamecoldiv = document.createElement('div');
-	labelnamecoldiv.className = "col-sm-1";
-	labelnamecoldiv.innerHTML = "Icon2x:"
-
-	var inputnamecoldiv = document.createElement('div');
-	labelnamecoldiv.className = "col-sm-3";
-
-	var imgname = document.createElement('img');
-	imgname.id = "icon2ximg"
-	imgname.className = "input_img"
-
-	var inputname = document.createElement('input');
-	inputname.id = "icon2xfile";
-	inputname.type = "file";
-	inputname.accept = "image/*";
-	inputname.name = "icon2x"
-	inputname.className = "input_file"
-
-
-	inputnamecoldiv.appendChild(imgname);
-	inputnamecoldiv.appendChild(inputname);
-	rownamediv.appendChild(labelnamecoldiv);
-	rownamediv.appendChild(inputnamecoldiv);
-	parent_form.appendChild(rownamediv);
+	parent_form.appendChild(createInputOrLabelRowElementDiv(method, "Icon2x", "icon2x", 'input', "file", false, true, "image/*", "input_file"));
 
 	// END ICON2X
 
 	// ICON3X
-	var rownamediv = document.createElement('div');
-	rownamediv.className = "row";
-
-	var labelnamecoldiv = document.createElement('div');
-	labelnamecoldiv.className = "col-sm-1";
-	labelnamecoldiv.innerHTML = "Icon3x:"
-
-	var inputnamecoldiv = document.createElement('div');
-	labelnamecoldiv.className = "col-sm-3";
-
-	var imgname = document.createElement('img');
-	imgname.id = "icon3ximg"
-	imgname.className = "input_img"
-
-	var inputname = document.createElement('input');
-	inputname.id = "icon3xfile";
-	inputname.type = "file";
-	inputname.accept = "image/*";
-	inputname.name = "icon3x"
-	inputname.className = "input_file"
-
-	inputnamecoldiv.appendChild(imgname);
-	inputnamecoldiv.appendChild(inputname);
-	rownamediv.appendChild(labelnamecoldiv);
-	rownamediv.appendChild(inputnamecoldiv);
-	parent_form.appendChild(rownamediv);
-
+	parent_form.appendChild(createInputOrLabelRowElementDiv(method, "Icon3x", "icon3x", 'input', "file", false, true, "image/*", "input_file"));
 	parent_form.appendChild(document.createElement('br'));
 
 	// END ICON3X
@@ -225,98 +213,26 @@ function CreatePackageFields(method){
 
 
   	// DURATION
-	var rownamediv = document.createElement('div');
-	rownamediv.className = "row";
 
-	var labelnamecoldiv = document.createElement('div');
-	labelnamecoldiv.className = "col-sm-1";
-	labelnamecoldiv.innerHTML = "Duration:"
-
-	var inputnamecoldiv = document.createElement('div');
-	labelnamecoldiv.className = "col-sm-3";
-
-	var inputname = document.createElement('input');
-	inputname.id = "duration";
-	inputname.type = "text";
-
-	inputnamecoldiv.appendChild(inputname);
-	rownamediv.appendChild(labelnamecoldiv);
-	rownamediv.appendChild(inputnamecoldiv);
-	fieldset.appendChild(rownamediv);
+	fieldset.appendChild(createInputOrLabelRowElementDiv(method, "Duration", "duration", 'input', "text", false, false, "", ""));
 
 	// END DURATION
 
 	// FRAMES COUNT
-	var rownamediv = document.createElement('div');
-	rownamediv.className = "row";
 
-	var labelnamecoldiv = document.createElement('div');
-	labelnamecoldiv.className = "col-sm-1";
-	labelnamecoldiv.innerHTML = "Frames Count:"
-
-	var inputnamecoldiv = document.createElement('div');
-	labelnamecoldiv.className = "col-sm-3";
-
-	var inputname = document.createElement('input');
-	inputname.id = "frames_count";
-	inputname.type = "text";
-
-	inputnamecoldiv.appendChild(inputname);
-	rownamediv.appendChild(labelnamecoldiv);
-	rownamediv.appendChild(inputnamecoldiv);
-	fieldset.appendChild(rownamediv);
+	fieldset.appendChild(createInputOrLabelRowElementDiv(method, "Frames Count", "frames_count", 'input', "text", false, false, "", ""));
 
 	// END FRAMES COUNT
 
 	// THUMBNAIL FRAME INDEX
-	var rownamediv = document.createElement('div');
-	rownamediv.className = "row";
 
-	var labelnamecoldiv = document.createElement('div');
-	labelnamecoldiv.className = "col-sm-1";
-	labelnamecoldiv.innerHTML = "Thumbnail Frame Index:"
-
-	var inputnamecoldiv = document.createElement('div');
-	labelnamecoldiv.className = "col-sm-3";
-
-	var inputname = document.createElement('input');
-	inputname.id = "thumbnail_frame_index";
-	inputname.type = "text";
-
-	inputnamecoldiv.appendChild(inputname);
-	rownamediv.appendChild(labelnamecoldiv);
-	rownamediv.appendChild(inputnamecoldiv);
-	fieldset.appendChild(rownamediv);
+	fieldset.appendChild(createInputOrLabelRowElementDiv(method, "Thumbnail Frame Index", "thumbnail_frame_index", 'input', "text", false, false, "", ""));
 
 	// END THUMBNAIL FRAME INDEX
 
 	// ICON MASK
-	var rownamediv = document.createElement('div');
-	rownamediv.className = "row";
 
-	var labelnamecoldiv = document.createElement('div');
-	labelnamecoldiv.className = "col-sm-1";
-	labelnamecoldiv.innerHTML = "Icon Mask:"
-
-	var inputnamecoldiv = document.createElement('div');
-	labelnamecoldiv.className = "col-sm-3";
-
-	var imgname = document.createElement('img');
-	imgname.id = "icon_maskimg"
-	imgname.className = "input_img"
-
-	var inputname = document.createElement('input');
-	inputname.id = "icon_maskfile";
-	inputname.type = "file";
-	inputname.accept = "image/*";
-	inputname.name = "icon_mask"
-	inputname.className = "input_file"
-
-	inputnamecoldiv.appendChild(inputname);
-	inputnamecoldiv.appendChild(imgname);
-	rownamediv.appendChild(labelnamecoldiv);
-	rownamediv.appendChild(inputnamecoldiv);
-	fieldset.appendChild(rownamediv);
+	fieldset.appendChild(createInputOrLabelRowElementDiv(method, "Icon Mask", "icon_mask", 'input', "file", false, true, "image/*", "input_file"));
 
 	// END ICON MASK
 	parent_form.appendChild(fieldset);
@@ -362,7 +278,8 @@ function CreatePackageFields(method){
 	saveButton.type = "button";
 	saveButton.innerHTML = "Save";
 	saveButton.id = "saveButton";
-	saveButton.onclick = function(){ savePackage(method);};
+	saveButton.setAttribute("data-method", method);
+	saveButton.setAttribute("data-pack", pack);
 
 	parent_form.appendChild(saveButton);
 
@@ -379,7 +296,6 @@ function CreatePackageFields(method){
 		zipButton.type = "button";
 		zipButton.innerHTML = "Zip";
 		zipButton.id = "zipButton";
-		zipButton.onclick = function(){ zipPackage();};
 
 		parent_form.appendChild(zipButton);
 
@@ -392,7 +308,6 @@ function CreatePackageFields(method){
 		deployButton.type = "button";
 		deployButton.innerHTML = "Deploy";
 		deployButton.id = "deployButton";
-		deployButton.onclick = function(){ deployPackage();};
 
 		parent_form.appendChild(deployButton);
 		
@@ -425,7 +340,7 @@ function CreatePackageFields(method){
 
 function DisplayPackage(pack) {
 
-	CreatePackageFields('PUT');
+	CreatePackageFields('PUT', pack);
 
 	// NAME
 	pack_name = document.getElementById("pack_name");
@@ -490,7 +405,7 @@ function CreatePackage() {
 }
 
 
-function savePackage(method){
+function savePackage(method, pack, p_scratchpad, p_public){
 
 	var query = "";
 	form = document.getElementById("parent_form");
@@ -508,8 +423,8 @@ function savePackage(method){
 	}
 
 	if (!/^[a-z0-9_\-\ ]+$/.test(pack_name) || pack_name == ""){
-		alert("fuck you! pack_name must contain only lowercase letters, numbers, - , _ , space")
-		return
+		alert("fuck you! pack_name must contain only lowercase letters, numbers, - , _ , space");
+		return;
 	}
 
 	pack_label = document.getElementById("pack_label").value;
@@ -530,8 +445,8 @@ function savePackage(method){
 	}
 
 	if(updateIcons == 1){
-		alert("Cannot update only one icon size you fucking bastard!")
-		return
+		alert("Cannot update only one icon size you fucking bastard!");
+		return;
 	}
 
 	icon_maskfile = document.getElementById("icon_maskfile");
@@ -598,7 +513,23 @@ function savePackage(method){
 
 }
 
-function zipPackage(){
+function zipPackage(pack, p_scratchpad, p_public){
+
+	// Validations
+	if(pack.emuticons.length < 6){
+		alert("Trying to zip with less than 6 emuticons? who the fuck do you think you are? Chuck norris??!@#$");
+		return;
+	}
+
+	for (scrathpack in p_scratchpad){
+		if(pack.name == scrathpack.name)
+		{
+			alert("Package name already in use");
+			return;
+		}
+	}
+
+	// END validations
 
 	var query = "";
 	form = document.getElementById("parent_form");
@@ -639,7 +570,7 @@ function zipPackage(){
 
 }
 
-function deployPackage(){
+function deployPackage(pack,p_scratchpad,p_public){
 
 	var query = "";
 	form = document.getElementById("parent_form");
@@ -825,123 +756,26 @@ function CreateEmuticonFields(pack, method){
 	// END PACK
 
 	// NAME
-	var rownamediv = document.createElement('div');
-	rownamediv.className = "row";
 
-	var labelnamecoldiv = document.createElement('div');
-	labelnamecoldiv.className = "col-sm-1";
-	labelnamecoldiv.innerHTML = "Name:"
-
-	var inputnamecoldiv = document.createElement('div');
-	labelnamecoldiv.className = "col-sm-3";
-
-	var labelname = null;
-	if(method == 'PUT'){
-		labelname = document.createElement('label');
-		labelname.id = "emuticon_name";
-	}else{
-		labelname = document.createElement('input');
-		labelname.id = "emuticon_name";
-		labelname.type = "text"
-	}
-
-	inputnamecoldiv.appendChild(labelname);
-	rownamediv.appendChild(labelnamecoldiv);
-	rownamediv.appendChild(inputnamecoldiv);
-	parent_form.appendChild(rownamediv);
+	parent_form.appendChild(createInputOrLabelRowElementDiv(method, "Name", "emuticon_name", "input", "text", true, false, "", ""));
 
 	// END NAME
 
 	// source_back_layer
-	var rownamediv = document.createElement('div');
-	rownamediv.className = "row";
 
-	var labelnamecoldiv = document.createElement('div');
-	labelnamecoldiv.className = "col-sm-1";
-	labelnamecoldiv.innerHTML = "source_back_layer:"
-
-	var inputnamecoldiv = document.createElement('div');
-	labelnamecoldiv.className = "col-sm-3";
-
-	var imgname = document.createElement('img');
-	imgname.id = "source_back_layer_img"
-	imgname.className = "input_img"
-
-	var inputname = document.createElement('input');
-	inputname.id = "source_back_layer_file";
-	inputname.type = "file";
-	inputname.accept = "image/*";
-	inputname.name = "source_back_layer"
-	inputname.className = "input_file"
-	
-	inputnamecoldiv.appendChild(inputname);
-	inputnamecoldiv.appendChild(imgname);
-	rownamediv.appendChild(labelnamecoldiv);
-	rownamediv.appendChild(inputnamecoldiv);
-	parent_form.appendChild(rownamediv);
+	parent_form.appendChild(createInputOrLabelRowElementDiv(method, "source_back_layer", "source_back_layer", 'input', "file", false, true, "image/*", "input_file"));
 
 	// END source_back_layer
 
 	// source_front_layer
-	var rownamediv = document.createElement('div');
-	rownamediv.className = "row";
 
-	var labelnamecoldiv = document.createElement('div');
-	labelnamecoldiv.className = "col-sm-1";
-	labelnamecoldiv.innerHTML = "source_front_layer:"
-
-	var inputnamecoldiv = document.createElement('div');
-	labelnamecoldiv.className = "col-sm-3";
-
-	var imgname = document.createElement('img');
-	imgname.id = "source_front_layer_img"
-	imgname.className = "input_img"
-
-	var inputname = document.createElement('input');
-	inputname.id = "source_front_layer_file";
-	inputname.type = "file";
-	inputname.accept = "image/*";
-	inputname.name = "source_front_layer"
-	inputname.className = "input_file"
-
-	
-	inputnamecoldiv.appendChild(inputname);
-	inputnamecoldiv.appendChild(imgname);
-	rownamediv.appendChild(labelnamecoldiv);
-	rownamediv.appendChild(inputnamecoldiv);
-	parent_form.appendChild(rownamediv);
-
-	parent_form.appendChild(document.createElement('br'));
+	parent_form.appendChild(createInputOrLabelRowElementDiv(method, "source_front_layer", "source_front_layer", 'input', "file", false, true, "image/*", "input_file"));
 
 	// END source_front_layer
 
 	// source_user_layer_mask
-	var rownamediv = document.createElement('div');
-	rownamediv.className = "row";
 
-	var labelnamecoldiv = document.createElement('div');
-	labelnamecoldiv.className = "col-sm-1";
-	labelnamecoldiv.innerHTML = "source_user_layer_mask:"
-
-	var inputnamecoldiv = document.createElement('div');
-	labelnamecoldiv.className = "col-sm-3";
-
-	var imgname = document.createElement('img');
-	imgname.id = "source_user_layer_mask_img"
-	imgname.className = "input_img"
-
-	var inputname = document.createElement('input');
-	inputname.id = "source_user_layer_mask_file";
-	inputname.type = "file";
-	inputname.accept = "image/*";
-	inputname.name = "source_user_layer_mask"
-	inputname.className = "input_file"
-
-	inputnamecoldiv.appendChild(inputname);
-	inputnamecoldiv.appendChild(imgname);
-	rownamediv.appendChild(labelnamecoldiv);
-	rownamediv.appendChild(inputnamecoldiv);
-	parent_form.appendChild(rownamediv);
+	parent_form.appendChild(createInputOrLabelRowElementDiv(method, "source_user_layer_mask", "source_user_layer_mask", 'input', "file", false, true, "image/*", "input_file"));
 
 	// END source_user_layer_mask
 
@@ -949,47 +783,13 @@ function CreateEmuticonFields(pack, method){
 
 	// palette
 
-	var rownamediv = document.createElement('div');
-	rownamediv.className = "row";
-
-	var labelnamecoldiv = document.createElement('div');
-	labelnamecoldiv.className = "col-sm-1";
-	labelnamecoldiv.innerHTML = "palette:"
-
-	var inputnamecoldiv = document.createElement('div');
-	labelnamecoldiv.className = "col-sm-3";
-
-	var inputname = document.createElement('input');
-	inputname.id = "palette";
-	inputname.type = "text";
-
-	inputnamecoldiv.appendChild(inputname);
-	rownamediv.appendChild(labelnamecoldiv);
-	rownamediv.appendChild(inputnamecoldiv);
-	parent_form.appendChild(rownamediv);
+	parent_form.appendChild(createInputOrLabelRowElementDiv(method, "palette", "palette", "input", "text", true, false, "", ""));
 
 	// END palette
 
 	// tags
 
-	var rownamediv = document.createElement('div');
-	rownamediv.className = "row";
-
-	var labelnamecoldiv = document.createElement('div');
-	labelnamecoldiv.className = "col-sm-1";
-	labelnamecoldiv.innerHTML = "tags:"
-
-	var inputnamecoldiv = document.createElement('div');
-	labelnamecoldiv.className = "col-sm-3";
-
-	var inputname = document.createElement('input');
-	inputname.id = "tags";
-	inputname.type = "text";
-
-	inputnamecoldiv.appendChild(inputname);
-	rownamediv.appendChild(labelnamecoldiv);
-	rownamediv.appendChild(inputnamecoldiv);
-	parent_form.appendChild(rownamediv);
+	parent_form.appendChild(createInputOrLabelRowElementDiv(method, "tags", "tags", "input", "text", true, false, "", ""));
 
 	// END tags
 
