@@ -292,7 +292,7 @@ function CreatePackageFields(method, pack){
 	saveButton.innerHTML = "Save";
 	saveButton.id = "saveButton";
 	saveButton.setAttribute("data-method", method);
-	if(pack.cms_proccessing == true){
+	if(method == 'PUT' && pack.cms_proccessing == true){
 		saveButton.disabled = true;
 	}
 
@@ -446,8 +446,7 @@ try {
 	var deployButtonState = false
 
 	saveButton = document.getElementById("saveButton");
-	saveButton.disabled = true;
-	saveButton.innerHTML = "Saving Please Fking wait..";
+	
 	if(method == 'PUT'){
 		zipButton = document.getElementById("zipButton");
 		zipButtonstate = zipButton.disabled;
@@ -500,8 +499,8 @@ try {
 		updateIcons++;
 	}
 
-	if(updateIcons == 1){
-		alert("Cannot update only one icon size you fucking bastard!");
+	if(method == 'POST' && updateIcons < 2){
+		alert("Cannot create only one icon size or no icons at all you fucking bastard!");
 		return;
 	}
 
@@ -536,6 +535,9 @@ try {
 	else{
 		query += "&dev_only=" + "false";
 	}
+
+	saveButton.disabled = true;
+	saveButton.innerHTML = "Saving Please Fking wait..";
 
 	var theUrl = form.getAttribute('action') + query;
 
