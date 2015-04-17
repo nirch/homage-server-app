@@ -21,9 +21,6 @@ end
 def createNewPackage(connection, name,label,duration,frames_count,thumbnail_frame_index,source_user_layer_mask,active,dev_only,icon_2x,icon_3x)
 	
 	success = true
-	package = getPackageByName(package_name)
-	package.cms_proccessing = true
-	package.save
 
 	begin
 
@@ -119,15 +116,12 @@ def createNewPackage(connection, name,label,duration,frames_count,thumbnail_fram
 		return "createNewPackage" + e.to_s
 
 	ensure
-		package = getPackageByName(package_name)
-		package.cms_proccessing = false
-		package.save
 	end
 end
 
 def updatePackage(connection, name,label,duration,frames_count,thumbnail_frame_index,source_user_layer_mask,active,dev_only,icon_2x,icon_3x)
 	success = true
-	package = getPackageByName(package_name)
+	package = getPackageByName(name)
 	package.cms_proccessing = true
 	package.save
 
@@ -200,7 +194,7 @@ def updatePackage(connection, name,label,duration,frames_count,thumbnail_frame_i
 		return "updatePackage" + e.to_s
 
 	ensure
-		package = getPackageByName(package_name)
+		package = getPackageByName(name)
 		package.cms_proccessing = false
 		package.save
 	end
