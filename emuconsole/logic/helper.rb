@@ -1,10 +1,11 @@
 require_relative '../../utils/aws/aws_manager'
 require_relative '../model/emuticon'
 require_relative '../model/package'
+require_relative '../../utils/zipper'
 
 # zip files
 def zip_package_files(download_folder, input_filenames, zip_file_name)
-	zipfolder(download_folder, input_filenames, zip_file_name)
+	return zipListOfFiles(download_folder, input_filenames, zip_file_name)
 end
 
 # upload zip file to zipped_packages
@@ -13,13 +14,14 @@ def upload_zip_to_s3(file_path, filename, connection)
 		filename += ".zip"
 	end
 	s3_key = "zipped_packages/" + filename
-	connection.upload(file_path + filename, s3_key, :public_read, content_type=nil, metadata=nil)
+	return connection.upload(file_path + filename, s3_key, :public_read, content_type=nil, metadata=nil)
 end
 
 # upload zip file to zipped_packages
 def download_zip_from_s3(file_path, filename, connection)
 	s3_key = "zipped_packages/" + filename
-	connection.download(s3_key, file_path + filename)
+	success = connection.download(s3_key, file_path + filename)
+	return success
 end
 
 
@@ -51,7 +53,7 @@ def getResourcesFromPackage(package)
 		end
 
 		source_front_layer = emuticon.source_front_layer
-		if source_back_layer != nil && source_back_layer != ""
+		if source_front_layer != nil && source_front_layer != ""
 			input_files.push source_front_layer
 		end
 
@@ -67,47 +69,62 @@ end
 # download files
 def download_from_aws(package_name, input_files, download_folder, connection)
 
+	success = true
+
 	for f in input_files do
-
-		filename = package_name + "/" + f
-		object_key = "packages/" + filename
-		local_path = download_folder + f
-		connection.download(object_key, local_path)
-
+		if(f != nil)
+			filename = package_name + "/" + f
+			object_key = "packages/" + filename
+			local_path = download_folder + f
+			success = connection.download(object_key, local_path)
+			if(success != true)
+				return "Problem downloading: " + f
+			end
+		end
 	end
+
+	return success
 
 end
 
 # upload files
 def upload_to_aws(package_name, input_files, download_folder, connection)
+	success = true
 
 	for f in input_files do
 		local_path = download_folder + f
-		upload_filepath_to_s3(package_name,local_path, f, "image/*", connection)
+		success = upload_filepath_to_s3(package_name,local_path, f, "image/*", connection)
+		if(success != true)
+			return "Problem uploading: " + f
+		end
 	end
-
+	
+	return success
 end
 
 def upload_file_to_s3(pack_name, file, file_name, connection)
 	s3_key = 'packages/' + pack_name + '/' + file_name
-	s3_object = connection.upload(file[:tempfile].path, s3_key, :public_read, file[:type])
-	if s3_object != nil && s3_object.public_url != nil
-		return true
-	else
-		return false
-	end
+	success =  connection.upload(file[:tempfile].path, s3_key, :public_read, file[:type])
+	# if s3_object != nil && s3_object.public_url != nil
+	# 	return true
+	# else
+	# 	return false
+	# end
 	FileUtils.rm(file[:tempfile].path)
+	return success
 end
 
 def upload_filepath_to_s3(pack_name,file_path, file_name, content_type, connection)
 	s3_key = 'packages/' + pack_name + '/' + file_name
-	s3_object = connection.upload(file_path, s3_key, :public_read, content_type)
-	if s3_object != nil && s3_object.public_url != nil
-		return true
-	else
-		return false
-	end
-	FileUtils.rm(file[:tempfile].path)
+	success = connection.upload(file_path, s3_key, :public_read, content_type)
+	# if s3_object != nil && s3_object.public_url != nil
+	# 	return true
+	# else
+	# 	return false
+	# end
+	# FileUtils.rm(file[:tempfile].path)
+
+	return success
 end
 
 def make_icon_name(icon_name, ext, update, isEmuticon)

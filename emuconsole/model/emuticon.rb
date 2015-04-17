@@ -5,7 +5,7 @@ class Emuticon
 	key :source_front_layer, String
 	key :source_user_layer_mask, String
 	key :palette, String
-	key :patchedOn, Date
+	key :patchedOn, Time
 	key :tags, String
 	key :use_for_preview, Boolean
 end

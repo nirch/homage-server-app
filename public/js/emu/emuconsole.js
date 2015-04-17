@@ -34,40 +34,53 @@ $(document).on("ready", function(){
 
 	$("body").on("click", ".emuticonsButton", function(){
 			var pack = $(this).data("package");
-			var awslink = $("body").data("awslink");
+			var awslink = $("#mydata").data("awslink");
 			setAwsFolder(awslink);
 			DisplayEmuticons(pack);
 	});
 
 	$("body").on("click", ".packButton", function(){
 			var pack = $(this).data("package");
-			var awslink = $("body").data("awslink");
+			var awslink = $("#mydata").data("awslink");
 			setAwsFolder(awslink);
 			DisplayPackage(pack);
 	});
 
+	$("body").on("click", ".createPackButton", function(){
+			var pack = $(this).data("package");
+			CreatePackage(pack);
+	});
+
 	$("body").on("click", "#zipButton", function(){
-			var pack = $("body").data("package");
-			var p_scratchpad = $("body").data("pscratchpad");
-			var p_public = $("body").data("ppublic");
+			var pack = $(this).data("package");
+			var p_scratchpad = $("#mydata").data("pscratchpad");
+			var p_public = $("#mydata").data("ppublic");
 			setAllPacks(p_scratchpad, p_public);
 			zipPackage(pack,p_scratchpad,p_public);
 	});
 
 	$("body").on("click", "#deployButton", function(){
-			var pack = $("body").data("package");
-			var p_scratchpad = $("body").data("pscratchpad");
-			var p_public = $("body").data("ppublic");
+			var pack = $(this).data("package");
+			var p_scratchpad = $("#mydata").data("pscratchpad");
+			var p_public = $("#mydata").data("ppublic");
 			setAllPacks(p_scratchpad, p_public);
 			deployPackage(pack,p_scratchpad,p_public);
-	});saveButton.setAttribute("data-method", method);
+	});
 
 	$("body").on("click", "#saveButton", function(){
-			var pack = $("body").data("package");
-			var p_scratchpad = $("body").data("pscratchpad");
-			var p_public = $("body").data("ppublic");
+			var method = $(this).data("method");
+			var p_scratchpad = $("#mydata").data("pscratchpad");
+			var p_public = $("#mydata").data("ppublic");
 			setAllPacks(p_scratchpad, p_public);
-			deployPackage(pack,p_scratchpad,p_public);
+			savePackage(method,p_scratchpad,p_public);
+	});
+
+	$("body").on("click", "#saveEmuButton", function(){
+			var method = $(this).data("method");
+			var p_scratchpad = $("#mydata").data("pscratchpad");
+			var p_public = $("#mydata").data("ppublic");
+			setAllPacks(p_scratchpad, p_public);
+			saveEmuticon(method,p_scratchpad,p_public);
 	});
 
 	$("body").on("change", ".input_file", function(){
@@ -83,16 +96,16 @@ $(document).on("ready", function(){
 			readURL(this, '#icon_maskimg');
 		}
 
-		else if(this.id == 'source_back_layer_file'){
-			readURL(this, '#source_back_layer_img');
+		else if(this.id == 'source_back_layerfile'){
+			readURL(this, '#source_back_layerimg');
 		}
 
-		else if(this.id == 'source_front_layer_file'){
-			readURL(this, '#source_front_layer_img');
+		else if(this.id == 'source_front_layerfile'){
+			readURL(this, '#source_front_layerimg');
 		}
 
-		else if(this.id == 'source_user_layer_mask_file'){
-			readURL(this, '#source_user_layer_mask_img');
+		else if(this.id == 'source_user_layer_maskfile'){
+			readURL(this, '#source_user_layer_maskimg');
 		}
 			
 	});
@@ -279,7 +292,9 @@ function CreatePackageFields(method, pack){
 	saveButton.innerHTML = "Save";
 	saveButton.id = "saveButton";
 	saveButton.setAttribute("data-method", method);
-	saveButton.setAttribute("data-pack", pack);
+	if(pack.cms_proccessing == true){
+		saveButton.disabled = true;
+	}
 
 	parent_form.appendChild(saveButton);
 
@@ -291,23 +306,36 @@ function CreatePackageFields(method, pack){
 
 		// BUTTON ZIP
 
+		
+
 		var zipButton = document.createElement('button');
 		zipButton.className = "btn btn-default";
 		zipButton.type = "button";
 		zipButton.innerHTML = "Zip";
 		zipButton.id = "zipButton";
+		zipButton.setAttribute("data-package", JSON.stringify(pack));
+		if(pack.cms_proccessing == true || pack.cms_state != "zip" || pack.emuticons.length < 6){
+			zipButton.disabled = true;
+		}
 
 		parent_form.appendChild(zipButton);
+		
 
 		// END BUTTON ZIP
 
 		// BUTTON DEPLOY
+
+		
 
 		var deployButton = document.createElement('button');
 		deployButton.className = "btn btn-default";
 		deployButton.type = "button";
 		deployButton.innerHTML = "Deploy";
 		deployButton.id = "deployButton";
+		deployButton.setAttribute("data-package", JSON.stringify(pack));
+		if(pack.cms_proccessing == true || pack.cms_state != "deploy" || pack.emuticons.length < 6){
+			deployButton.disabled = true;
+		}
 
 		parent_form.appendChild(deployButton);
 		
@@ -400,16 +428,34 @@ function DisplayPackage(pack) {
 
 function CreatePackage() {
 
-	CreatePackageFields('POST');
+	CreatePackageFields('POST',null);
 
 }
 
 
-function savePackage(method, pack, p_scratchpad, p_public){
+function savePackage(method, p_scratchpad, p_public){
+
+
+try {
+    
 
 	var query = "";
 	form = document.getElementById("parent_form");
+
+	var zipButtonstate = false
+	var deployButtonState = false
+
 	saveButton = document.getElementById("saveButton");
+	saveButton.disabled = true;
+	saveButton.innerHTML = "Saving Please Fking wait..";
+	if(method == 'PUT'){
+		zipButton = document.getElementById("zipButton");
+		zipButtonstate = zipButton.disabled;
+		zipButton.disabled = true;
+		deployButton = document.getElementById("deployButton");
+		deployButtonState = deployButton.disabled;
+		deployButton.disabled = true;
+	}
 	
 	var formData = new FormData(form);
 
@@ -427,19 +473,29 @@ function savePackage(method, pack, p_scratchpad, p_public){
 		return;
 	}
 
+	if(method == 'POST'){
+		for (scrathpack in p_scratchpad){
+			if(pack_name == p_scratchpad[scrathpack].name)
+			{
+				alert("Package name already in use");
+				return;
+			}
+		}
+	}
+
 	pack_label = document.getElementById("pack_label").value;
 	query += "&label=" + pack_label;
 
 	var updateIcons = 0;
 
 	icon2xfile = document.getElementById("icon2xfile");
-	if(icon2xfile.files && icon2xfile.files[0]){
+	if(icon2xfile.files.length > 0 && icon2xfile.files[0]){
 		formData.append('icon_2x', icon2xfile.files[0]);
 		updateIcons++;
 	}
 	
 	icon3xfile = document.getElementById("icon3xfile");
-	if(icon3xfile.files && icon3xfile.files[0]){
+	if(icon3xfile.files.length > 0 && icon3xfile.files[0]){
 		formData.append('icon_3x', icon3xfile.files[0]);
 		updateIcons++;
 	}
@@ -450,7 +506,7 @@ function savePackage(method, pack, p_scratchpad, p_public){
 	}
 
 	icon_maskfile = document.getElementById("icon_maskfile");
-	if(icon_maskfile.files && icon_maskfile.files[0]){
+	if(icon_maskfile.files.length > 0 && icon_maskfile.files[0]){
 		formData.append('source_user_layer_mask', icon_maskfile.files[0]);
 	}
 	// emuticons defaults
@@ -481,9 +537,6 @@ function savePackage(method, pack, p_scratchpad, p_public){
 		query += "&dev_only=" + "false";
 	}
 
-	saveButton.disabled = true;
-	saveButton.innerHTML = "Saving Please Fking wait..";
-
 	var theUrl = form.getAttribute('action') + query;
 
 	var xmlHttp = null;
@@ -494,9 +547,18 @@ function savePackage(method, pack, p_scratchpad, p_public){
 		  {
 		  if (xmlHttp.readyState==4 && xmlHttp.status==200)
 		    {
-		    	alert("Saved Package")
-		    	document.getElementById("display").innerHTML = "";
-		    	location.reload();
+
+		    	result = JSON.parse(xmlHttp.responseText);
+		    	if(result.error == true){
+		    		alert("Saved Package successfully");
+		    		location.reload();
+		    	}else{
+		    		alert(result.error);
+		    		saveButton.disabled = false;
+					saveButton.innerHTML = "Save";
+					zipButton.disabled = zipButtonstate;
+					deployButton.disabled = deployButtonState;
+		    	}
 		    }
 		  }
 
@@ -512,35 +574,44 @@ function savePackage(method, pack, p_scratchpad, p_public){
 	    return false;
 
 }
+catch(err) {
+    alert(err.message);
+    return;
+}
+
+}
 
 function zipPackage(pack, p_scratchpad, p_public){
 
+try{
 	// Validations
+
 	if(pack.emuticons.length < 6){
 		alert("Trying to zip with less than 6 emuticons? who the fuck do you think you are? Chuck norris??!@#$");
 		return;
-	}
-
-	for (scrathpack in p_scratchpad){
-		if(pack.name == scrathpack.name)
-		{
-			alert("Package name already in use");
-			return;
-		}
 	}
 
 	// END validations
 
 	var query = "";
 	form = document.getElementById("parent_form");
+
+	var zipButtonstate = false
+	var deployButtonState = false
+
+	saveButton = document.getElementById("saveButton");
+	saveButton.disabled = true;
 	zipButton = document.getElementById("zipButton");
+	zipButtonstate = zipButton.disabled;
+	zipButton.disabled = true;
+	zipButton.innerHTML = "Zipping Please Fking wait..";
+	deployButton = document.getElementById("deployButton");
+	deployButtonState = deployButton.disabled;
+	deployButton.disabled = true;
 
 	var pack_name = document.getElementById("pack_name").innerHTML;
 
 	query = "?package_name=" + pack_name;
-
-	zipButton.disabled = true;
-	zipButton.innerHTML = "Zipping Please Fking wait..";
 
 	var theUrl = "/emuconsole/zip" + query;
 
@@ -552,8 +623,18 @@ function zipPackage(pack, p_scratchpad, p_public){
 		  {
 		  if (xmlHttp.readyState==4 && xmlHttp.status==200)
 		    {
-		    	alert("Zipped Package")
-		    	document.getElementById("display").innerHTML = "";
+
+		    	result = JSON.parse(xmlHttp.responseText);
+		    	if(result.error == true){
+		    		alert("Zipped Package successfully");
+		    		location.reload();
+		    	}else{
+		    		alert(result.error);
+		    		saveButton.disabled = false;
+					zipButton.innerHTML = "Zip";
+					zipButton.disabled = zipButtonstate;
+					deployButton.disabled = deployButtonState;
+		    	}
 		    }
 		  }
 
@@ -569,19 +650,42 @@ function zipPackage(pack, p_scratchpad, p_public){
 	    return false;
 
 }
+catch(err) {
+    alert(err.message);
+    return;
+}
+
+}
 
 function deployPackage(pack,p_scratchpad,p_public){
 
+try{
+
+	// validations
+
+
+
+	// END validations
+
 	var query = "";
 	form = document.getElementById("parent_form");
+
+	var zipButtonstate = false
+	var deployButtonState = false
+	
+	saveButton = document.getElementById("saveButton");
+	saveButton.disabled = true;
+	zipButton = document.getElementById("zipButton");
+	zipButtonstate = zipButton.disabled;
+	zipButton.disabled = true;
 	deployButton = document.getElementById("deployButton");
+	deployButtonState = deployButton.disabled;
+	deployButton.disabled = true;
+	deployButton.innerHTML = "Deploying Please Fking wait..";
 
 	var pack_name = document.getElementById("pack_name").innerHTML;
 
 	query = "?package_name=" + pack_name;
-
-	deployButton.disabled = true;
-	deployButton.innerHTML = "Deploying Please Fking wait..";
 
 	var theUrl = "/emuconsole/deploy" + query;
 
@@ -593,8 +697,17 @@ function deployPackage(pack,p_scratchpad,p_public){
 		  {
 		  if (xmlHttp.readyState==4 && xmlHttp.status==200)
 		    {
-		    	alert("Deployed Package")
-		    	document.getElementById("display").innerHTML = "";
+		    	result = JSON.parse(xmlHttp.responseText);
+		    	if(result.error == true){
+		    		alert("Deployed Package successfully");
+		    		location.reload();
+		    	}else{
+		    		alert(result.error);
+		    		saveButton.disabled = false;
+					deployButton.innerHTML = "Deploy";
+					zipButton.disabled = zipButtonstate;
+					deployButton.disabled = deployButtonState;
+		    	}
 		    }
 		  }
 
@@ -608,7 +721,11 @@ function deployPackage(pack,p_scratchpad,p_public){
 	    // xmlHttp.send( null );
 
 	    return false;
-
+}
+catch(err) {
+    alert(err.message);
+    return;
+}
 }
 
 // END PACKAGE
@@ -676,17 +793,17 @@ function DisplayEmuticon(pack, emuticon) {
 	// END NAME
 
 	// source_back_layer
-	source_back_layer = document.getElementById("source_back_layer_img");
+	source_back_layer = document.getElementById("source_back_layerimg");
 	source_back_layer.src = awsfolder + pack.name + "/" + emuticon.source_back_layer;
 	// END source_back_layer
 
 	// source_front_layer
-	source_front_layer = document.getElementById("source_front_layer_img");
+	source_front_layer = document.getElementById("source_front_layerimg");
 	source_front_layer.src = awsfolder + pack.name + "/" + emuticon.source_front_layer;
 	// END source_front_layer
 
 	// source_user_layer_mask
-	source_user_layer_mask = document.getElementById("source_user_layer_mask_img");
+	source_user_layer_mask = document.getElementById("source_user_layer_maskimg");
 	source_user_layer_mask.src = awsfolder + pack.name + "/" + emuticon.source_user_layer_mask;
 	// END source_user_layer_mask
 
@@ -783,13 +900,13 @@ function CreateEmuticonFields(pack, method){
 
 	// palette
 
-	parent_form.appendChild(createInputOrLabelRowElementDiv(method, "palette", "palette", "input", "text", true, false, "", ""));
+	parent_form.appendChild(createInputOrLabelRowElementDiv(method, "palette", "palette", "input", "text", false, false, "", ""));
 
 	// END palette
 
 	// tags
 
-	parent_form.appendChild(createInputOrLabelRowElementDiv(method, "tags", "tags", "input", "text", true, false, "", ""));
+	parent_form.appendChild(createInputOrLabelRowElementDiv(method, "tags", "tags", "input", "text", false, false, "", ""));
 
 	// END tags
 
@@ -816,8 +933,11 @@ function CreateEmuticonFields(pack, method){
 	saveButton.className = "btn btn-default";
 	saveButton.type = "button"
 	saveButton.innerHTML = "Save"
-	saveButton.id = "saveButton";
-	saveButton.onclick = function(){ saveEmuticon(method);};
+	saveButton.id = "saveEmuButton";
+	saveButton.setAttribute("data-method", method);
+	if(pack.cms_proccessing == true){
+		saveButton.disabled = true;
+	}
 
 	parent_form.appendChild(saveButton);
 
@@ -826,22 +946,12 @@ function CreateEmuticonFields(pack, method){
 	// END BUTTON UPDATE
 }
 
-function saveEmuticon(method){
-
-	// addEmuticon(package_name,
-    	// name,
-    	// source_back_layer,
-    	// source_front_layer,
-    	// source_user_layer_mask,
-    	// palette,
-    	// patched_on,
-    	// tags,
-    	// use_for_preview)
-
+function saveEmuticon(method,p_scratchpad,p_public){
+try{
 	var query = "";
 	form = document.getElementById("parent_form");
 
-	saveButton = document.getElementById("saveButton");
+	saveButton = document.getElementById("saveEmuButton");
 	
 
 	var formData = new FormData(form);
@@ -864,23 +974,42 @@ function saveEmuticon(method){
 		return
 	}
 
-	source_back_layer_file = document.getElementById("source_back_layer_file");
-	if(source_back_layer_file.files && source_back_layer_file.files[0]){
-		formData.append('source_back_layer', source_back_layer_file.files[0]);
-	}
-	
-	source_front_layer_file = document.getElementById("source_front_layer_file");
-	if(source_front_layer_file.files && source_front_layer_file.files[0]){
-		formData.append('source_front_layer', source_front_layer_file.files[0]);
+	if(method == 'POST'){
+		for (scrathpack in p_scratchpad){
+			for (emu in p_scratchpad[scrathpack].emuticons){
+				if(emuticon_name == p_scratchpad[scrathpack].emuticons[emu].name)
+				{
+					alert("Emuticon name already in use");
+					return;
+				}
+			}
+		}
 	}
 
-	source_user_layer_mask_file = document.getElementById("source_user_layer_mask_file");
-	if(source_user_layer_mask_file.files && source_user_layer_mask_file.files[0]){
-		formData.append('source_user_layer_mask', source_user_layer_mask_file.files[0]);
+	source_back_layerfile = document.getElementById("source_back_layerfile");
+	if(source_back_layerfile != null && source_back_layerfile.files.length > 0 && source_back_layerfile.files[0]){
+		formData.append('source_back_layer', source_back_layerfile.files[0]);
+	}
+	
+	source_front_layerfile = document.getElementById("source_front_layerfile");
+	if(source_front_layerfile != null && source_front_layerfile.files.length > 0 && source_front_layerfile.files[0]){
+		formData.append('source_front_layer', source_front_layerfile.files[0]);
+	}
+
+	if(method == 'POST' && source_back_layerfile.files.length == 0 && source_front_layerfile.files.length == 0){
+		alert("Must have at least one file for background or foreground");
+		return;
+	}
+
+	source_user_layer_maskfile = document.getElementById("source_user_layer_maskfile");
+	if(source_user_layer_maskfile != null && source_user_layer_maskfile.files.length > 0 && source_user_layer_maskfile.files[0]){
+		formData.append('source_user_layer_mask', source_user_layer_maskfile.files[0]);
 	}
 
 	palette = document.getElementById("palette").value;
-	query += "&palette=" + escape(palette);
+	if(palette != null || palette != ""){
+		query += "&palette=" + escape(palette);
+	}
 
 	tags = document.getElementById("tags").value;
 	query += "&tags=" + escape(tags);
@@ -912,9 +1041,15 @@ function saveEmuticon(method){
 		  {
 		  if (xmlHttp.readyState==4 && xmlHttp.status==200)
 		    {
-		    	alert("Saved Emuticon")
-		    	document.getElementById("display").innerHTML = "";
-		    	location.reload();
+		    	result = JSON.parse(xmlHttp.responseText);
+		    	if(result.error == true){
+		    		alert("Saved Emuticon successfully");
+		    		location.reload()
+		    	}else{
+		    		alert(result.error);
+		    		saveButton.disabled = false;
+					saveButton.innerHTML = "Save";
+		    	}
 		    }
 		  }
 
@@ -928,7 +1063,11 @@ function saveEmuticon(method){
 	    // xmlHttp.send( null );
 
 	    return false;
-
+}
+catch(err) {
+    alert(err.message);
+    return;
+}
 }
 
 // END EMUTICON

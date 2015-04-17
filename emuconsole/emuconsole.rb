@@ -42,14 +42,24 @@ end
 protect do
 	post '/emuconsole/zip' do
 		package_name = params[:package_name]
-		zipEmuPackage(package_name)
+		success = zipEmuPackage(package_name)
+
+		result = Hash.new
+		result['error'] = success
+
+		return result.to_json
 	end
 end
 
 protect do
 	post '/emuconsole/deploy' do
 		package_name = params[:package_name]
-		deployEmuPackage(package_name)
+		success = deployEmuPackage(package_name)
+
+		result = Hash.new
+		result['error'] = success
+
+		return result.to_json
 	end
 end
 
