@@ -8,7 +8,7 @@ require 'time'
 # Main file
 def zipEmuPackage(package_name)
 
-	package = getPackageByName(package_name)
+	package = getPackageByName(package_name, settings.emu_scratchpad)
 	package.cms_proccessing = true
 	package.save
 
@@ -19,9 +19,9 @@ def zipEmuPackage(package_name)
 		download_folder = "downloadTemp/"
 		FileUtils::mkdir_p download_folder
 
-		package = getPackageByName(package_name)
+		package = getPackageByName(package_name, settings.emu_scratchpad)
 		message = "input_files"
-		input_files = getResourcesFromPackage(package)
+		input_files = getResourcesFromPackage(package.name, false)
 		
 
 		message = "download_from_aws"
@@ -48,7 +48,7 @@ def zipEmuPackage(package_name)
 			message = "package.save"
 			package.last_update = Time.parse(currentdatetime)
 			package.cms_last_zip_file_name = zip_file_name + ".zip"
-			package.cms_state = "deploy"
+			package.cms_state = "save"
 			package.save
 		end
 
@@ -59,8 +59,7 @@ def zipEmuPackage(package_name)
 		return "zipEmuPackage: " + message + "  error: " + e.to_s
 
 	ensure
-		reconnect_database(settings.emu_scratchpad)
-		package = getPackageByName(package_name)
+		package = getPackageByName(package_name, settings.emu_scratchpad)
 		package.cms_proccessing = false
 		package.save
 	end

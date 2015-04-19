@@ -1,9 +1,12 @@
 class Package
   include MongoMapper::Document
   	key :first_published_on, Time
+    key :notification_text, String
   	key :last_update, Time
     key :meta_data_created_on, Time
     key :meta_data_last_update, Time
+    key :cms_first_published, Time
+    key :cms_last_published, Time
   	key :icon_name, String
     key :cms_icon_2x, String
     key :cms_icon_3x, String

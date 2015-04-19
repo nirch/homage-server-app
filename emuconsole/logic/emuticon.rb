@@ -4,8 +4,8 @@ require_relative '../model/package'
 require_relative '../../utils/aws/aws_manager'
 require_relative 'helper'
 
-def getEmuticonByName(package_name,name)
-	package = getPackageByName(package_name)
+def getEmuticonByName(connection, package_name,name)
+	package = getPackageByName(package_name,connection)
 	emuticons = package.emuticons
 
 	for emuticon in emuticons
@@ -17,8 +17,8 @@ def getEmuticonByName(package_name,name)
 	return nil
 end
 
-def setUseForPreviewEmuticon(package_name, emuticon_name)
-	package = getPackageByName(package_name)
+def setUseForPreviewEmuticon(connection, package_name, emuticon_name)
+	package = getPackageByName(package_name,connection)
 	emuticons = package.emuticons
 	for emu in emuticons
 		if emu.name != emuticon_name
@@ -28,26 +28,26 @@ def setUseForPreviewEmuticon(package_name, emuticon_name)
 	end
 end
 
-def addEmuticon(connection, package_name,name,source_back_layer,source_front_layer,source_user_layer_mask,palette,tags,use_for_preview)
+def addEmuticon(mongoconnection, awsconnection, package_name,name,source_back_layer,source_front_layer,source_user_layer_mask,palette,tags,use_for_preview)
 
 	success = true
-	package = getPackageByName(package_name)
+	package = getPackageByName(package_name,mongoconnection)
 	package.cms_proccessing = true
 	package.save
 
 	begin
 
 		if(use_for_preview == "true")
-			setUseForPreviewEmuticon(package_name, name)
+			setUseForPreviewEmuticon(mongoconnection, package_name, name)
 		end
 
-		package = getPackageByName(package_name)
-		emuticon = getEmuticonByName(package_name,name)
+		package = getPackageByName(package_name,mongoconnection)
+		emuticon = getEmuticonByName(mongoconnection, package_name,name)
 		if emuticon == nil
 			if(source_back_layer != nil)
 				# only update mongo if file was uploaded successfully
 				filename = make_icon_name(nameNewEmuticon(package.name, name, "-bg"), File.extname(source_back_layer[:filename]), false, true)
-				success = upload_file_to_s3(package.name,source_back_layer, filename, connection)
+				success = upload_file_to_s3(package.name,source_back_layer, filename, awsconnection)
 				if(success == true)
 					source_back_layer = filename
 				end
@@ -55,7 +55,7 @@ def addEmuticon(connection, package_name,name,source_back_layer,source_front_lay
 			if(success == true && source_front_layer != nil)
 				# only update mongo if file was uploaded successfully
 				filename = make_icon_name(nameNewEmuticon(package.name, name, "-fg"), File.extname(source_front_layer[:filename]), false, true)
-				success = upload_file_to_s3(package.name,source_front_layer,filename, connection)
+				success = upload_file_to_s3(package.name,source_front_layer,filename, awsconnection)
 				if(success == true)
 					source_front_layer = filename
 				end
@@ -63,7 +63,7 @@ def addEmuticon(connection, package_name,name,source_back_layer,source_front_lay
 			if(success == true && source_user_layer_mask != nil)
 				# only update mongo if file was uploaded successfully
 				filename = make_icon_name(nameNewEmuticon(package.name, name, "-mask"), File.extname(source_user_layer_mask[:filename]), false, true)
-				success = upload_file_to_s3(package.name,source_user_layer_mask, filename, connection)
+				success = upload_file_to_s3(package.name,source_user_layer_mask, filename, awsconnection)
 				if(success == true)
 					source_user_layer_mask = filename
 				end
@@ -103,14 +103,14 @@ def addEmuticon(connection, package_name,name,source_back_layer,source_front_lay
 		return "addEmuticon" + e.to_s
 
 	ensure
-		package = getPackageByName(package_name)
+		package = getPackageByName(package_name,mongoconnection)
 		package.cms_proccessing = false
 		package.save
 	end
 end
 
-def removeEmuticon(package_name,name)
-	package = getPackageByName(package_name)
+def removeEmuticon(mongoconnection, awsconnection, package_name,name)
+	package = getPackageByName(package_name,mongoconnection)
 	package.emuticons.delete_if {|emuticon| emuticon.name == name}
 	package.save
 end
@@ -119,21 +119,21 @@ def nameNewEmuticon(package_name, name, type)
 	return package_name + "-" + name + type
 end
 
-def updateEmuticon(connection, package_name,name,source_back_layer,source_front_layer,source_user_layer_mask,palette,tags,use_for_preview)
+def updateEmuticon(mongoconnection, awsconnection, package_name,name,source_back_layer,source_front_layer,source_user_layer_mask,palette,tags,use_for_preview)
 
 	success = true
-	package = getPackageByName(package_name)
+	package = getPackageByName(package_name,mongoconnection)
 	package.cms_proccessing = true
 	package.save
 
 	begin
 
 		if(use_for_preview == "true")
-			setUseForPreviewEmuticon(package_name, name)
+			setUseForPreviewEmuticon(mongoconnection, package_name, name)
 		end
 
-		package = getPackageByName(package_name)
-		emuticon = getEmuticonByName(package_name,name)
+		package = getPackageByName(package_name,mongoconnection)
+		emuticon = getEmuticonByName(mongoconnection, package_name,name)
 
 		if emuticon != nil
 
@@ -147,7 +147,7 @@ def updateEmuticon(connection, package_name,name,source_back_layer,source_front_
 				else
 					filename = make_icon_name(nameNewEmuticon(package.name, name, "-bg"), File.extname(source_back_layer[:filename]), false, true)
 				end
-				success = upload_file_to_s3(package.name,source_back_layer, filename, connection)
+				success = upload_file_to_s3(package.name,source_back_layer, filename, awsconnection)
 				if(success == true)
 					emuticon.source_back_layer = filename
 					patched = true
@@ -161,7 +161,7 @@ def updateEmuticon(connection, package_name,name,source_back_layer,source_front_
 				else
 					filename = make_icon_name(nameNewEmuticon(package.name, name, "-fg"), File.extname(source_front_layer[:filename]), false, true)
 				end
-				success = upload_file_to_s3(package.name,source_front_layer,filename, connection)
+				success = upload_file_to_s3(package.name,source_front_layer,filename, awsconnection)
 				if(success == true)
 					emuticon.source_front_layer = filename
 					patched = true
@@ -175,7 +175,7 @@ def updateEmuticon(connection, package_name,name,source_back_layer,source_front_
 				else
 					filename = make_icon_name(nameNewEmuticon(package.name, name, "-mask"), File.extname(source_user_layer_mask[:filename]), false, true)
 				end
-				success = upload_file_to_s3(package.name,source_user_layer_mask, filename, connection)
+				success = upload_file_to_s3(package.name,source_user_layer_mask, filename, awsconnection)
 				if(success == true)
 					emuticon.source_user_layer_mask = filename
 					patched = true
@@ -200,7 +200,7 @@ def updateEmuticon(connection, package_name,name,source_back_layer,source_front_
 			if(success == true)
 				emuticon.save
 
-				package = getPackageByName(package_name)
+				package = getPackageByName(package_name,mongoconnection)
 				if(patched && package.emuticons.length >= 6)
 					package.cms_state = "zip"
 					package.save
@@ -215,7 +215,7 @@ def updateEmuticon(connection, package_name,name,source_back_layer,source_front_
 		return "updateEmuticon" + e.to_s
 
 	ensure
-		package = getPackageByName(package_name)
+		package = getPackageByName(package_name,mongoconnection)
 		package.cms_proccessing = false
 		package.save
 	end

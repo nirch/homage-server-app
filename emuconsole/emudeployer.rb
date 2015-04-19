@@ -7,9 +7,9 @@ require 'fileutils'
 require 'time'
 
 # Main file
-def deployEmuPackage(package_name)
+def deployEmuPackage(package_name, first_published_on)
 
-	package = getPackageByName(package_name)
+	package = getPackageByName(package_name, settings.emu_scratchpad)
 	package.cms_proccessing = true
 	package.save
 
@@ -20,9 +20,10 @@ def deployEmuPackage(package_name)
 		download_folder = "downloadTemp/"
 		FileUtils::mkdir_p download_folder
 
-		scratchpad_package = getPackageByName(package_name)
+		production_package = getPackageByName(package_name, settings.emu_public)
+		scratchpad_package = getPackageByName(package_name, settings.emu_scratchpad)
 		message = "input_files"
-		input_files = getResourcesFromPackage(scratchpad_package)
+		input_files = getResourcesFromPackage(scratchpad_package.name, true)
 
 		# THE DOWNLOAD FROM SCRATCHPAD
 		message = "download_from_aws"
@@ -30,7 +31,9 @@ def deployEmuPackage(package_name)
 
 		if(success == true)
 			message = "download_zip_from_s3"
-			success = download_zip_from_s3(download_folder, scratchpad_package.cms_last_zip_file_name, settings.emu_s3_test)
+			if(production_package == nil || (production_package != nil && scratchpad_package.cms_last_zip_file_name != production_package.cms_last_zip_file_name))
+				success = download_zip_from_s3(download_folder, scratchpad_package.cms_last_zip_file_name, settings.emu_s3_test)
+			end
 		end
 		# TODO downloadzip
 
@@ -39,7 +42,6 @@ def deployEmuPackage(package_name)
 			# create package on the production db and save first_published_on to now
 			reconnect_database(settings.emu_public)
 
-			production_package = getPackageByName(package_name)
 			# Upload All package and emuticon files and latest zip file
 			if(success == true)
 				message = "upload_to_aws"
@@ -47,12 +49,21 @@ def deployEmuPackage(package_name)
 			end
 			if(success == true)
 				message = "upload_zip_to_s3"
-				success = upload_zip_to_s3(download_folder, scratchpad_package.cms_last_zip_file_name, settings.emu_s3_prod)
+				if(production_package == nil || (production_package != nil && scratchpad_package.cms_last_zip_file_name != production_package.cms_last_zip_file_name))
+					success = upload_zip_to_s3(download_folder, scratchpad_package.cms_last_zip_file_name, settings.emu_s3_prod)
+				end
 			end
 
 			if (success == true)
 				if(production_package != nil)
 					# UPDATE package
+					if (first_published_on == true)
+						production_package.first_published_on = Time.now.utc.iso8601
+					elsif (production_package.first_published_on != nil)
+						production_package.unset(:first_published_on)
+					end
+
+					production_package.notification_text = scratchpad_package.notification_text
 					production_package.meta_data_last_update = scratchpad_package.meta_data_last_update
 					production_package.last_update = scratchpad_package.last_update
 					production_package.cms_last_zip_file_name = scratchpad_package.cms_last_zip_file_name
@@ -118,8 +129,15 @@ def deployEmuPackage(package_name)
 
 				else
 					# CREATE NEW PACKAGE
+					if (first_published_on)
+						first_published_on = Time.now.utc.iso8601
+					else
+						first_published_on = nil
+					end
+
 					production_package = Package.create({ 
-					:first_published_on => Time.now.utc.iso8601, :meta_data_created_on => scratchpad_package.meta_data_created_on,
+					:first_published_on => first_published_on,:notification_text => scratchpad_package.notification_text, 
+					:meta_data_created_on => scratchpad_package.meta_data_created_on,
 				 	:meta_data_last_update => scratchpad_package.meta_data_last_update, :last_update => scratchpad_package.last_update,
 				 	:name => scratchpad_package.name, :cms_last_zip_file_name => scratchpad_package.cms_last_zip_file_name,
 				 	:icon_name => scratchpad_package.icon_name, :cms_icon_2x => scratchpad_package.cms_icon_2x,
@@ -147,12 +165,12 @@ def deployEmuPackage(package_name)
 				end
 			end
 
-			if(success == true)
-				# Update state of scratch package to save
-				reconnect_database(settings.emu_scratchpad)
-				scratchpad_package.cms_state = "save"
-				scratchpad_package.save
-			end
+			# if(success == true)
+			# 	Update state of scratch package to save
+			# 	reconnect_database(settings.emu_scratchpad)
+			# 	scratchpad_package.cms_state = "save"
+			# 	scratchpad_package.save
+			# end
 
 		end
 
@@ -167,8 +185,7 @@ def deployEmuPackage(package_name)
 		return "deployEmuPackage: " + message + " error: " + e.to_s
 
 	ensure
-		reconnect_database(settings.emu_scratchpad)
-		package = getPackageByName(package_name)
+		package = getPackageByName(package_name, settings.emu_scratchpad)
 		package.cms_proccessing = false
 		package.save
 	end

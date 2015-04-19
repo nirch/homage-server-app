@@ -1,6 +1,7 @@
 #encoding: utf-8
 require_relative 'emuapi_config'
 require_relative '../emuconsole/logic/package'
+require_relative '../bson_override'
 
 before do
   use_scratchpad = request.env['HTTP_SCRATCHPAD'].to_s
@@ -12,6 +13,17 @@ before do
     MongoMapper.database = settings.emu_public.db().name
   end
   # else public
+end
+
+get '/test/bson' do
+  packages = settings.emu_test.db().collection("packages").find({})
+  packages.to_json
+  # for package in packages do
+  #   x = package.to_json
+  #   puts package["_id"].class
+  #   break
+  # end
+  # x
 end
 
 post '/dan/test' do
@@ -73,6 +85,7 @@ protect do
     #  get params 
 
     name = params[:name]
+    notification_text = params[:notification_text]
     label = params[:label]
     duration = params[:duration]
     frames_count = params[:frames_count]
@@ -84,7 +97,7 @@ protect do
     icon_3x = params[:icon_3x]
 
     # upload to s3 and save to mongo
-    success = createNewPackage(settings.emu_s3_test, name,label,duration,frames_count,thumbnail_frame_index,source_user_layer_mask,active,dev_only,icon_2x,icon_3x)
+    success = createNewPackage(settings.emu_scratchpad, settings.emu_s3_test, name,label,duration,frames_count,thumbnail_frame_index,source_user_layer_mask,active,dev_only,icon_2x,icon_3x, notification_text)
     
     result = Hash.new
     result['error'] = success
@@ -98,6 +111,7 @@ protect do
     #  get params 
     
     name = params[:name]
+    notification_text = params[:notification_text]
     label = params[:label]
     duration = params[:duration]
     frames_count = params[:frames_count]
@@ -109,7 +123,7 @@ protect do
     icon_3x = params[:icon_3x]
 
     # upload to s3 and save to mongo
-    success = updatePackage(settings.emu_s3_test, name,label,duration,frames_count,thumbnail_frame_index,source_user_layer_mask,active,dev_only,icon_2x,icon_3x)
+    success = updatePackage(settings.emu_scratchpad, settings.emu_s3_test, name,label,duration,frames_count,thumbnail_frame_index,source_user_layer_mask,active,dev_only,icon_2x,icon_3x, notification_text)
     
     result = Hash.new
     result['error'] = success
@@ -131,7 +145,7 @@ protect do
     use_for_preview = params[:use_for_preview]
 
     # upload to s3 and save to mongo
-    success = addEmuticon(settings.emu_s3_test, package_name,name,source_back_layer,source_front_layer,source_user_layer_mask,palette,tags,use_for_preview)
+    success = addEmuticon(settings.emu_scratchpad, settings.emu_s3_test, package_name,name,source_back_layer,source_front_layer,source_user_layer_mask,palette,tags,use_for_preview)
     
     result = Hash.new
     result['error'] = success
@@ -153,7 +167,7 @@ protect do
     use_for_preview = params[:use_for_preview]
 
     # upload to s3 and save to mongo
-    success = updateEmuticon(settings.emu_s3_test, package_name,name,source_back_layer,source_front_layer,source_user_layer_mask,palette,tags,use_for_preview)
+    success = updateEmuticon(settings.emu_scratchpad, settings.emu_s3_test, package_name,name,source_back_layer,source_front_layer,source_user_layer_mask,palette,tags,use_for_preview)
     
     result = Hash.new
     result['error'] = success

@@ -2,6 +2,7 @@ require_relative '../../utils/aws/aws_manager'
 require_relative '../model/emuticon'
 require_relative '../model/package'
 require_relative '../../utils/zipper'
+require 'byebug'
 
 # zip files
 def zip_package_files(download_folder, input_filenames, zip_file_name)
@@ -31,7 +32,14 @@ def delete_download_folder(folder)
 end
 
 # get files to download from aws
-def getResourcesFromPackage(package)
+def getResourcesFromPackage(package_name, getOnlyNew)
+	public_package = nil
+	if(getOnlyNew)
+		public_package = getPackageByName(package_name, settings.emu_public)
+	end
+
+	package = getPackageByName(package_name, settings.emu_scratchpad)
+
 	input_files = []
 
 	# icon2x = package.cms_icon_2x
@@ -41,25 +49,85 @@ def getResourcesFromPackage(package)
 
 	source_user_layer_mask = package.emuticons_defaults["source_user_layer_mask"]
 	if source_user_layer_mask != nil && source_user_layer_mask != ""
-		
-		input_files.push source_user_layer_mask
+		insertValue = false
+		if public_package != nil
+			if public_package.source_user_layer_mask == nil
+				insertValue = true
+			else
+				if public_package.source_user_layer_mask != source_user_layer_mask
+					insertValue = true
+				end
+			end
+		else
+			insertValue = true
+		end
+		if(insertValue)
+			input_files.push source_user_layer_mask
+		end
 	end
 
 	for emuticon in package.emuticons do
+		public_emuticon = nil
+		if(getOnlyNew)
+			public_emuticon = getEmuticonByName(settings.emu_public, package_name,emuticon.name)
+		end
 
 		source_back_layer = emuticon.source_back_layer
 		if source_back_layer != nil && source_back_layer != ""
-			input_files.push source_back_layer
+			insertValue = false
+			if public_emuticon != nil
+				if public_emuticon.source_back_layer == nil
+					insertValue = true
+				else
+					if public_emuticon.source_back_layer != source_back_layer
+						insertValue = true
+					end
+				end
+			else
+				insertValue = true
+			end
+			if(insertValue)
+				input_files.push source_back_layer
+			end
 		end
 
 		source_front_layer = emuticon.source_front_layer
 		if source_front_layer != nil && source_front_layer != ""
-			input_files.push source_front_layer
+
+			insertValue = false
+			if public_emuticon != nil
+				if public_emuticon.source_front_layer == nil
+					insertValue = true
+				else
+					if public_emuticon.source_front_layer != source_front_layer
+						insertValue = true
+					end
+				end
+			else
+				insertValue = true
+			end
+			if(insertValue)
+				input_files.push source_front_layer
+			end
 		end
 
 		source_user_layer_mask = emuticon.source_user_layer_mask
 		if source_user_layer_mask != nil && source_user_layer_mask != ""
-			input_files.push source_user_layer_mask
+			insertValue = false
+			if public_emuticon != nil
+				if public_emuticon.source_user_layer_mask == nil
+					insertValue = true
+				else
+					if public_emuticon.source_user_layer_mask != source_user_layer_mask
+						insertValue = true
+					end
+				end
+			else
+				insertValue = true
+			end
+			if(insertValue)
+				input_files.push source_user_layer_mask
+			end
 		end
 	end
 

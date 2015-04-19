@@ -21,6 +21,8 @@ function setAllPacks(p_scratchpad, p_public){
 
 $(document).on("ready", function(){
 
+	setAllPacks($("#mydata").data("pscratchpad"), $("#mydata").data("ppublic"));
+
 	$("body").on("click", ".emuButton", function(){
 			var pack = $(this).data("pack");
 			var emu = $(this).data("emu");
@@ -115,7 +117,28 @@ $(document).on("ready", function(){
  //    });
 });
 
+function getPackageByName(pack_name, packs_list){
+	for (packnum in packs_list){
+		if(pack_name == packs_list[packnum].name){
+			return packs_list[packnum];
+		}
+	}
+	return null;
+}
 
+function getEmuticonByName(pack_name, emuticon_name, packs_list){
+	for (packnum in packs_list){
+		if(pack_name == packs_list[packnum].name){
+			for(emuticonnum in packs_list[packnum].emuticons)
+			{
+				if(emuticon_name == packs_list[packnum].emuticons[emuticonnum].name){
+					return packs_list[packnum].emuticons[emuticonnum];
+				}
+			}
+		}
+	}
+	return null;
+}
 
 
 function readURL(input,imgid) {
@@ -139,7 +162,7 @@ function createInputOrLabelRowElementDiv(method, label, element_id, element_type
 	labelnamecoldiv.innerHTML = label + ":"
 
 	var inputnamecoldiv = document.createElement('div');
-	labelnamecoldiv.className = "col-sm-3";
+	inputnamecoldiv.className = "col-sm-3";
 
 	if(isFile){
 		var imgname = document.createElement('img');
@@ -170,12 +193,65 @@ function createInputOrLabelRowElementDiv(method, label, element_id, element_type
 	}
 
 	
-
 	inputnamecoldiv.appendChild(inputname);
 	rownamediv.appendChild(labelnamecoldiv);
 	rownamediv.appendChild(inputnamecoldiv);
+	rownamediv.appendChild(compareLabel(element_id));
 
 	return rownamediv;
+}
+
+function compareLabel(element_id){
+	var inputnamecoldiv = document.createElement('div');
+	inputnamecoldiv.className = "col-sm-3";
+
+	compare_label = document.createElement('label');
+	compare_label.id = element_id + "compare";
+	compare_label.innerHTML = "*value changed*";
+	compare_label.className = "comparelabel";
+	compare_label.style.display = 'none';
+
+	inputnamecoldiv.appendChild(compare_label);
+	return inputnamecoldiv;
+}
+
+function displayCompareForField(element_id, public_value, scratch_value){
+	if(scratch_value != public_value){
+		document.getElementById(element_id + "compare").style.display = 'block';
+		return true;
+	}
+	return false;
+}
+
+function emuticonsValuesUpdate(pack, public_pack){
+
+	var valuesChanged = false;
+	for (i = 0; i <  pack.emuticons.length; i++) {
+		var keylist = Object.keys(pack.emuticons[i])
+		if(public_pack.emuticons.length > i){
+			var publickeylist = Object.keys(public_pack.emuticons[i])
+			for(item in keylist){
+				if(keylist[item] != "id" && keylist[item] != "name"){
+					if(!public_pack.emuticons[i].hasOwnProperty(keylist[item])){
+						valuesChanged = true;
+				    	break;
+					}
+					if(public_pack.emuticons[i][keylist[item]] == "" && pack.emuticons[i][keylist[item]] == ""){
+						continue;
+					}
+				    if(public_pack.emuticons[i][keylist[item]] != pack.emuticons[i][keylist[item]]){
+				    	valuesChanged = true;
+				    	break;
+				    }
+				}
+			}
+		}
+		else{
+			valuesChanged = true;
+		}
+
+	}
+	return valuesChanged;
 }
 
 // PACKAGE
@@ -196,18 +272,15 @@ function CreatePackageFields(method, pack){
 
 	// NAME
 	parent_form.appendChild(createInputOrLabelRowElementDiv(method, "Name", "pack_name", "input", "text", true, false, "", ""));
-	
 	// END NAME
 
 	// LABEL
 	parent_form.appendChild(createInputOrLabelRowElementDiv(method, "Label", "pack_label", "input", "text", false, false, "", ""));
-
 	// END LABEL
 
 	// ICON2X
 
 	parent_form.appendChild(createInputOrLabelRowElementDiv(method, "Icon2x", "icon2x", 'input', "file", false, true, "image/*", "input_file"));
-
 	// END ICON2X
 
 	// ICON3X
@@ -228,7 +301,6 @@ function CreatePackageFields(method, pack){
   	// DURATION
 
 	fieldset.appendChild(createInputOrLabelRowElementDiv(method, "Duration", "duration", 'input', "text", false, false, "", ""));
-
 	// END DURATION
 
 	// FRAMES COUNT
@@ -256,14 +328,7 @@ function CreatePackageFields(method, pack){
 
 	// ACTIVE
 
-	parent_form.innerHTML += " Active: ";
-
-	var activecheckbox = document.createElement('input');
-	activecheckbox.type = "checkbox";
-	activecheckbox.name = "active";
-	activecheckbox.id = "active";
-
-	parent_form.appendChild(activecheckbox);
+	parent_form.appendChild(createInputOrLabelRowElementDiv(method, "Active", "active", "input", "checkbox", false, false, "", ""));
 
 	// END ACTIVE
 
@@ -271,14 +336,7 @@ function CreatePackageFields(method, pack){
 
 	// DEV ONLY
 
-	parent_form.innerHTML += " Dev Only: ";
-
-	var devonlycheckbox = document.createElement('input');
-	devonlycheckbox.type = "checkbox";
-	devonlycheckbox.name = "dev_only";
-	devonlycheckbox.id = "dev_only";
-
-	parent_form.appendChild(devonlycheckbox);
+	parent_form.appendChild(createInputOrLabelRowElementDiv(method, "Dev Only", "dev_only", "input", "checkbox", false, false, "", ""));
 
 	// END DEV ONLY
 
@@ -325,19 +383,36 @@ function CreatePackageFields(method, pack){
 
 		// BUTTON DEPLOY
 
-		
-
 		var deployButton = document.createElement('button');
 		deployButton.className = "btn btn-default";
 		deployButton.type = "button";
 		deployButton.innerHTML = "Deploy";
 		deployButton.id = "deployButton";
 		deployButton.setAttribute("data-package", JSON.stringify(pack));
-		if(pack.cms_proccessing == true || pack.cms_state != "deploy" || pack.emuticons.length < 6){
+		if(pack.cms_proccessing == true || pack.cms_state == "zip" || pack.emuticons.length < 6){
 			deployButton.disabled = true;
 		}
 
 		parent_form.appendChild(deployButton);
+
+		// first_published_on
+
+		parent_form.innerHTML += " Notify users when deployed: ";
+
+		var first_published_oncheckbox = document.createElement('input');
+		first_published_oncheckbox.type = "checkbox";
+		first_published_oncheckbox.name = "first_published_on";
+		first_published_oncheckbox.id = "first_published_on";
+
+		parent_form.appendChild(first_published_oncheckbox);
+
+		// END first_published_on
+
+		// notification_text
+
+		parent_form.appendChild(createInputOrLabelRowElementDiv(method, "Notifiy text", "notification_text", 'input', "text", false, false, "", ""));
+
+		// END notification_text
 		
 
 		// END BUTTON DEPLOY
@@ -368,6 +443,10 @@ function CreatePackageFields(method, pack){
 
 function DisplayPackage(pack) {
 
+	public_pack = getPackageByName(pack.name, packs_public);
+
+	var values_update = false;
+
 	CreatePackageFields('PUT', pack);
 
 	// NAME
@@ -378,16 +457,25 @@ function DisplayPackage(pack) {
 	// LABEL
 	pack_label = document.getElementById("pack_label");
 	pack_label.value = pack.label;
+	if(public_pack && values_update == false){
+		values_update = displayCompareForField("pack_label", public_pack.label, pack.label);
+	}
 	// END LABEL
 
 	// ICON2X
 	img2xname = document.getElementById("icon2ximg");
 	img2xname.src = awsfolder + pack.name + "/" + pack.cms_icon_2x;
+	if(public_pack && values_update == false){
+		values_update = displayCompareForField("icon2x", public_pack.cms_icon_2x, pack.cms_icon_2x);
+	}
 	// END ICON2X
 
 	// ICON3X
 	img3xname = document.getElementById("icon3ximg");
 	img3xname.src = awsfolder + pack.name + "/" + pack.cms_icon_3x;
+	if(public_pack && values_update == false){
+		values_update = displayCompareForField("icon3x", public_pack.cms_icon_3x, pack.cms_icon_3x);
+	}
 	// END ICON3X
 
   	// EMUTICON DEFAULTS
@@ -395,21 +483,33 @@ function DisplayPackage(pack) {
   	// DURATION
 	duration = document.getElementById("duration");
 	duration.value = pack.emuticons_defaults.duration;
+	if(public_pack && values_update == false){
+		values_update = displayCompareForField("duration", public_pack.emuticons_defaults.duration, pack.emuticons_defaults.duration);
+	}
 	// END DURATION
 
 	// FRAMES COUNT
 	frames_count = document.getElementById("frames_count");
 	frames_count.value = pack.emuticons_defaults.frames_count;
+	if(public_pack && values_update == false){
+		values_update = displayCompareForField("frames_count", public_pack.emuticons_defaults.frames_count, pack.emuticons_defaults.frames_count);
+	}
 	// END FRAMES COUNT
 
 	// THUMBNAIL FRAME INDEX
 	thumbnail_frame_index = document.getElementById("thumbnail_frame_index");
 	thumbnail_frame_index.value = pack.emuticons_defaults.thumbnail_frame_index;
+	if(public_pack && values_update == false){
+		values_update = displayCompareForField("thumbnail_frame_index", public_pack.emuticons_defaults.thumbnail_frame_index, pack.emuticons_defaults.thumbnail_frame_index);
+	}
 	// END THUMBNAIL FRAME INDEX
 
 	// ICON MASK
 	icon_maskimg = document.getElementById("icon_maskimg");
 	icon_maskimg.src = awsfolder + pack.name + "/" + pack.emuticons_defaults["source_user_layer_mask"];
+	if(public_pack && values_update == false){
+		values_update = displayCompareForField("icon_mask", public_pack.emuticons_defaults["source_user_layer_mask"], pack.emuticons_defaults["source_user_layer_mask"]);
+	}
 	// END ICON MASK
 
 	// END EMUTICON DEFAULTS
@@ -417,19 +517,62 @@ function DisplayPackage(pack) {
 	// ACTIVE
 	active = document.getElementById("active");
 	active.checked = pack.active;
+	if(public_pack && values_update == false){
+		values_update = displayCompareForField("active", public_pack.active, pack.active);
+	}
 	// END ACTIVE
 
 	// DEV ONLY
 	dev_only = document.getElementById("dev_only");
 	dev_only.checked = pack.dev_only;
+	if(public_pack && values_update == false){
+		values_update = displayCompareForField("dev_only", public_pack.dev_only, pack.dev_only);
+	}
 	// END DEV ONLY
+
+	// first_published_on
+	if(public_pack != null && public_pack.first_published_on != null){
+		first_published_on = document.getElementById("first_published_on");
+		first_published_on.checked = true;
+	}
+	// END ACTIVE
+
+	// notification_text
+	notification_text = document.getElementById("notification_text");
+	if(pack.notification_text && pack.notification_text != ""){
+		notification_text.value = pack.notification_text;
+	}
+	if(public_pack && values_update == false){
+		values_update = displayCompareForField("notification_text", public_pack.notification_text, pack.notification_text);
+	}
+	// END notification_text
+
+	if(values_update == false){
+		// Check emuticons values
+		if(public_pack != null){
+			values_update = emuticonsValuesUpdate(pack, public_pack);
+		}
+		else
+		{
+			values_update = true;
+		}
+	}
+
+	if(values_update == true){
+		document.getElementById("deployButton").disabled = false;
+	}
+	else{
+		document.getElementById("deployButton").disabled = true;
+	}
+
+	if(pack.cms_last_zip_file_name == null || pack.emuticons.length < 6){
+		document.getElementById("deployButton").disabled = true;
+	}
 
 }
 
 function CreatePackage() {
-
 	CreatePackageFields('POST',null);
-
 }
 
 
@@ -485,6 +628,12 @@ try {
 	pack_label = document.getElementById("pack_label").value;
 	query += "&label=" + pack_label;
 
+	if (pack_label == ""){ //!/^[A-Za-z0-9_\-\ ]+$/.test(pack_label) || 
+		alert("fuck you! label cannot be empty"); // must contain only letters, numbers, - , _ , space");
+		return;
+	}
+
+
 	var updateIcons = 0;
 
 	icon2xfile = document.getElementById("icon2xfile");
@@ -535,6 +684,13 @@ try {
 	else{
 		query += "&dev_only=" + "false";
 	}
+
+
+	notification_text = document.getElementById("notification_text").value;
+	if(notification_text != ""){
+		query += "&notification_text=" + notification_text;
+	}
+
 
 	saveButton.disabled = true;
 	saveButton.innerHTML = "Saving Please Fking wait..";
@@ -689,6 +845,15 @@ try{
 
 	query = "?package_name=" + pack_name;
 
+	first_published_on = document.getElementById("first_published_on").checked;
+	
+	if(first_published_on){
+		query += "&first_published_on=" + "true";
+	}
+	else{
+		query += "&first_published_on=" + "false";
+	}
+
 	var theUrl = "/emuconsole/deploy" + query;
 
 	var xmlHttp = null;
@@ -777,6 +942,8 @@ function DisplayEmuticons(pack){
 
 function DisplayEmuticon(pack, emuticon) {
 
+	public_emuticon = getEmuticonByName(pack.name, emuticon.name, packs_public)
+
 	CreateEmuticonFields(pack, 'PUT');
 
 	 // addEmuticon(package_name,
@@ -797,33 +964,51 @@ function DisplayEmuticon(pack, emuticon) {
 	// source_back_layer
 	source_back_layer = document.getElementById("source_back_layerimg");
 	source_back_layer.src = awsfolder + pack.name + "/" + emuticon.source_back_layer;
+	if(public_emuticon){
+		displayCompareForField("source_back_layer", public_emuticon.source_back_layer, emuticon.source_back_layer);
+	}
 	// END source_back_layer
 
 	// source_front_layer
 	source_front_layer = document.getElementById("source_front_layerimg");
 	source_front_layer.src = awsfolder + pack.name + "/" + emuticon.source_front_layer;
+	if(public_emuticon){
+		displayCompareForField("source_front_layer", public_emuticon.source_front_layer, emuticon.source_front_layer);
+	}
 	// END source_front_layer
 
 	// source_user_layer_mask
 	source_user_layer_mask = document.getElementById("source_user_layer_maskimg");
 	source_user_layer_mask.src = awsfolder + pack.name + "/" + emuticon.source_user_layer_mask;
+	if(public_emuticon){
+		displayCompareForField("source_user_layer_mask", public_emuticon.source_user_layer_mask, emuticon.source_user_layer_mask);
+	}
 	// END source_user_layer_mask
 
 	// palette
 	palette = document.getElementById("palette");
 	if(emuticon.palette && emuticon.palette != ""){
 		palette.value = emuticon.palette;
+		if(public_emuticon){
+			displayCompareForField("palette", public_emuticon.palette, emuticon.palette);
+		}
 	}
 	// END palette
 
 	// tags
 	tags = document.getElementById("tags");
 	tags.value = emuticon.tags;
+	if(public_emuticon){
+		displayCompareForField("tags", public_emuticon.tags, emuticon.tags);
+	}
 	// END tags
 
 	// use_for_preview
 	use_for_preview = document.getElementById("use_for_preview");
 	use_for_preview.checked = emuticon.use_for_preview;
+	if(public_emuticon){
+		displayCompareForField("use_for_preview", public_emuticon.use_for_preview, emuticon.use_for_preview);
+	}
 	// END use_for_preview
 
 }
@@ -914,13 +1099,7 @@ function CreateEmuticonFields(pack, method){
 
 	// use_for_preview
 
-	parent_form.innerHTML += " use_for_preview: ";
-
-	var use_for_previewcheckbox = document.createElement('input');
-	use_for_previewcheckbox.type = "checkbox";
-	use_for_previewcheckbox.id = "use_for_preview";
-
-	parent_form.appendChild(use_for_previewcheckbox);
+	parent_form.appendChild(createInputOrLabelRowElementDiv(method, "use for preview", "use_for_preview", "input", "checkbox", false, false, "", ""));
 
 	// END use_for_preview
 
