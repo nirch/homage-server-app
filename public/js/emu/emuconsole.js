@@ -407,16 +407,16 @@ function CreatePackageFields(method, pack){
 		parent_form.appendChild(first_published_oncheckbox);
 
 		// END first_published_on
-
-		// notification_text
-
-		parent_form.appendChild(createInputOrLabelRowElementDiv(method, "Notifiy text", "notification_text", 'input', "text", false, false, "", ""));
-
-		// END notification_text
 		
 
 		// END BUTTON DEPLOY
 	}
+
+	// notification_text
+
+	parent_form.appendChild(createInputOrLabelRowElementDiv(method, "Notifiy text", "notification_text", 'input', "text", false, false, "", ""));
+
+	// END notification_text
 
 	
 

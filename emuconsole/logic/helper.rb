@@ -2,7 +2,6 @@ require_relative '../../utils/aws/aws_manager'
 require_relative '../model/emuticon'
 require_relative '../model/package'
 require_relative '../../utils/zipper'
-require 'byebug'
 
 # zip files
 def zip_package_files(download_folder, input_filenames, zip_file_name)
@@ -32,11 +31,13 @@ def delete_download_folder(folder)
 end
 
 # get files to download from aws
-def getResourcesFromPackage(package_name, getOnlyNew)
+def getResourcesFromPackage(package_name, getOnlyNew, message)
 	public_package = nil
 	if(getOnlyNew)
 		public_package = getPackageByName(package_name, settings.emu_public)
 	end
+
+	message = "getPackageByName"
 
 	package = getPackageByName(package_name, settings.emu_scratchpad)
 
@@ -46,7 +47,7 @@ def getResourcesFromPackage(package_name, getOnlyNew)
 	# input_files.push icon2x
 	# icon3x = package.cms_icon_3x
 	# input_files.push icon3x
-
+	message = "package.emuticons_defaults[]"
 	source_user_layer_mask = package.emuticons_defaults["source_user_layer_mask"]
 	if source_user_layer_mask != nil && source_user_layer_mask != ""
 		insertValue = false
@@ -66,12 +67,13 @@ def getResourcesFromPackage(package_name, getOnlyNew)
 		end
 	end
 
+	message = "for emuticon in package.emuticons do"
 	for emuticon in package.emuticons do
 		public_emuticon = nil
-		if(getOnlyNew)
+		if(public_package != nil)
 			public_emuticon = getEmuticonByName(settings.emu_public, package_name,emuticon.name)
 		end
-
+		message = "source_back_layer = emuticon.source_back_layer"
 		source_back_layer = emuticon.source_back_layer
 		if source_back_layer != nil && source_back_layer != ""
 			insertValue = false
@@ -91,6 +93,7 @@ def getResourcesFromPackage(package_name, getOnlyNew)
 			end
 		end
 
+		message = "source_front_layer = emuticon.source_front_layer"
 		source_front_layer = emuticon.source_front_layer
 		if source_front_layer != nil && source_front_layer != ""
 
@@ -111,6 +114,7 @@ def getResourcesFromPackage(package_name, getOnlyNew)
 			end
 		end
 
+		message = "source_user_layer_mask = emuticon.source_user_layer_mask"
 		source_user_layer_mask = emuticon.source_user_layer_mask
 		if source_user_layer_mask != nil && source_user_layer_mask != ""
 			insertValue = false

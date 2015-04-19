@@ -23,7 +23,7 @@ def deployEmuPackage(package_name, first_published_on)
 		production_package = getPackageByName(package_name, settings.emu_public)
 		scratchpad_package = getPackageByName(package_name, settings.emu_scratchpad)
 		message = "input_files"
-		input_files = getResourcesFromPackage(scratchpad_package.name, true)
+		input_files = getResourcesFromPackage(scratchpad_package.name, true, message)
 
 		# THE DOWNLOAD FROM SCRATCHPAD
 		message = "download_from_aws"
@@ -67,6 +67,7 @@ def deployEmuPackage(package_name, first_published_on)
 					production_package.meta_data_last_update = scratchpad_package.meta_data_last_update
 					production_package.last_update = scratchpad_package.last_update
 					production_package.cms_last_zip_file_name = scratchpad_package.cms_last_zip_file_name
+					production_package.cms_last_published = Time.now.utc.iso8601
 					production_package.icon_name = scratchpad_package.icon_name
 					production_package.cms_icon_2x = scratchpad_package.cms_icon_2x
 					production_package.cms_icon_3x = scratchpad_package.cms_icon_3x
@@ -136,6 +137,7 @@ def deployEmuPackage(package_name, first_published_on)
 					end
 
 					production_package = Package.create({ 
+					:cms_first_published => Time.now.utc.iso8601, :cms_last_published => Time.now.utc.iso8601,
 					:first_published_on => first_published_on,:notification_text => scratchpad_package.notification_text, 
 					:meta_data_created_on => scratchpad_package.meta_data_created_on,
 				 	:meta_data_last_update => scratchpad_package.meta_data_last_update, :last_update => scratchpad_package.last_update,

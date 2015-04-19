@@ -196,7 +196,7 @@ def updatePackage(mongoconnection,awsconnection, name,label,duration,frames_coun
 
 	rescue StandardError => e
 
-		return "updatePackage" + e.to_s
+		return "updatePackage: " + e.to_s
 
 	ensure
 		package = getPackageByName(name,mongoconnection)
