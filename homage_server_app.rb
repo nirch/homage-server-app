@@ -20,7 +20,37 @@ require 'mail'
 require 'zip'
 require File.expand_path '../public/resources/emu/binary_images.rb', __FILE__
 require File.expand_path '../mongo scripts/Analytics.rb', __FILE__
+
 # require 'erubis'
+require_relative 'bson_override'
+
+# require_relative 'bson_override'
+
+module BSON
+      class ObjectId
+
+        def converted_to_s
+          @data.map {|e| v=e.to_s(16); v.size == 1 ? "0#{v}" : v }.join
+        end
+
+        # Monkey patching to_json so it will return
+        # ObjectId as json and not as a simple string containg the oid
+        def to_json(*a)
+          "{\"$oid\": \"#{converted_to_s}\"}"
+        end
+
+        # Monkey patching as_json so it will return
+        # ObjectId as json and not as a simple string containg the oid
+        def as_json(options ={})
+          {"$oid" => converted_to_s}
+        end
+
+        def to_s
+        	{"$oid" => converted_to_s}.to_s
+        end
+
+      end
+  end
 
 # emu api related
 require_relative 'emuapi/emuapi'
@@ -744,7 +774,6 @@ get '/stories' do
 			story_remakes = settings.db.collection("Remakes").find({story_id:story["_id"], status: RemakeStatus::Done, user_id:{"$in" => public_users}, grade:{"$ne" => -1}}).sort(grade:-1).limit(remakes_num);
 			story[:remakes] = story_remakes.to_a
 		end
-
 		stories_json_array.push(story.to_json) if allow_story
 	end
 
