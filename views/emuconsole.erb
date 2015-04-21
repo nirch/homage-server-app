@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <title>Emu Console</title>
+    <link rel="icon" href='/resources/emu/favicon.ico' type="image/x-icon">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="emu">
+
+    <!-- BOOTSTRAP AND JQUERY -->
+    <link rel="stylesheet" type="text/css" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">  
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script type="text/javascript" src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+
+    <!-- CSS -->
+    <link rel="stylesheet" type="text/css" href="/css/emu/emuconsole.css">
+
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Custom Fonts -->
+   <!--  <link href="font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link  href="http://fonts.googleapis.com/css?family=Lato:300,400,700,300italic,400italic,700italic" rel="stylesheet" type="text/css">
+            -->
+</head>
+
+<body>
+
+    <input id="mydata" type="hidden" data-awslink='<%= @awspackageslink %>' data-pscratchpad='<%= @packs_scratchpad.to_json %>' data-ppublic='<%= @packs_public.to_json %>' />
+
+<div id="content">
+    <!-- Main Body -->
+    <div class="intro-header">
+
+        <div class="container-fluid">
+
+            <div class="row">
+                <!-- MENU -->
+                <div class="col-xs-2 menu">
+                        <div class="leftbackground">
+                            <div id="packs">
+
+                                <div class="header">
+                                    Packs
+                                </div>
+
+                                <% for pack in @packs_scratchpad  do %>
+                                    <div class="pack">
+                                        <button type="button" class="btn btn-default packButton" data-package='<%= pack.to_json %>'><%= pack["name"] %></button>
+                                        <button id="<%= pack["name"] + '-plus-button' %>" type="button" class="btn btn-default emuticonsButton" data-package='<%= pack.to_json %>'>+</button>
+                                        <div id="<%= pack["name"] + '-emuticons' %>" >
+
+                                        </div>
+                                    </div>
+                                <% end %>
+                                <button type="button" class="btn btn-default createPackButton" data-package='<%= pack.to_json %>'>Add +</button>
+                            </div>
+                            <!-- <div> -->
+                            <!-- <h3>Upload New Algorithm Version</h3> -->
+
+                            <!-- Upload form. Note enctype attribute! -->
+                            <!-- <form action="/emuconsole/upload" method="POST" enctype="multipart/form-data">
+                                <input type="file" name="file">
+                                <input type="submit" value="Upload image">
+                            </form> -->
+                        </div>
+                </div>
+
+                <div id="seperator" class="col-xs-1">
+                </div>
+
+                <!-- DISPLAY AREA -->
+                <div id="display" class="col-xs-9 display">
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+    <script src="http://netdna.bootstrapcdn.com/bootstrap/3.0.2/js/bootstrap.min.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+    <script src="/js/emu/emuconsole.js"></script>
+
+</body>
+
+</html>

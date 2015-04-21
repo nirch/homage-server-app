@@ -18,11 +18,43 @@ require "sinatra/basic_auth"
 require 'mixpanel-ruby'
 require 'mail'
 require 'zip'
+require File.expand_path '../public/resources/emu/binary_images.rb', __FILE__
 require File.expand_path '../mongo scripts/Analytics.rb', __FILE__
+
 # require 'erubis'
+require_relative 'bson_override'
+
+# require_relative 'bson_override'
+
+module BSON
+      class ObjectId
+
+        def converted_to_s
+          @data.map {|e| v=e.to_s(16); v.size == 1 ? "0#{v}" : v }.join
+        end
+
+        # Monkey patching to_json so it will return
+        # ObjectId as json and not as a simple string containg the oid
+        def to_json(*a)
+          "{\"$oid\": \"#{converted_to_s}\"}"
+        end
+
+        # Monkey patching as_json so it will return
+        # ObjectId as json and not as a simple string containg the oid
+        def as_json(options ={})
+          {"$oid" => converted_to_s}
+        end
+
+        def to_s
+        	{"$oid" => converted_to_s}.to_s
+        end
+
+      end
+  end
 
 # emu api related
 require_relative 'emuapi/emuapi'
+require_relative 'emuconsole/emuconsole'
 
 current_session_ID = nil
 HTML_ESCAPE	=	{ '&' => '&amp;', '>' => '&gt;', '<' => '&lt;', '"' => '&quot;', "'" => '&#39;' }
@@ -267,12 +299,12 @@ get '/' do
 	end
 end
 
-# get '/danemu' do
-# 	info = Hash.new
-# 	info["EMU_ENTERED"] = "production"
-# 	reportToMixpanel("EmuLandingPageView",info)
-# 	erb :emu_landing_page
-# end
+get '/danemu' do
+	# info = Hash.new
+	# info["EMU_ENTERED"] = "production"
+	# reportToMixpanel("EmuLandingPageView",info)
+	erb :'emu/emuconsole'
+end
 
 get '/test/cgi' do
 	x = "Don't bla bla cgi"
@@ -742,7 +774,6 @@ get '/stories' do
 			story_remakes = settings.db.collection("Remakes").find({story_id:story["_id"], status: RemakeStatus::Done, user_id:{"$in" => public_users}, grade:{"$ne" => -1}}).sort(grade:-1).limit(remakes_num);
 			story[:remakes] = story_remakes.to_a
 		end
-
 		stories_json_array.push(story.to_json) if allow_story
 	end
 
@@ -1849,6 +1880,17 @@ post '/emu/sign_up' do
 			logger.info("user already signed up in the past")
 			@valid_address = "Already signed up"
 		end
+
+		Mail.deliver do
+			  	to      email_address
+			  	from    'Tomer Harry <tomer@homage.it>'
+			  	subject 'Message from Emu Team'
+
+                content_type 'text/html; charset=UTF-8'
+body '<h3>You are on the waiting list for Emu Android
+updates!</h3><h3>Cheers from the Emu team!</h3><a href="http://www.emu.im"><img src="data:image/jpg;base64,' +
+get_emu_logo + '"></a>'
+end
 	else
 	  @valid_address = "definately not valid"
 	end
@@ -2418,12 +2460,15 @@ end
 
 get '/test/mail' do
 	Mail.deliver do
-	  from     'homage-server-app@homage.it'
-	  to       'nir@homage.it'
-	  subject  'Test Mail'
-	  body     'Test body...'
-	end
+	  	to      'dangalg@gmail.com'
+	  	from    'Tomer Harry <dan@homage.it>'
+	  	subject 'Message from Emu Team'
 
+	  	content_type 'text/html; charset=UTF-8'     
+	  	body '<h1>You are on
+		the waiting list for Android updates</h1><h3>Cheers from the Emu
+		team!</h3><img src="data:image/jpg;base64,' + get_emu_logo + '" />'
+	end
 	"Mail sent successfully"
 end
 
