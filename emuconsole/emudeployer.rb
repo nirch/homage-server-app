@@ -93,6 +93,9 @@ def deployEmuPackage(package_name, first_published_on)
 								:source_back_layer => emuticon.source_back_layer, 
 								:source_front_layer => emuticon.source_front_layer,
 								:source_user_layer_mask => emuticon.source_user_layer_mask,
+								:duration => emuticon.duration, 
+								:frames_count => emuticon.frames_count, 
+								:thumbnail_frame_index => emuticon.thumbnail_frame_index, 
 								:palette => emuticon.palette, 
 								:patchedOn => emuticon.patchedOn,
 								:tags => emuticon.tags, 
@@ -113,6 +116,9 @@ def deployEmuPackage(package_name, first_published_on)
 								pemuticon.source_back_layer = emuticon.source_back_layer
 								pemuticon.source_front_layer = emuticon.source_front_layer
 								pemuticon.source_user_layer_mask = emuticon.source_user_layer_mask
+								pemuticon.duration = emuticon.duration
+								pemuticon.frames_count = emuticon.frames_count
+								pemuticon.thumbnail_frame_index = emuticon.thumbnail_frame_index
 								pemuticon.palette = emuticon.palette
 								pemuticon.patchedOn = emuticon.patchedOn
 								pemuticon.tags = emuticon.tags
@@ -156,6 +162,9 @@ def deployEmuPackage(package_name, first_published_on)
 							:source_back_layer => emuticon.source_back_layer, 
 							:source_front_layer => emuticon.source_front_layer,
 							:source_user_layer_mask => emuticon.source_user_layer_mask,
+							:duration => emuticon.duration, 
+							:frames_count => emuticon.frames_count, 
+							:thumbnail_frame_index => emuticon.thumbnail_frame_index, 
 							:palette => emuticon.palette, 
 							:patchedOn => emuticon.patchedOn,
 							:tags => emuticon.tags, 

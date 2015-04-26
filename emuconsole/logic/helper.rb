@@ -52,10 +52,10 @@ def getResourcesFromPackage(package_name, getOnlyNew, message)
 	if source_user_layer_mask != nil && source_user_layer_mask != ""
 		insertValue = false
 		if public_package != nil
-			if public_package.source_user_layer_mask == nil
+			if public_package.emuticons_defaults["source_user_layer_mask"] == nil
 				insertValue = true
 			else
-				if public_package.source_user_layer_mask != source_user_layer_mask
+				if public_package.emuticons_defaults["source_user_layer_mask"] != source_user_layer_mask
 					insertValue = true
 				end
 			end

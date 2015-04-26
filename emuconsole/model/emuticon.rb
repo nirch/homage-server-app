@@ -4,6 +4,9 @@ class Emuticon
 	key :source_back_layer,      String
 	key :source_front_layer, String
 	key :source_user_layer_mask, String
+	key :duration, Integer
+	key :frames_count, Integer
+	key :thumbnail_frame_index, Integer
 	key :palette, String
 	key :patchedOn, Time
 	key :tags, String

@@ -36,21 +36,21 @@ before do
   # else public
 end
 
-get '/test/bson' do
-  packages = settings.emu_test.db().collection("packages").find({})
-  packages.to_json
-  # for package in packages do
-  #   x = package.to_json
-  #   puts package["_id"].class
-  #   break
-  # end
-  # x
-end
+# get '/test/bson' do
+#   packages = settings.emu_test.db().collection("packages").find({})
+#   packages.to_json
+#   # for package in packages do
+#   #   x = package.to_json
+#   #   puts package["_id"].class
+#   #   break
+#   # end
+#   # x
+# end
 
-post '/dan/test' do
-  name = MongoMapper.connection.name
-  "name of current db = " + name.to_s
-end
+# post '/dan/test' do
+#   name = MongoMapper.connection.name
+#   "name of current db = " + name.to_s
+# end
 
 # just for testing.
 # GET route - test
@@ -138,13 +138,16 @@ protect do
     frames_count = params[:frames_count]
     thumbnail_frame_index = params[:thumbnail_frame_index]
     source_user_layer_mask = params[:source_user_layer_mask]
+    removesource_user_layer_mask = params[:removesource_user_layer_mask]
     active = params[:active]
     dev_only = params[:dev_only]
     icon_2x = params[:icon_2x]
     icon_3x = params[:icon_3x]
+    removeicon_2x = params[:removeicon_2x]
+    removeicon_3x = params[:removeicon_3x]
 
     # upload to s3 and save to mongo
-    success = updatePackage(settings.emu_scratchpad, settings.emu_s3_test, name,label,duration,frames_count,thumbnail_frame_index,source_user_layer_mask,active,dev_only,icon_2x,icon_3x, notification_text)
+    success = updatePackage(settings.emu_scratchpad, settings.emu_s3_test, name,label,duration,frames_count,thumbnail_frame_index,source_user_layer_mask,removesource_user_layer_mask,active,dev_only,icon_2x,removeicon_2x,icon_3x,removeicon_3x, notification_text)
     
     result = Hash.new
     result['error'] = success
@@ -161,12 +164,15 @@ protect do
     source_back_layer = params[:source_back_layer]
     source_front_layer = params[:source_front_layer]
     source_user_layer_mask = params[:source_user_layer_mask]
+    duration = params[:duration]
+    frames_count = params[:frames_count]
+    thumbnail_frame_index = params[:thumbnail_frame_index]
     palette = params[:palette]
     tags = params[:tags]
     use_for_preview = params[:use_for_preview]
 
     # upload to s3 and save to mongo
-    success = addEmuticon(settings.emu_scratchpad, settings.emu_s3_test, package_name,name,source_back_layer,source_front_layer,source_user_layer_mask,palette,tags,use_for_preview)
+    success = addEmuticon(settings.emu_scratchpad, settings.emu_s3_test, package_name,name,source_back_layer,source_front_layer,source_user_layer_mask,removesource_back_layer,removesource_front_layer,removesource_user_layer_mask,duration,frames_count,thumbnail_frame_index,palette,tags,use_for_preview)
     
     result = Hash.new
     result['error'] = success
@@ -183,12 +189,18 @@ protect do
     source_back_layer = params[:source_back_layer]
     source_front_layer = params[:source_front_layer]
     source_user_layer_mask = params[:source_user_layer_mask]
+    removesource_back_layer = params[:removesource_back_layer]
+    removesource_front_layer = params[:removesource_front_layer]
+    removesource_user_layer_mask = params[:removesource_user_layer_mask]
+    duration = params[:duration]
+    frames_count = params[:frames_count]
+    thumbnail_frame_index = params[:thumbnail_frame_index]
     palette = params[:palette]
     tags = params[:tags]
     use_for_preview = params[:use_for_preview]
 
     # upload to s3 and save to mongo
-    success = updateEmuticon(settings.emu_scratchpad, settings.emu_s3_test, package_name,name,source_back_layer,source_front_layer,source_user_layer_mask,palette,tags,use_for_preview)
+    success = updateEmuticon(settings.emu_scratchpad, settings.emu_s3_test, package_name,name,source_back_layer,source_front_layer,source_user_layer_mask,removesource_back_layer,removesource_front_layer,removesource_user_layer_mask,duration,frames_count,thumbnail_frame_index,palette,tags,use_for_preview)
     
     result = Hash.new
     result['error'] = success

@@ -21,7 +21,7 @@ def zipEmuPackage(package_name)
 
 		package = getPackageByName(package_name, settings.emu_scratchpad)
 		message = "input_files"
-		input_files = getResourcesFromPackage(package.name, false)
+		input_files = getResourcesFromPackage(package.name, false, message)
 		
 
 		message = "download_from_aws"

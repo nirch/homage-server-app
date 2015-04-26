@@ -168,6 +168,13 @@ function createInputOrLabelRowElementDiv(method, label, element_id, element_type
 		var imgname = document.createElement('img');
 		imgname.id = element_id + "img"
 		imgname.className = "input_img"
+		if(method == 'PUT' ){
+			var imgchkbxlbl = document.createElement('label');
+			imgchkbxlbl.innerHTML = " remove image: "
+			var imgchkbx = document.createElement('input');
+			imgchkbx.type = "checkbox"
+			imgchkbx.id = element_id + "checkbox"
+		}
 		var inputname = document.createElement(element_type);
 		inputname.id = element_id + "file";
 		inputname.type = input_type;
@@ -175,6 +182,8 @@ function createInputOrLabelRowElementDiv(method, label, element_id, element_type
 		inputname.name = element_id
 		inputname.className = classname
 		inputnamecoldiv.appendChild(imgname);
+		inputnamecoldiv.appendChild(imgchkbxlbl);
+		inputnamecoldiv.appendChild(imgchkbx);
 	}else{
 		var inputname = null;
 		if(cantChangeOnUpdate){
@@ -565,7 +574,7 @@ function DisplayPackage(pack) {
 		document.getElementById("deployButton").disabled = true;
 	}
 
-	if(pack.cms_last_zip_file_name == null || pack.emuticons.length < 6){
+	if(pack.cms_last_zip_file_name == null || pack.cms_proccessing == true || pack.cms_state == "zip" || pack.emuticons.length < 6){
 		document.getElementById("deployButton").disabled = true;
 	}
 
@@ -641,11 +650,25 @@ try {
 		formData.append('icon_2x', icon2xfile.files[0]);
 		updateIcons++;
 	}
+
+	if(method == 'PUT'){
+		icon2xfilecheckbox = document.getElementById("icon2xcheckbox");
+		if (icon2xfilecheckbox.checked){
+			query += "&removeicon2x=" + "true";
+		}
+	}
 	
 	icon3xfile = document.getElementById("icon3xfile");
 	if(icon3xfile.files.length > 0 && icon3xfile.files[0]){
 		formData.append('icon_3x', icon3xfile.files[0]);
 		updateIcons++;
+	}
+
+	if(method == 'PUT'){
+		icon3xfilecheckbox = document.getElementById("icon3xcheckbox");
+		if (icon3xfilecheckbox.checked){
+			query += "&removeicon3x=" + "true";
+		}
 	}
 
 	if(method == 'POST' && updateIcons < 2){
@@ -656,6 +679,13 @@ try {
 	icon_maskfile = document.getElementById("icon_maskfile");
 	if(icon_maskfile.files.length > 0 && icon_maskfile.files[0]){
 		formData.append('source_user_layer_mask', icon_maskfile.files[0]);
+	}
+
+	if(method == 'PUT'){
+		icon_maskcheckbox = document.getElementById("icon_maskcheckbox");
+		if (icon_maskcheckbox.checked){
+			query += "&removesource_user_layer_mask=" + "true";
+		}
 	}
 	// emuticons defaults
 	duration = document.getElementById("duration").value;
@@ -985,6 +1015,36 @@ function DisplayEmuticon(pack, emuticon) {
 	}
 	// END source_user_layer_mask
 
+	// DURATION
+	duration = document.getElementById("duration");
+	if(emuticon.duration && emuticon.duration != ""){
+		duration.value = emuticon.duration;
+		if(public_emuticon){
+			values_update = displayCompareForField("duration", public_emuticon.duration, emuticon.duration);
+		}
+	}
+	// END DURATION
+
+	// FRAMES COUNT
+	frames_count = document.getElementById("frames_count");
+	if(emuticon.frames_count && emuticon.frames_count != ""){
+		frames_count.value = emuticon.frames_count;
+		if(public_emuticon){
+			values_update = displayCompareForField("frames_count", public_emuticon.frames_count, emuticon.frames_count);
+		}
+	}
+	// END FRAMES COUNT
+
+	// THUMBNAIL FRAME INDEX
+	thumbnail_frame_index = document.getElementById("thumbnail_frame_index");
+	if(emuticon.thumbnail_frame_index && emuticon.thumbnail_frame_index != ""){
+		thumbnail_frame_index.value = emuticon.thumbnail_frame_index;
+		if(public_emuticon){
+			values_update = displayCompareForField("thumbnail_frame_index", public_emuticon.thumbnail_frame_index, emuticon.thumbnail_frame_index);
+		}
+	}
+	// END THUMBNAIL FRAME INDEX
+
 	// palette
 	palette = document.getElementById("palette");
 	if(emuticon.palette && emuticon.palette != ""){
@@ -997,9 +1057,11 @@ function DisplayEmuticon(pack, emuticon) {
 
 	// tags
 	tags = document.getElementById("tags");
-	tags.value = emuticon.tags;
-	if(public_emuticon){
-		displayCompareForField("tags", public_emuticon.tags, emuticon.tags);
+	if(emuticon.tags && emuticon.tags != ""){
+		tags.value = emuticon.tags;
+		if(public_emuticon){
+			displayCompareForField("tags", public_emuticon.tags, emuticon.tags);
+		}
 	}
 	// END tags
 
@@ -1084,6 +1146,23 @@ function CreateEmuticonFields(pack, method){
 	// END source_user_layer_mask
 
 	parent_form.appendChild(document.createElement('br'));
+
+	// DURATION
+
+	parent_form.appendChild(createInputOrLabelRowElementDiv(method, "Duration", "duration", 'input', "text", false, false, "", ""));
+	// END DURATION
+
+	// FRAMES COUNT
+
+	parent_form.appendChild(createInputOrLabelRowElementDiv(method, "Frames Count", "frames_count", 'input', "text", false, false, "", ""));
+
+	// END FRAMES COUNT
+
+	// THUMBNAIL FRAME INDEX
+
+	parent_form.appendChild(createInputOrLabelRowElementDiv(method, "Thumbnail Frame Index", "thumbnail_frame_index", 'input', "text", false, false, "", ""));
+
+	// END THUMBNAIL FRAME INDEX
 
 	// palette
 
@@ -1187,9 +1266,41 @@ try{
 		formData.append('source_user_layer_mask', source_user_layer_maskfile.files[0]);
 	}
 
+	if(method == 'PUT'){
+		source_back_layercheckbox = document.getElementById("source_back_layercheckbox");
+		if (source_back_layercheckbox.checked){
+			query += "&removesource_back_layer=" + "true";
+		}
+
+		source_front_layercheckbox = document.getElementById("source_front_layercheckbox");
+		if (source_front_layercheckbox.checked){
+			query += "&removesource_front_layer=" + "true";
+		}
+
+		source_user_layer_maskcheckbox = document.getElementById("source_user_layer_maskcheckbox");
+		if (source_user_layer_maskcheckbox.checked){
+			query += "&removesource_user_layer_mask=" + "true";
+		}
+	}
+
 	palette = document.getElementById("palette").value;
 	if(palette != null || palette != ""){
 		query += "&palette=" + escape(palette);
+	}
+
+	if(duration != null || duration != ""){
+		duration = document.getElementById("duration").value;
+		query += "&duration=" + duration;
+	}
+
+	if(frames_count != null || frames_count != ""){
+		frames_count = document.getElementById("frames_count").value;
+		query += "&frames_count=" + frames_count;
+	}
+
+	if(thumbnail_frame_index != null || thumbnail_frame_index != ""){
+		thumbnail_frame_index = document.getElementById("thumbnail_frame_index").value;
+		query += "&thumbnail_frame_index=" + thumbnail_frame_index;
 	}
 
 	tags = document.getElementById("tags").value;

@@ -30,18 +30,12 @@ def createNewPackage(mongoconnection, awsconnection, name,label,duration,frames_
 		emuticons_defaults_hash = Hash.new("emuticons_defaults")
 		if duration != nil
 			emuticons_defaults_hash["duration"] = duration
-		else
-			emuticons_defaults_hash["duration"] = 2
 		end
 		if frames_count != nil
 			emuticons_defaults_hash["frames_count"] = frames_count
-		else
-			emuticons_defaults_hash["frames_count"] = 24
 		end
 		if thumbnail_frame_index != nil
 			emuticons_defaults_hash["thumbnail_frame_index"] = thumbnail_frame_index
-		else
-			emuticons_defaults_hash["thumbnail_frame_index"] = 23
 		end
 		if source_user_layer_mask != nil
 			emuticons_defaults_hash["source_user_layer_mask"] = name +"-mask" + File.extname(source_user_layer_mask[:filename])
@@ -121,7 +115,7 @@ def createNewPackage(mongoconnection, awsconnection, name,label,duration,frames_
 	end
 end
 
-def updatePackage(mongoconnection,awsconnection, name,label,duration,frames_count,thumbnail_frame_index,source_user_layer_mask,active,dev_only,icon_2x,icon_3x, notification_text)
+def updatePackage(mongoconnection,awsconnection, name,label,duration,frames_count,thumbnail_frame_index,source_user_layer_mask,removesource_user_layer_mask,active,dev_only,icon_2x,removeicon_2x,icon_3x,removeicon_3x, notification_text)
 	success = true
 	package = getPackageByName(name,mongoconnection)
 	package.cms_proccessing = true
@@ -135,31 +129,44 @@ def updatePackage(mongoconnection,awsconnection, name,label,duration,frames_coun
 		
 		if label != nil
 			package.label = label
+		elsif package.label != nil
+			package.unset(:label)
 		end
 		if duration != nil
 			package.emuticons_defaults["duration"] = duration
+		elsif package.emuticons_defaults["duration"] != nil
+			package.emuticons_defaults["duration"] = nil
 		end
 		if frames_count != nil
 			package.emuticons_defaults["frames_count"] = frames_count
+		elsif package.emuticons_defaults["frames_count"] != nil
+			package.emuticons_defaults.unset(:frames_count)
 		end
 		if thumbnail_frame_index != nil
 			package.emuticons_defaults["thumbnail_frame_index"] = thumbnail_frame_index
+		elsif package.emuticons_defaults["thumbnail_frame_index"] != nil
+			package.emuticons_defaults.unset(:thumbnail_frame_index)
+		end
+		if duration == nil && frames_count == nil && thumbnail_frame_index == nil
+			package.unset(:emuticons_defaults)
 		end
 		if notification_text != nil
 			package.notification_text = notification_text
+		elsif package.notification_text != nil
+			package.unset(:notification_text)
 		end
 		if active != nil
 			if(active == "true")
-				package.emuticons_defaults["active"] = true
+				package.active = true
 			elsif active == "false"
-				package.emuticons_defaults["active"] = false
+				package.active = false
 			end
 		end
 		if dev_only != nil
 			if(dev_only == "true")
-				package.emuticons_defaults["dev_only"] = true
+				package.dev_only = true
 			elsif dev_only == "false"
-				package.emuticons_defaults["dev_only"] = false
+				package.dev_only = false
 			end
 		end
 
@@ -173,6 +180,9 @@ def updatePackage(mongoconnection,awsconnection, name,label,duration,frames_coun
 			package.icon_name = filename.rpartition('@').first
 			updateResources = true
 			package.cms_icon_2x = filename
+		elsif package.cms_icon_2x != nil && removeicon_2x == "true"
+			package.unset(:cms_icon_2x)
+			updateResources = true
 		end
 
 		if icon_3x != nil
@@ -181,6 +191,9 @@ def updatePackage(mongoconnection,awsconnection, name,label,duration,frames_coun
 			package.icon_name = filename.rpartition('@').first
 			updateResources = true
 			package.cms_icon_3x = filename
+		elsif package.cms_icon_3x != nil  && removeicon_3x == "true"
+			package.unset(:cms_icon_3x)
+			updateResources = true
 		end
 
 		if source_user_layer_mask != nil
@@ -188,6 +201,13 @@ def updatePackage(mongoconnection,awsconnection, name,label,duration,frames_coun
 			upload_file_to_s3(package.name, source_user_layer_mask, filename, awsconnection)
 			package.emuticons_defaults["source_user_layer_mask"] = filename
 			updateResources = true
+		elsif package.emuticons_defaults["source_user_layer_mask"] != nil  && removesource_user_layer_mask == "true"
+			package.emuticons_defaults["source_user_layer_mask"] = nil
+			updateResources = true
+		end
+
+		if (updateResources == true && package.emuticons.length >= 6)
+			package.cms_state = "zip"
 		end
 
 		package.save
