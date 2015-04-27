@@ -173,7 +173,6 @@ def updatePackage(mongoconnection,awsconnection, name,label,duration,frames_coun
 		package.meta_data_last_update = Time.now.utc.iso8601
 
 		icon_name = package.icon_name
-
 		if icon_2x != nil
 			filename = make_icon_name(icon_name + "@2x", File.extname(icon_2x[:filename]), true, false)
 			upload_file_to_s3(package.name, icon_2x, filename, awsconnection)
@@ -181,6 +180,10 @@ def updatePackage(mongoconnection,awsconnection, name,label,duration,frames_coun
 			package.cms_icon_2x = filename
 		elsif package.cms_icon_2x != nil && removeicon_2x == "true"
 			package.unset(:cms_icon_2x)
+		elsif package.cms_icon_2x == nil
+			filename = make_icon_name(icon_name + "@2x", ".png", false, false)
+			package.icon_name = filename.rpartition('@').first
+			package.cms_icon_2x = filename
 		end
 
 		if icon_3x != nil
@@ -190,6 +193,10 @@ def updatePackage(mongoconnection,awsconnection, name,label,duration,frames_coun
 			package.cms_icon_3x = filename
 		elsif package.cms_icon_3x != nil  && removeicon_3x == "true"
 			package.unset(:cms_icon_3x)
+		elsif package.cms_icon_3x == nil
+			filename = make_icon_name(icon_name + "@3x", ".png", false, false)
+			package.icon_name = filename.rpartition('@').first
+			package.cms_icon_3x = filename
 		end
 
 		if source_user_layer_mask != nil
@@ -202,8 +209,15 @@ def updatePackage(mongoconnection,awsconnection, name,label,duration,frames_coun
 			updateResources = true
 		end
 
+		if package.zipped_package_file_name == nil && package.last_update != nil
+			zip_file_name = create_zip_file_name(package.name, package.last_update.iso8601)
+			package.zipped_package_file_name = zip_file_name + ".zip"
+		end
+
 		if (updateResources == true && package.emuticons.length >= 6)
 			package.cms_state = "zip"
+		else
+			package.cms_state = "save"
 		end
 
 		package.save

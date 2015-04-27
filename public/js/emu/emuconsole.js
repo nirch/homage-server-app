@@ -683,7 +683,7 @@ function DisplayPackage(pack) {
 	}
 
 	// Validations
-	if(pack.cms_last_zip_file_name == null || pack.cms_proccessing == true || pack.cms_state == "zip" || pack.emuticons.length < 6){
+	if(pack.zipped_package_file_name == null || pack.cms_proccessing == true || pack.cms_state == "zip" || pack.emuticons.length < 6){
 		document.getElementById("deployButton").disabled = true;
 	}
 
