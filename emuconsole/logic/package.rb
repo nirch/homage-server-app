@@ -180,7 +180,7 @@ def updatePackage(mongoconnection,awsconnection, name,label,duration,frames_coun
 			package.cms_icon_2x = filename
 		elsif package.cms_icon_2x != nil && removeicon_2x == "true"
 			package.unset(:cms_icon_2x)
-		else
+		elsif package.cms_icon_2x == nil
 			filename = make_icon_name(icon_name + "@2x", ".png", false, false)
 			package.icon_name = filename.rpartition('@').first
 			package.cms_icon_2x = filename
@@ -193,7 +193,7 @@ def updatePackage(mongoconnection,awsconnection, name,label,duration,frames_coun
 			package.cms_icon_3x = filename
 		elsif package.cms_icon_3x != nil  && removeicon_3x == "true"
 			package.unset(:cms_icon_3x)
-		else
+		elsif package.cms_icon_3x == nil
 			filename = make_icon_name(icon_name + "@3x", ".png", false, false)
 			package.icon_name = filename.rpartition('@').first
 			package.cms_icon_3x = filename
