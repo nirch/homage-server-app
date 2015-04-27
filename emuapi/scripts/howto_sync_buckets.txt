@@ -1,0 +1,2 @@
+
+boto-rsync -a AKIAJTPGKC25LGKJUCTA -s GAmrvii4bMbk5NGR8GiLSmHKbEUfCdp43uWi1ECv -p s3://homage-emu-test s3://homage-emu-prod
