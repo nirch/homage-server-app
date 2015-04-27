@@ -7,9 +7,9 @@ require_relative '../utils/aws/aws_manager'
 configure :test do
   emu_db_connection_scratchpad = Mongo::MongoClient.from_uri("mongodb://Homage:homageIt12@dogen.mongohq.com:10009/emu-dev-test")
   emu_db_connection_public = Mongo::MongoClient.from_uri("mongodb://Homage:homageIt12@dogen.mongohq.com:10008/emu-dev-prod")
-  # emu_db_connection_test = Mongo::MongoClient.from_uri("mongodb://Homage:homageIt12@dogen.mongohq.com:10073/emu-test")
+  emu_db_connection_test = Mongo::MongoClient.from_uri("mongodb://Homage:homageIt12@dogen.mongohq.com:10073/emu-test")
 
-  # set :emu_test, emu_db_connection_test
+  set :emu_test, emu_db_connection_test
   set :emu_scratchpad, emu_db_connection_scratchpad
   set :emu_public, emu_db_connection_public
 
