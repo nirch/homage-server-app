@@ -31,7 +31,7 @@ def zipEmuPackage(package_name)
 		if(success == true)
 			currentdatetime = Time.now.utc.iso8601
 			
-			zip_file_name = "package_" + package.name + "_" + ("%02d" % Time.parse(currentdatetime).year).to_s + ("%02d" % Time.parse(currentdatetime).month).to_s + ("%02d" % Time.parse(currentdatetime).day).to_s + "_" + ("%02d" % Time.parse(currentdatetime).hour).to_s + ("%02d" % Time.parse(currentdatetime).min).to_s + ("%02d" % Time.parse(currentdatetime).sec).to_s
+			zip_file_name = create_zip_file_name(package_name, currentdatetime)
 			message = "zip_package_files zip_file_name: " + zip_file_name.to_s
 			success = zip_package_files(download_folder, input_files, zip_file_name)
 		end
