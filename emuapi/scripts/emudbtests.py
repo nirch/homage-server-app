@@ -1,17 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-"""This script is used for creation of zip files containing all current resources
-required for packages of the emu app.
-
-The script:
-
-    1) Gets info from emuapi about all packages.
-    2) Checks for each package if a zip file is available and up to date.
-    3) If a zip file is missing or not up to date on s3 the script will:
-        a) Download all required resources.
-        b) Validate that all required resources exist (halts on missing resource).
-        c) Zip all resources.
-        d) Upload the zip file to S3.
+"""This script is used for testing correctness of emu's databases
 """
 import os
 import sys
@@ -24,7 +13,6 @@ import shutil
 API_PATH = None
 API_PACKAGES_PATH = "packages/full"
 API_PACKAGES_URL = None
-ONLY_THIS_PACKAGE = None
 
 HOME_PATH = None
 TEMP_FILES_PATH = None
@@ -35,13 +23,14 @@ bucket = None
 aws_access_key = "AKIAIQKZZYTHOJ6NOYDA"
 aws_secret_key = "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"
 
+unique_oids = {}
+
 
 # region - Configuration and setup
 def setup_configuration(args):
     global API_PATH, API_PACKAGES_PATH, API_PACKAGES_URL
     global HOME_PATH, TEMP_FILES_PATH
     global s3, bucket, BUCKET_NAME
-    global ONLY_THIS_PACKAGE
 
     if len(args) < 2:
         return False
@@ -53,17 +42,10 @@ def setup_configuration(args):
     elif env == "test":
         API_PATH = "http://app-test.emu.im/emuapi/"
     elif env == "prod":
-        API_PATH = "http://localhost:9292/emuapi/"
+        API_PATH = "http://app.emu.im/emuapi/"
     else:
         print "env parameter missing (must be test or prod)."
         return False
-
-    try:
-        ONLY_THIS_PACKAGE = args[2]
-    except:
-        ONLY_THIS_PACKAGE = None
-
-    print ">>>>>>", ONLY_THIS_PACKAGE
 
     API_PACKAGES_URL = API_PATH + API_PACKAGES_PATH
     print "Fetching info from %s" % API_PACKAGES_URL
@@ -128,78 +110,59 @@ def package_current_zip_key(pkg):
 # region - Checking packages
 def check_packages_with_info(info):
     for package_info in info["packages"]:
-        
-        if ONLY_THIS_PACKAGE != None:
-            if ONLY_THIS_PACKAGE != package_info["name"]:
-                continue
-
         package_name = package_info["name"]
+        package_oid = package_info["_id"]["$oid"]
         print "-" * 40
-        print "Checking package %s... " % package_name
-        if "dev_only" in package_info:
-            print "Skipping... dev only"
+        print "Checking package %s %s... " % (package_name, package_oid)
+        if "dev_only" in package_info and package_info["dev_only"] is True:
+            print "Skipping package (dev only)"
             continue
+
         if is_package_up_to_date(package_info):
             print "OK"
         else:
             print "Missing"
-            create_and_upload_zipped_package(package_info)
+
+        # Check oid of the package
+        validate_oid(package_oid, package_name)
+
+        for emu_info in package_info["emuticons"]:
+            check_emu(emu_info)
+
+def check_emu(emu_info):
+    oid = emu_info["_id"]["$oid"]
+    name = emu_info["name"]
+    print "Checking emu: %(name)s" % locals()
+    validate_oid(oid, name)
+
+def validate_oid(oid, name):
+    global unique_oids
+    if oid in unique_oids:
+        raise Exception("Duplicate key found %s in %s it is the same as %s" % (oid, name, unique_oids[oid]))
+    unique_oids[oid] = name
 # endregion
 
 
-# region - Zip, Uploads & Downloads
-def create_and_upload_zipped_package(pkg):
-    print "Downloading resources..."
-    emuticons = pkg["emuticons"]
-    package_name = pkg["name"]
-
-    folder = download_temp_folder(package_name)
-    recreate_folder(folder)
-
-    # download resources for the package
-    i = 0
-    for emu in emuticons:
-        i += 1
-        name = emu["name"]
-        print "%d / %d - %s" %(i, len(emuticons), name)
-        download_emuticon_files(emu, package_name, folder)
-
-    # zip resources of the package
-    zip_name = package_current_zip_name(pkg, False)
-    zip_path = os.path.join(TEMP_FILES_PATH, zip_name)
-    print "Zipping to %s.zip" % zip_name,
-    zip_output = shutil.make_archive(zip_path, 'zip', folder)
-    print
-
-    # upload the zipped file to s3
-    print "Uploading...",
-    key_name = package_current_zip_key(pkg)
-    k = bucket.new_key(key_name)
-    k.set_contents_from_filename(zip_output)
-    k.set_acl('public-read')
-    print "!"
+# def download_emuticon_files(emu, package_name, folder):
+#     download(package_name, emu.get("source_back_layer"), folder)
+#     download(package_name, emu.get("source_front_layer"), folder)
+#     download(package_name, emu.get("source_user_layer_mask"), folder)
 
 
-def download_emuticon_files(emu, package_name, folder):
-    download(package_name, emu.get("source_back_layer"), folder)
-    download(package_name, emu.get("source_front_layer"), folder)
-    download(package_name, emu.get("source_user_layer_mask"), folder)
+# def download(package_name, file_name, folder):
+#     if file_name is None:
+#         return
 
+#     key_name = "packages/%s/%s" %(package_name, file_name)
+#     k_s3 = bucket.get_key(key_name)
+#     if k_s3 is None:
+#         print "Missing resource: %s" % key_name
+#         print "aborting..."
+#         exit(1)
 
-def download(package_name, file_name, folder):
-    if file_name is None:
-        return
-
-    key_name = "packages/%s/%s" %(package_name, file_name)
-    k_s3 = bucket.get_key(key_name)
-    if k_s3 is None:
-        print "Missing resource: %s" % key_name
-        print "aborting..."
-        exit(1)
-
-    print key_name, "downloading...",
-    k_s3.get_contents_to_filename(os.path.join(folder, file_name))
-    print "!"
+#     print key_name, "downloading...",
+#     k_s3.get_contents_to_filename(os.path.join(folder, file_name))
+#     print "!"
 # endregion
 
 
@@ -216,6 +179,7 @@ def is_package_up_to_date(pkg):
     print key_name,
     k = bucket.get_key(key_name)
     if k is None:
+        raise Exception("Package zip file not up to date: %s" % key_name)
         return False
     else:
         return True
@@ -226,14 +190,7 @@ def is_package_up_to_date(pkg):
 def show_help_info():
     info = """
 
-,------.                  ,-------.,--.
-|  .---',--,--,--.,--.,--.`--.   / `--' ,---.  ,---.  ,---. ,--.--.
-|  `--, |        ||  ||  |  /   /  ,--.| .-. || .-. || .-. :|  .--'
-|  `---.|  |  |  |'  ''  ' /   `--.|  || '-' '| '-' '\   --.|  |
-`------'`--`--`--' `----' `-------'`--'|  |-' |  |-'  `----'`--'
-                                       `--'   `--'
-
-Usage: python emuzipper.py <env> <specific package name>
+Usage: python emudbtests.py <env>
 
 -----------
 Parameters:
@@ -241,30 +198,18 @@ Parameters:
 <env>
     test or prod for test environment or production environment
 
-<specific package name>
-    (optional param) Indicate a specific package to check and update.
-    By default (if optional parameter not provided) iterates all packages.
-
-
 ----------------
 What does it do:
 ----------------
-
     1) Gets info from emuapi about all packages.
     2) Checks for each package if a zip file is available and up to date.
-    3) If a zip file is missing or not up to date on s3 the script will:
-        a) Download all required resources.
-        b) Validate that all required resources exist (halts on missing resource).
-        c) Zip all resources.
-        d) Upload the zip file to S3.
+    3) Checks if all objects' ids are unique.
 """
     print info
 # endregion
 
 if __name__ == "__main__":
-
     if setup_configuration(sys.argv):
-        ensure_temp_folder_exists()
         info = fetch_packages_info()
         connect_to_s3()
         check_packages_with_info(info)
