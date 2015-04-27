@@ -18,7 +18,7 @@ end
 
 def get_all_packages(connection)
 	reconnect_database(connection)
-	return Package.all
+	return Package.sort(:name).all
 end
 
 def createNewPackage(mongoconnection, awsconnection, name,label,duration,frames_count,thumbnail_frame_index,source_user_layer_mask,active,dev_only,icon_2x,icon_3x, notification_text)
@@ -29,13 +29,13 @@ def createNewPackage(mongoconnection, awsconnection, name,label,duration,frames_
 
 		emuticons_defaults_hash = Hash.new("emuticons_defaults")
 		if duration != nil
-			emuticons_defaults_hash["duration"] = duration
+			emuticons_defaults_hash["duration"] = duration.to_i
 		end
 		if frames_count != nil
-			emuticons_defaults_hash["frames_count"] = frames_count
+			emuticons_defaults_hash["frames_count"] = frames_count.to_i
 		end
 		if thumbnail_frame_index != nil
-			emuticons_defaults_hash["thumbnail_frame_index"] = thumbnail_frame_index
+			emuticons_defaults_hash["thumbnail_frame_index"] = thumbnail_frame_index.to_i
 		end
 		if source_user_layer_mask != nil
 			emuticons_defaults_hash["source_user_layer_mask"] = name +"-mask" + File.extname(source_user_layer_mask[:filename])
@@ -133,17 +133,17 @@ def updatePackage(mongoconnection,awsconnection, name,label,duration,frames_coun
 			package.unset(:label)
 		end
 		if duration != nil
-			package.emuticons_defaults["duration"] = duration
+			package.emuticons_defaults["duration"] = duration.to_i
 		elsif package.emuticons_defaults["duration"] != nil
-			package.emuticons_defaults["duration"] = nil
+			package.emuticons_defaults.unset(:duration)
 		end
 		if frames_count != nil
-			package.emuticons_defaults["frames_count"] = frames_count
+			package.emuticons_defaults["frames_count"] = frames_count.to_i
 		elsif package.emuticons_defaults["frames_count"] != nil
 			package.emuticons_defaults.unset(:frames_count)
 		end
 		if thumbnail_frame_index != nil
-			package.emuticons_defaults["thumbnail_frame_index"] = thumbnail_frame_index
+			package.emuticons_defaults["thumbnail_frame_index"] = thumbnail_frame_index.to_i
 		elsif package.emuticons_defaults["thumbnail_frame_index"] != nil
 			package.emuticons_defaults.unset(:thumbnail_frame_index)
 		end
@@ -178,22 +178,18 @@ def updatePackage(mongoconnection,awsconnection, name,label,duration,frames_coun
 			filename = make_icon_name(icon_name + "@2x", File.extname(icon_2x[:filename]), true, false)
 			upload_file_to_s3(package.name, icon_2x, filename, awsconnection)
 			package.icon_name = filename.rpartition('@').first
-			updateResources = true
 			package.cms_icon_2x = filename
 		elsif package.cms_icon_2x != nil && removeicon_2x == "true"
 			package.unset(:cms_icon_2x)
-			updateResources = true
 		end
 
 		if icon_3x != nil
 			filename = make_icon_name(icon_name + "@3x", File.extname(icon_3x[:filename]), true, false)
 			upload_file_to_s3(package.name, icon_3x, filename, awsconnection)
 			package.icon_name = filename.rpartition('@').first
-			updateResources = true
 			package.cms_icon_3x = filename
 		elsif package.cms_icon_3x != nil  && removeicon_3x == "true"
 			package.unset(:cms_icon_3x)
-			updateResources = true
 		end
 
 		if source_user_layer_mask != nil

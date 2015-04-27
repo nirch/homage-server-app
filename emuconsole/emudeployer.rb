@@ -31,8 +31,8 @@ def deployEmuPackage(package_name, first_published_on)
 
 		if(success == true)
 			message = "download_zip_from_s3"
-			if(production_package == nil || (production_package != nil && scratchpad_package.cms_last_zip_file_name != production_package.cms_last_zip_file_name))
-				success = download_zip_from_s3(download_folder, scratchpad_package.cms_last_zip_file_name, settings.emu_s3_test)
+			if(production_package == nil || (production_package != nil && scratchpad_package.zipped_package_file_name != production_package.zipped_package_file_name))
+				success = download_zip_from_s3(download_folder, scratchpad_package.zipped_package_file_name, settings.emu_s3_test)
 			end
 		end
 		# TODO downloadzip
@@ -49,8 +49,8 @@ def deployEmuPackage(package_name, first_published_on)
 			end
 			if(success == true)
 				message = "upload_zip_to_s3"
-				if(production_package == nil || (production_package != nil && scratchpad_package.cms_last_zip_file_name != production_package.cms_last_zip_file_name))
-					success = upload_zip_to_s3(download_folder, scratchpad_package.cms_last_zip_file_name, settings.emu_s3_prod)
+				if(production_package == nil || (production_package != nil && scratchpad_package.zipped_package_file_name != production_package.zipped_package_file_name))
+					success = upload_zip_to_s3(download_folder, scratchpad_package.zipped_package_file_name, settings.emu_s3_prod)
 				end
 			end
 
@@ -66,7 +66,7 @@ def deployEmuPackage(package_name, first_published_on)
 					production_package.notification_text = scratchpad_package.notification_text
 					production_package.meta_data_last_update = scratchpad_package.meta_data_last_update
 					production_package.last_update = scratchpad_package.last_update
-					production_package.cms_last_zip_file_name = scratchpad_package.cms_last_zip_file_name
+					production_package.zipped_package_file_name = scratchpad_package.zipped_package_file_name
 					production_package.cms_last_published = Time.now.utc.iso8601
 					production_package.icon_name = scratchpad_package.icon_name
 					production_package.cms_icon_2x = scratchpad_package.cms_icon_2x
@@ -97,7 +97,7 @@ def deployEmuPackage(package_name, first_published_on)
 								:frames_count => emuticon.frames_count, 
 								:thumbnail_frame_index => emuticon.thumbnail_frame_index, 
 								:palette => emuticon.palette, 
-								:patchedOn => emuticon.patchedOn,
+								:patched_on => emuticon.patched_on,
 								:tags => emuticon.tags, 
 								:use_for_preview => emuticon.use_for_preview)
 						else
@@ -120,7 +120,7 @@ def deployEmuPackage(package_name, first_published_on)
 								pemuticon.frames_count = emuticon.frames_count
 								pemuticon.thumbnail_frame_index = emuticon.thumbnail_frame_index
 								pemuticon.palette = emuticon.palette
-								pemuticon.patchedOn = emuticon.patchedOn
+								pemuticon.patched_on = emuticon.patched_on
 								pemuticon.tags = emuticon.tags
 								pemuticon.use_for_preview = emuticon.use_for_preview
 								message = "pemuticon.save"
@@ -147,7 +147,7 @@ def deployEmuPackage(package_name, first_published_on)
 					:first_published_on => first_published_on,:notification_text => scratchpad_package.notification_text, 
 					:meta_data_created_on => scratchpad_package.meta_data_created_on,
 				 	:meta_data_last_update => scratchpad_package.meta_data_last_update, :last_update => scratchpad_package.last_update,
-				 	:name => scratchpad_package.name, :cms_last_zip_file_name => scratchpad_package.cms_last_zip_file_name,
+				 	:name => scratchpad_package.name, :zipped_package_file_name => scratchpad_package.zipped_package_file_name,
 				 	:icon_name => scratchpad_package.icon_name, :cms_icon_2x => scratchpad_package.cms_icon_2x,
 				  	:cms_icon_3x => scratchpad_package.cms_icon_3x, :label => scratchpad_package.label,
 				    :active => scratchpad_package.active,  
@@ -166,7 +166,7 @@ def deployEmuPackage(package_name, first_published_on)
 							:frames_count => emuticon.frames_count, 
 							:thumbnail_frame_index => emuticon.thumbnail_frame_index, 
 							:palette => emuticon.palette, 
-							:patchedOn => emuticon.patchedOn,
+							:patched_on => emuticon.patched_on,
 							:tags => emuticon.tags, 
 							:use_for_preview => emuticon.use_for_preview)
 

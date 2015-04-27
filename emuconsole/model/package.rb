@@ -10,7 +10,7 @@ class Package
   	key :icon_name, String
     key :cms_icon_2x, String
     key :cms_icon_3x, String
-    key :cms_last_zip_file_name, String
+    key :zipped_package_file_name, String
     key :cms_state, String
     key :cms_proccessing, Boolean, :default => false
   	key :name, String

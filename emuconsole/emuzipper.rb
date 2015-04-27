@@ -47,7 +47,7 @@ def zipEmuPackage(package_name)
 		if(success == true)
 			message = "package.save"
 			package.last_update = Time.parse(currentdatetime)
-			package.cms_last_zip_file_name = zip_file_name + ".zip"
+			package.zipped_package_file_name = zip_file_name + ".zip"
 			package.cms_state = "save"
 			package.save
 		end
