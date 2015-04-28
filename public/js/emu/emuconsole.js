@@ -279,7 +279,7 @@ function emuticonsValidated(pack){
 	var validated = true;
 	for (i in  pack.emuticons) {
 		emuticon = pack.emuticons[i];
-		if(emuticon.source_back_layer == nil || emuticon.source_back_layer == ""){
+		if(emuticon.source_back_layer == null || emuticon.source_back_layer == ""){
 			validated = false;
 			alert("emuticon: " + emuticon.name + " does not have a back layer");
 		}
@@ -418,6 +418,28 @@ function CreatePackageFields(method, pack){
 
 	parent_form.appendChild(document.createElement('br'));
 
+	// notification_text
+
+		parent_form.appendChild(createInputOrLabelRowElementDiv(method, "Notifiy text", "notification_text", 'input', "text", false, false, "", ""));
+
+		// END notification_text
+
+		// first_published_on
+
+		parent_form.innerHTML += " Notify users when deployed: ";
+
+		var first_published_oncheckbox = document.createElement('input');
+		first_published_oncheckbox.type = "checkbox";
+		first_published_oncheckbox.name = "first_published_on";
+		first_published_oncheckbox.id = "first_published_on";
+
+		parent_form.appendChild(first_published_oncheckbox);
+
+		// END first_published_on
+
+	parent_form.appendChild(document.createElement('br'));
+	parent_form.appendChild(document.createElement('br'));
+
 	// BUTTON SAVE
 
 	var saveButton = document.createElement('button');
@@ -464,25 +486,6 @@ function CreatePackageFields(method, pack){
 		// END BUTTON ZIP
 
 		// BUTTON DEPLOY
-
-		// notification_text
-
-		parent_form.appendChild(createInputOrLabelRowElementDiv(method, "Notifiy text", "notification_text", 'input', "text", false, false, "", ""));
-
-		// END notification_text
-
-		// first_published_on
-
-		parent_form.innerHTML += " Notify users when deployed: ";
-
-		var first_published_oncheckbox = document.createElement('input');
-		first_published_oncheckbox.type = "checkbox";
-		first_published_oncheckbox.name = "first_published_on";
-		first_published_oncheckbox.id = "first_published_on";
-
-		parent_form.appendChild(first_published_oncheckbox);
-
-		// END first_published_on
 
 		parent_form.appendChild(document.createElement('br'));
 		parent_form.appendChild(document.createElement('br'));
