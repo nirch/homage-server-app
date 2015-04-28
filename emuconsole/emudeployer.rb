@@ -57,12 +57,21 @@ def deployEmuPackage(package_name)
 			if (success == true)
 				if(production_package != nil)
 					# UPDATE package
-					updatePackageOnProduction(production_package, scratchpad_package)
+					currenttime = updatePackageOnProduction(production_package, scratchpad_package)
+					package = getPackageByName(package_name, settings.emu_scratchpad)
+					if(package.cms_first_published == nil)
+						package.cms_first_published = currenttime
+					end
+					package.cms_last_published = currenttime
+					package.save
 
 				else
 					# CREATE NEW PACKAGE
-					createPackageOnProduction(production_package, scratchpad_package)
-
+					currenttime = createPackageOnProduction(production_package, scratchpad_package)
+					package = getPackageByName(package_name, settings.emu_scratchpad)
+					package.cms_first_published = currenttime
+					package.cms_last_published = currenttime
+					package.save
 				end
 			end
 
@@ -154,6 +163,7 @@ def updatePackageOnProduction(production_package, scratchpad_package)
 	message = "production_package.save"
 	production_package.save
 
+	return currenttime
 end
 
 def createPackageOnProduction(production_package, scratchpad_package)
@@ -194,5 +204,7 @@ def createPackageOnProduction(production_package, scratchpad_package)
 	end
 	message = "production_package.save"
 	production_package.save
+
+	return currenttime
 end
 
