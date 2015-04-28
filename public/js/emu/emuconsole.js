@@ -645,11 +645,13 @@ function DisplayPackage(pack) {
 	// END DEV ONLY
 
 	// first_published_on
-	if(public_pack != null && public_pack.first_published_on != null){
+
+	if(pack.first_published_on != null){
 		first_published_on = document.getElementById("first_published_on");
 		first_published_on.checked = true;
 	}
-	// END ACTIVE
+
+	// END first_published_on
 
 	// notification_text
 	notification_text = document.getElementById("notification_text");
@@ -736,7 +738,7 @@ try {
 	}
 
 	if (!/^[a-z0-9_\-]+$/.test(pack_name) || pack_name == ""){
-		alert("Sir, pack_name must contain only lowercase letters, numbers, - , _  and fried chicken");
+		alert("pack_name must contain only lowercase letters, numbers, - , _");
 		return;
 	}
 
@@ -754,7 +756,7 @@ try {
 	query += "&label=" + pack_label;
 
 	if (pack_label == ""){ //!/^[A-Za-z0-9_\-\ ]+$/.test(pack_label) || 
-		alert("Thy label may not be empty my liege"); // must contain only letters, numbers, - , _ , space");
+		alert("label may not be empty"); // must contain only letters, numbers, - , _ , space");
 		return;
 	}
 
@@ -788,7 +790,7 @@ try {
 	}
 
 	if(method == 'POST' && updateIcons < 2){
-		alert("Cannot create only one icon size or no icons at all you foundering blunderbus!");
+		alert("Cannot create only one icon size or no icons at all");
 		return;
 	}
 
@@ -813,6 +815,11 @@ try {
 	thumbnail_frame_index = document.getElementById("thumbnail_frame_index").value;
 	query += "&thumbnail_frame_index=" + thumbnail_frame_index;
 
+	if(duration == "" || frames_count == "" || thumbnail_frame_index == ""){
+		alert("Must fill in Duration, frames_count, thumbnail_frame_index in defaults")
+		return;
+	}
+
 	active = document.getElementById("active").checked;
 	
 	if(active){
@@ -831,6 +838,14 @@ try {
 		query += "&dev_only=" + "false";
 	}
 
+	first_published_on = document.getElementById("first_published_on").checked;
+	
+	if(first_published_on){
+		query += "&first_published_on=" + "true";
+	}
+	else{
+		query += "&first_published_on=" + "false";
+	}
 
 	notification_text = document.getElementById("notification_text").value;
 	if(notification_text != ""){
@@ -891,7 +906,7 @@ try{
 	// Validations
 
 	if(pack.emuticons.length < 6){
-		alert("Trying to zip with less than 6 emuticons? who the fuck do you think you are? Chuck norris??!@#$");
+		alert("Trying to zip with less than 6 emuticons?");
 		return;
 	}
 
@@ -990,15 +1005,6 @@ try{
 	var pack_name = document.getElementById("pack_name").innerHTML;
 
 	query = "?package_name=" + pack_name;
-
-	first_published_on = document.getElementById("first_published_on").checked;
-	
-	if(first_published_on){
-		query += "&first_published_on=" + "true";
-	}
-	else{
-		query += "&first_published_on=" + "false";
-	}
 
 	var theUrl = "/emuconsole/deploy" + query;
 
@@ -1439,7 +1445,7 @@ try{
 	query += "&tags=" + escape(tags);
 
 	if (!/^[a-z0-9\,]+$/.test(tags) || tags == ""){
-		alert("tags may contain only lowercase letters, numbers, seperated by commas and must have at least one value fok yuuuu")
+		alert("tags may contain only lowercase letters, numbers, seperated by commas and must have at least one value")
 		return
 	}
 	

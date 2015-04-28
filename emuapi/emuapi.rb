@@ -113,6 +113,7 @@ protect do
     #  get params 
 
     name = params[:name]
+    first_published_on = params[:first_published_on]
     notification_text = params[:notification_text]
     label = params[:label]
     duration = params[:duration]
@@ -125,7 +126,7 @@ protect do
     icon_3x = params[:icon_3x]
 
     # upload to s3 and save to mongo
-    success = createNewPackage(settings.emu_scratchpad, settings.emu_s3_test, name,label,duration,frames_count,thumbnail_frame_index,source_user_layer_mask,active,dev_only,icon_2x,icon_3x, notification_text)
+    success = createNewPackage(settings.emu_scratchpad, settings.emu_s3_test, name,label,duration,frames_count,thumbnail_frame_index,source_user_layer_mask,active,dev_only,icon_2x,icon_3x,first_published_on, notification_text)
     
     result = Hash.new
     result['error'] = success
@@ -139,6 +140,7 @@ protect do
     #  get params 
     
     name = params[:name]
+    first_published_on = params[:first_published_on]
     notification_text = params[:notification_text]
     label = params[:label]
     duration = params[:duration]
@@ -154,7 +156,7 @@ protect do
     removeicon_3x = params[:removeicon_3x]
 
     # upload to s3 and save to mongo
-    success = updatePackage(settings.emu_scratchpad, settings.emu_s3_test, name,label,duration,frames_count,thumbnail_frame_index,source_user_layer_mask,removesource_user_layer_mask,active,dev_only,icon_2x,removeicon_2x,icon_3x,removeicon_3x, notification_text)
+    success = updatePackage(settings.emu_scratchpad, settings.emu_s3_test, name,label,duration,frames_count,thumbnail_frame_index,source_user_layer_mask,removesource_user_layer_mask,active,dev_only,icon_2x,removeicon_2x,icon_3x,removeicon_3x,first_published_on, notification_text)
     
     result = Hash.new
     result['error'] = success

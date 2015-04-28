@@ -76,15 +76,8 @@ end
 protect do
 	post '/emuconsole/deploy' do
 		package_name = params[:package_name]
-		first_published_on = params[:first_published_on]
 
-		if(first_published_on) == "true"
-			first_published_on = true
-		else
-			first_published_on = false
-		end
-
-		success = deployEmuPackage(package_name, first_published_on)
+		success = deployEmuPackage(package_name)
 
 		result = Hash.new
 		result['error'] = success
