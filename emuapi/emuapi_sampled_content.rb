@@ -8,9 +8,9 @@ def handle_upload_user_content(config, connection, already_sampled=false)
   sampled_info = connection.db().collection("config").find({"config_type"=> "sampled users", "client_name"=>"Emu iOS"}).to_a
 
   # This feature can be disabled completely for all future clients.
-  if upload_user_content == nil or sampled_info.count != 1
+  if upload_user_content == nil or sampled_info.count != 1 or upload_user_content["enabled"] == false
     # Disable all sampling for all future content.
-    config["upload_user_content"] = { "enabled"=>false, "reason"=>"no valid configuration" }
+    config["upload_user_content"] = { "enabled"=>false, "reason"=>"not valid or disabled" }
     return
   end
   sampled_info = sampled_info[0]
