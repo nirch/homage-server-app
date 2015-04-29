@@ -3,6 +3,11 @@ require_relative '../model/emuticon'
 require_relative '../model/package'
 require_relative '../../utils/zipper'
 
+# Zip File Name
+def create_zip_file_name(package_name, currentdatetime)
+	return "package_" + package_name + "_" + ("%02d" % Time.parse(currentdatetime).year).to_s + ("%02d" % Time.parse(currentdatetime).month).to_s + ("%02d" % Time.parse(currentdatetime).day).to_s + "_" + ("%02d" % Time.parse(currentdatetime).hour).to_s + ("%02d" % Time.parse(currentdatetime).min).to_s + ("%02d" % Time.parse(currentdatetime).sec).to_s
+end
+
 # zip files
 def zip_package_files(download_folder, input_filenames, zip_file_name)
 	return zipListOfFiles(download_folder, input_filenames, zip_file_name)

@@ -8,7 +8,7 @@ class Emuticon
 	key :frames_count, Integer
 	key :thumbnail_frame_index, Integer
 	key :palette, String
-	key :patchedOn, Time
+	key :patched_on, Time
 	key :tags, String
 	key :use_for_preview, Boolean
 end

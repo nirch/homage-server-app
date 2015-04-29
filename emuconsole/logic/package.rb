@@ -18,10 +18,10 @@ end
 
 def get_all_packages(connection)
 	reconnect_database(connection)
-	return Package.all
+	return Package.sort(:name).all
 end
 
-def createNewPackage(mongoconnection, awsconnection, name,label,duration,frames_count,thumbnail_frame_index,source_user_layer_mask,active,dev_only,icon_2x,icon_3x, notification_text)
+def createNewPackage(mongoconnection, awsconnection, name,label,duration,frames_count,thumbnail_frame_index,source_user_layer_mask,active,dev_only,icon_2x,icon_3x,first_published_on, notification_text)
 	
 	success = true
 
@@ -29,13 +29,13 @@ def createNewPackage(mongoconnection, awsconnection, name,label,duration,frames_
 
 		emuticons_defaults_hash = Hash.new("emuticons_defaults")
 		if duration != nil
-			emuticons_defaults_hash["duration"] = duration
+			emuticons_defaults_hash["duration"] = duration.to_i
 		end
 		if frames_count != nil
-			emuticons_defaults_hash["frames_count"] = frames_count
+			emuticons_defaults_hash["frames_count"] = frames_count.to_i
 		end
 		if thumbnail_frame_index != nil
-			emuticons_defaults_hash["thumbnail_frame_index"] = thumbnail_frame_index
+			emuticons_defaults_hash["thumbnail_frame_index"] = thumbnail_frame_index.to_i
 		end
 		if source_user_layer_mask != nil
 			emuticons_defaults_hash["source_user_layer_mask"] = name +"-mask" + File.extname(source_user_layer_mask[:filename])
@@ -95,7 +95,13 @@ def createNewPackage(mongoconnection, awsconnection, name,label,duration,frames_
 			return success
 		end
 
-		package = Package.create({ 
+		if(first_published_on != "false")
+				first_published_on = Time.now.utc.iso8601
+		else
+			first_published_on = nil
+		end
+
+		package = Package.create({ :first_published_on => first_published_on,
 			:meta_data_created_on => meta_data_created_on, :notification_text => notification_text,
 		 :meta_data_last_update => meta_data_last_update, :last_update => last_update,:name => name, 
 		 :icon_name => icon_name, :cms_icon_2x => icon2xName, :cms_icon_3x => icon3xName, :cms_state => "save",
@@ -115,45 +121,36 @@ def createNewPackage(mongoconnection, awsconnection, name,label,duration,frames_
 	end
 end
 
-def updatePackage(mongoconnection,awsconnection, name,label,duration,frames_count,thumbnail_frame_index,source_user_layer_mask,removesource_user_layer_mask,active,dev_only,icon_2x,removeicon_2x,icon_3x,removeicon_3x, notification_text)
+def updatePackage(mongoconnection,awsconnection, name,label,duration,frames_count,thumbnail_frame_index,source_user_layer_mask,removesource_user_layer_mask,active,dev_only,icon_2x,removeicon_2x,icon_3x,removeicon_3x, first_published_on, notification_text)
 	success = true
+	production_package = getPackageByName(name,settings.emu_public)
 	package = getPackageByName(name,mongoconnection)
 	package.cms_proccessing = true
 	package.save
 
-	begin
+	currenttime = Time.now.utc.iso8601
 
+	begin
 		package = getPackageByName(name,mongoconnection)
 
 		updateResources = false
 		
 		if label != nil
 			package.label = label
-		elsif package.label != nil
-			package.unset(:label)
 		end
 		if duration != nil
-			package.emuticons_defaults["duration"] = duration
-		elsif package.emuticons_defaults["duration"] != nil
-			package.emuticons_defaults["duration"] = nil
+			package.emuticons_defaults["duration"] = duration.to_i
 		end
 		if frames_count != nil
-			package.emuticons_defaults["frames_count"] = frames_count
-		elsif package.emuticons_defaults["frames_count"] != nil
-			package.emuticons_defaults.unset(:frames_count)
+			package.emuticons_defaults["frames_count"] = frames_count.to_i
 		end
 		if thumbnail_frame_index != nil
-			package.emuticons_defaults["thumbnail_frame_index"] = thumbnail_frame_index
-		elsif package.emuticons_defaults["thumbnail_frame_index"] != nil
-			package.emuticons_defaults.unset(:thumbnail_frame_index)
-		end
-		if duration == nil && frames_count == nil && thumbnail_frame_index == nil
-			package.unset(:emuticons_defaults)
+			package.emuticons_defaults["thumbnail_frame_index"] = thumbnail_frame_index.to_i
 		end
 		if notification_text != nil
 			package.notification_text = notification_text
 		elsif package.notification_text != nil
-			package.unset(:notification_text)
+			package.notification_text = nil
 		end
 		if active != nil
 			if(active == "true")
@@ -170,30 +167,33 @@ def updatePackage(mongoconnection,awsconnection, name,label,duration,frames_coun
 			end
 		end
 
-		package.meta_data_last_update = Time.now.utc.iso8601
+		package.meta_data_last_update = currenttime
 
 		icon_name = package.icon_name
-
 		if icon_2x != nil
 			filename = make_icon_name(icon_name + "@2x", File.extname(icon_2x[:filename]), true, false)
 			upload_file_to_s3(package.name, icon_2x, filename, awsconnection)
 			package.icon_name = filename.rpartition('@').first
-			updateResources = true
 			package.cms_icon_2x = filename
 		elsif package.cms_icon_2x != nil && removeicon_2x == "true"
-			package.unset(:cms_icon_2x)
-			updateResources = true
+			package.cms_icon_2x = nil
+		elsif package.cms_icon_2x == nil
+			filename = make_icon_name(icon_name + "@2x", ".png", false, false)
+			package.icon_name = filename.rpartition('@').first
+			package.cms_icon_2x = filename
 		end
 
 		if icon_3x != nil
 			filename = make_icon_name(icon_name + "@3x", File.extname(icon_3x[:filename]), true, false)
 			upload_file_to_s3(package.name, icon_3x, filename, awsconnection)
 			package.icon_name = filename.rpartition('@').first
-			updateResources = true
 			package.cms_icon_3x = filename
 		elsif package.cms_icon_3x != nil  && removeicon_3x == "true"
-			package.unset(:cms_icon_3x)
-			updateResources = true
+			package.cms_icon_3x = nil
+		elsif package.cms_icon_3x == nil
+			filename = make_icon_name(icon_name + "@3x", ".png", false, false)
+			package.icon_name = filename.rpartition('@').first
+			package.cms_icon_3x = filename
 		end
 
 		if source_user_layer_mask != nil
@@ -206,8 +206,23 @@ def updatePackage(mongoconnection,awsconnection, name,label,duration,frames_coun
 			updateResources = true
 		end
 
+		if package.zipped_package_file_name == nil && package.last_update != nil
+			zip_file_name = create_zip_file_name(package.name, package.last_update.iso8601)
+			package.zipped_package_file_name = zip_file_name + ".zip"
+		end
+
 		if (updateResources == true && package.emuticons.length >= 6)
 			package.cms_state = "zip"
+		end
+
+		if(first_published_on == "true" || first_published_on == "on")
+			if(production_package != nil && production_package.first_published_on != nil)
+				package.first_published_on = production_package.first_published_on
+			else
+				package.first_published_on = currenttime
+			end
+		elsif package.first_published_on != nil
+			package.first_published_on = nil
 		end
 
 		package.save

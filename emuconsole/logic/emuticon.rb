@@ -87,7 +87,7 @@ def addEmuticon(mongoconnection, awsconnection, package_name,name,source_back_la
 				package.emuticons << Emuticon.new(:name => name, :source_back_layer => source_back_layer, :source_front_layer =>
 							source_front_layer, :source_user_layer_mask => source_user_layer_mask,
 							:duration => duration, :frames_count => frames_count, :thumbnail_frame_index => thumbnail_frame_index,
-							 :palette => palette, :patchedOn => patched_on,
+							 :palette => palette, :patched_on => patched_on,
 							:tags => tags, :use_for_preview => use_for_preview)
 
 				if(package.emuticons.length >= 6)
@@ -216,7 +216,7 @@ def updateEmuticon(mongoconnection, awsconnection, package_name,name,source_back
 				emuticon.palette = nil
 			end
 			if(patched)
-				emuticon.patchedOn = Time.now.utc.iso8601
+				emuticon.patched_on = Time.now.utc.iso8601
 			end
 			if(tags != nil)
 				emuticon.tags = tags

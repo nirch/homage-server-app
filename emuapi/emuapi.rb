@@ -1,5 +1,6 @@
 #encoding: utf-8
 require_relative 'emuapi_config'
+require_relative 'emuapi_sampled_content'
 require_relative '../emuconsole/logic/package'
 
 module BSON
@@ -64,13 +65,13 @@ end
 #   full - the result will also include all emuticons information for every package
 #   metadata - the result will only include meta data about the packages (excluding emuticons info)
 get '/emuapi/packages/:verbosity' do
+
   # determine the verbosity of the result
   connection = settings.emu_public
   use_scratchpad = request.env['HTTP_SCRATCHPAD'].to_s
   if use_scratchpad == "true"
     connection = settings.emu_scratchpad
   end
-
 
   verbosity = params[:verbosity]
   case verbosity
@@ -83,11 +84,16 @@ get '/emuapi/packages/:verbosity' do
   end
 
   # Get the config information
-  config = connection.db().collection("config").find({"client_name"=>"Emu iOS"}).to_a
+  config = connection.db().collection("config").find({"config_type"=> "app config", "client_name"=>"Emu iOS"}).to_a
   if (config.count != 1)
     return oops_500
   end
   config = config.to_a[0]
+
+  # Handle sampled user content
+  already_sampled_header = request.env['HTTP_USER_SAMPLED_BY_SERVER'].to_s
+  already_sampled = already_sampled_header=="true"
+  handle_upload_user_content(config, connection, already_sampled=already_sampled)
 
   # Get the packages
   packages = connection.db().collection("packages").find({}, {:fields=>fields_projection})
@@ -101,11 +107,13 @@ get '/emuapi/packages/:verbosity' do
   return result.to_json()
 end
 
+
 protect do
   post '/emuapi/package' do
     #  get params 
 
     name = params[:name]
+    first_published_on = params[:first_published_on]
     notification_text = params[:notification_text]
     label = params[:label]
     duration = params[:duration]
@@ -118,7 +126,7 @@ protect do
     icon_3x = params[:icon_3x]
 
     # upload to s3 and save to mongo
-    success = createNewPackage(settings.emu_scratchpad, settings.emu_s3_test, name,label,duration,frames_count,thumbnail_frame_index,source_user_layer_mask,active,dev_only,icon_2x,icon_3x, notification_text)
+    success = createNewPackage(settings.emu_scratchpad, settings.emu_s3_test, name,label,duration,frames_count,thumbnail_frame_index,source_user_layer_mask,active,dev_only,icon_2x,icon_3x,first_published_on, notification_text)
     
     result = Hash.new
     result['error'] = success
@@ -132,6 +140,7 @@ protect do
     #  get params 
     
     name = params[:name]
+    first_published_on = params[:first_published_on]
     notification_text = params[:notification_text]
     label = params[:label]
     duration = params[:duration]
@@ -147,7 +156,7 @@ protect do
     removeicon_3x = params[:removeicon_3x]
 
     # upload to s3 and save to mongo
-    success = updatePackage(settings.emu_scratchpad, settings.emu_s3_test, name,label,duration,frames_count,thumbnail_frame_index,source_user_layer_mask,removesource_user_layer_mask,active,dev_only,icon_2x,removeicon_2x,icon_3x,removeicon_3x, notification_text)
+    success = updatePackage(settings.emu_scratchpad, settings.emu_s3_test, name,label,duration,frames_count,thumbnail_frame_index,source_user_layer_mask,removesource_user_layer_mask,active,dev_only,icon_2x,removeicon_2x,icon_3x,removeicon_3x,first_published_on, notification_text)
     
     result = Hash.new
     result['error'] = success
@@ -172,7 +181,7 @@ protect do
     use_for_preview = params[:use_for_preview]
 
     # upload to s3 and save to mongo
-    success = addEmuticon(settings.emu_scratchpad, settings.emu_s3_test, package_name,name,source_back_layer,source_front_layer,source_user_layer_mask,removesource_back_layer,removesource_front_layer,removesource_user_layer_mask,duration,frames_count,thumbnail_frame_index,palette,tags,use_for_preview)
+    success = addEmuticon(settings.emu_scratchpad, settings.emu_s3_test, package_name,name,source_back_layer,source_front_layer,source_user_layer_mask,duration,frames_count,thumbnail_frame_index,palette,tags,use_for_preview)
     
     result = Hash.new
     result['error'] = success

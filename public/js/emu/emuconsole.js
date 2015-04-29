@@ -157,35 +157,39 @@ function createInputOrLabelRowElementDiv(method, label, element_id, element_type
 	var rownamediv = document.createElement('div');
 	rownamediv.className = "row";
 
-	var labelnamecoldiv = document.createElement('div');
-	labelnamecoldiv.className = "col-sm-1";
-	labelnamecoldiv.innerHTML = label + ":"
-
 	var inputnamecoldiv = document.createElement('div');
-	inputnamecoldiv.className = "col-sm-3";
+	inputnamecoldiv.className = "col-sm-8 align-left";
+
+	var labelnamecoldiv = null;
+	var inputname = null;
+	var imgname = null;
+	var imgchkbxlbl = null;
+	var imgchkbx = null;
+
+	var labelname = document.createElement('label');
+	labelname.innerHTML = label + ": "
 
 	if(isFile){
-		var imgname = document.createElement('img');
+		imgname = document.createElement('img');
 		imgname.id = element_id + "img"
 		imgname.className = "input_img"
+		
 		if(method == 'PUT' ){
-			var imgchkbxlbl = document.createElement('label');
+			imgchkbxlbl = document.createElement('label');
 			imgchkbxlbl.innerHTML = " remove image: "
-			var imgchkbx = document.createElement('input');
+			imgchkbx = document.createElement('input');
 			imgchkbx.type = "checkbox"
 			imgchkbx.id = element_id + "checkbox"
+		
 		}
-		var inputname = document.createElement(element_type);
+		inputname = document.createElement(element_type);
 		inputname.id = element_id + "file";
 		inputname.type = input_type;
 		inputname.accept = content_type;
 		inputname.name = element_id
 		inputname.className = classname
-		inputnamecoldiv.appendChild(imgname);
-		inputnamecoldiv.appendChild(imgchkbxlbl);
-		inputnamecoldiv.appendChild(imgchkbx);
 	}else{
-		var inputname = null;
+		inputname = null;
 		if(cantChangeOnUpdate){
 			if(method == 'PUT'){
 				inputname = document.createElement('label');
@@ -201,9 +205,17 @@ function createInputOrLabelRowElementDiv(method, label, element_id, element_type
 		inputname.id = element_id;
 	}
 
-	
+
+	inputnamecoldiv.appendChild(labelname);
 	inputnamecoldiv.appendChild(inputname);
-	rownamediv.appendChild(labelnamecoldiv);
+	if(imgchkbxlbl != null){
+		inputnamecoldiv.appendChild(imgchkbxlbl);
+		inputnamecoldiv.appendChild(imgchkbx);
+	}
+	if(imgname != null){
+		inputnamecoldiv.appendChild(document.createElement('br'));
+		inputnamecoldiv.appendChild(imgname);
+	}
 	rownamediv.appendChild(inputnamecoldiv);
 	rownamediv.appendChild(compareLabel(element_id));
 
@@ -263,6 +275,48 @@ function emuticonsValuesUpdate(pack, public_pack){
 	return valuesChanged;
 }
 
+function emuticonsValidated(pack){
+	var validated = true;
+	for (i in  pack.emuticons) {
+		emuticon = pack.emuticons[i];
+		if(emuticon.source_back_layer == null || emuticon.source_back_layer == ""){
+			validated = false;
+			alert("emuticon: " + emuticon.name + " does not have a back layer");
+		}
+	}
+	return validated;
+}
+
+function emuticonsSourcesChanged(pack){
+	var valuesChanged = false;
+	if(public_pack.emuticons.length == pack.emuticons.length){
+		for (i = 0; i <  pack.emuticons.length; i++) {
+			var keylist = Object.keys(pack.emuticons[i])
+				var publickeylist = Object.keys(public_pack.emuticons[i])
+				for(item in keylist){
+					if(keylist[item] == "source_back_layer" || keylist[item] != "source_front_layer" || keylist[item] != "source_user_layer_mask"){
+						if(!public_pack.emuticons[i].hasOwnProperty(keylist[item])){
+							valuesChanged = true;
+					    	break;
+						}
+						if(public_pack.emuticons[i][keylist[item]] == "" && pack.emuticons[i][keylist[item]] == ""){
+							continue;
+						}
+					    if(public_pack.emuticons[i][keylist[item]] != pack.emuticons[i][keylist[item]]){
+					    	valuesChanged = true;
+					    	break;
+					    }
+					}
+				}
+		}
+	}
+	else{
+		valuesChanged = true;
+	}
+
+	return valuesChanged;
+}
+
 // PACKAGE
 
 function CreatePackageFields(method, pack){
@@ -283,20 +337,27 @@ function CreatePackageFields(method, pack){
 	parent_form.appendChild(createInputOrLabelRowElementDiv(method, "Name", "pack_name", "input", "text", true, false, "", ""));
 	// END NAME
 
+	parent_form.appendChild(document.createElement('br'));
+
 	// LABEL
 	parent_form.appendChild(createInputOrLabelRowElementDiv(method, "Label", "pack_label", "input", "text", false, false, "", ""));
 	// END LABEL
+
+	parent_form.appendChild(document.createElement('br'));
 
 	// ICON2X
 
 	parent_form.appendChild(createInputOrLabelRowElementDiv(method, "Icon2x", "icon2x", 'input', "file", false, true, "image/*", "input_file"));
 	// END ICON2X
 
-	// ICON3X
-	parent_form.appendChild(createInputOrLabelRowElementDiv(method, "Icon3x", "icon3x", 'input', "file", false, true, "image/*", "input_file"));
 	parent_form.appendChild(document.createElement('br'));
 
+	// ICON3X
+	parent_form.appendChild(createInputOrLabelRowElementDiv(method, "Icon3x", "icon3x", 'input', "file", false, true, "image/*", "input_file"));
+
 	// END ICON3X
+
+	parent_form.appendChild(document.createElement('br'));
 
   	// EMUTICON DEFAULTS
 
@@ -312,11 +373,15 @@ function CreatePackageFields(method, pack){
 	fieldset.appendChild(createInputOrLabelRowElementDiv(method, "Duration", "duration", 'input', "text", false, false, "", ""));
 	// END DURATION
 
+	fieldset.appendChild(document.createElement('br'));
+
 	// FRAMES COUNT
 
 	fieldset.appendChild(createInputOrLabelRowElementDiv(method, "Frames Count", "frames_count", 'input', "text", false, false, "", ""));
 
 	// END FRAMES COUNT
+
+	fieldset.appendChild(document.createElement('br'));
 
 	// THUMBNAIL FRAME INDEX
 
@@ -324,9 +389,11 @@ function CreatePackageFields(method, pack){
 
 	// END THUMBNAIL FRAME INDEX
 
+	fieldset.appendChild(document.createElement('br'));
+
 	// ICON MASK
 
-	fieldset.appendChild(createInputOrLabelRowElementDiv(method, "Icon Mask", "icon_mask", 'input', "file", false, true, "image/*", "input_file"));
+	fieldset.appendChild(createInputOrLabelRowElementDiv(method, "Source Layer User Mask", "icon_mask", 'input', "file", false, true, "image/*", "input_file"));
 
 	// END ICON MASK
 	parent_form.appendChild(fieldset);
@@ -351,6 +418,28 @@ function CreatePackageFields(method, pack){
 
 	parent_form.appendChild(document.createElement('br'));
 
+	// notification_text
+
+		parent_form.appendChild(createInputOrLabelRowElementDiv(method, "Notifiy text", "notification_text", 'input', "text", false, false, "", ""));
+
+		// END notification_text
+
+		// first_published_on
+
+		parent_form.innerHTML += " Notify users when deployed: ";
+
+		var first_published_oncheckbox = document.createElement('input');
+		first_published_oncheckbox.type = "checkbox";
+		first_published_oncheckbox.name = "first_published_on";
+		first_published_oncheckbox.id = "first_published_on";
+
+		parent_form.appendChild(first_published_oncheckbox);
+
+		// END first_published_on
+
+	parent_form.appendChild(document.createElement('br'));
+	parent_form.appendChild(document.createElement('br'));
+
 	// BUTTON SAVE
 
 	var saveButton = document.createElement('button');
@@ -364,6 +453,9 @@ function CreatePackageFields(method, pack){
 	}
 
 	parent_form.appendChild(saveButton);
+
+	parent_form.appendChild(document.createElement('br'));
+	parent_form.appendChild(document.createElement('br'));
 
 	// END BUTTON SAVE
 
@@ -386,11 +478,17 @@ function CreatePackageFields(method, pack){
 		}
 
 		parent_form.appendChild(zipButton);
+
+		parent_form.appendChild(document.createElement('br'));
+		parent_form.appendChild(document.createElement('br'));
 		
 
 		// END BUTTON ZIP
 
 		// BUTTON DEPLOY
+
+		parent_form.appendChild(document.createElement('br'));
+		parent_form.appendChild(document.createElement('br'));
 
 		var deployButton = document.createElement('button');
 		deployButton.className = "btn btn-default";
@@ -404,30 +502,10 @@ function CreatePackageFields(method, pack){
 
 		parent_form.appendChild(deployButton);
 
-		// first_published_on
-
-		parent_form.innerHTML += " Notify users when deployed: ";
-
-		var first_published_oncheckbox = document.createElement('input');
-		first_published_oncheckbox.type = "checkbox";
-		first_published_oncheckbox.name = "first_published_on";
-		first_published_oncheckbox.id = "first_published_on";
-
-		parent_form.appendChild(first_published_oncheckbox);
-
-		// END first_published_on
-		
+		parent_form.appendChild(document.createElement('br'));
 
 		// END BUTTON DEPLOY
 	}
-
-	// notification_text
-
-	parent_form.appendChild(createInputOrLabelRowElementDiv(method, "Notifiy text", "notification_text", 'input', "text", false, false, "", ""));
-
-	// END notification_text
-
-	
 
 	display.appendChild(parent_form);
 
@@ -466,24 +544,33 @@ function DisplayPackage(pack) {
 	// LABEL
 	pack_label = document.getElementById("pack_label");
 	pack_label.value = pack.label;
-	if(public_pack && values_update == false){
-		values_update = displayCompareForField("pack_label", public_pack.label, pack.label);
+	if(public_pack){
+		var result = displayCompareForField("pack_label", public_pack.label, pack.label);
+		if(!values_update){
+			values_update = result;
+		}
 	}
 	// END LABEL
 
 	// ICON2X
 	img2xname = document.getElementById("icon2ximg");
 	img2xname.src = awsfolder + pack.name + "/" + pack.cms_icon_2x;
-	if(public_pack && values_update == false){
-		values_update = displayCompareForField("icon2x", public_pack.cms_icon_2x, pack.cms_icon_2x);
+	if(public_pack){
+		var result = displayCompareForField("icon2x", public_pack.cms_icon_2x, pack.cms_icon_2x);
+		if(!values_update){
+			values_update = result;
+		}
 	}
 	// END ICON2X
 
 	// ICON3X
 	img3xname = document.getElementById("icon3ximg");
 	img3xname.src = awsfolder + pack.name + "/" + pack.cms_icon_3x;
-	if(public_pack && values_update == false){
-		values_update = displayCompareForField("icon3x", public_pack.cms_icon_3x, pack.cms_icon_3x);
+	if(public_pack){
+		var result = displayCompareForField("icon3x", public_pack.cms_icon_3x, pack.cms_icon_3x);
+		if(!values_update){
+			values_update = result;
+		}
 	}
 	// END ICON3X
 
@@ -492,32 +579,44 @@ function DisplayPackage(pack) {
   	// DURATION
 	duration = document.getElementById("duration");
 	duration.value = pack.emuticons_defaults.duration;
-	if(public_pack && values_update == false){
-		values_update = displayCompareForField("duration", public_pack.emuticons_defaults.duration, pack.emuticons_defaults.duration);
+	if(public_pack){
+		var result = displayCompareForField("duration", public_pack.emuticons_defaults.duration, pack.emuticons_defaults.duration);
+		if(!values_update){
+			values_update = result;
+		}
 	}
 	// END DURATION
 
 	// FRAMES COUNT
 	frames_count = document.getElementById("frames_count");
 	frames_count.value = pack.emuticons_defaults.frames_count;
-	if(public_pack && values_update == false){
-		values_update = displayCompareForField("frames_count", public_pack.emuticons_defaults.frames_count, pack.emuticons_defaults.frames_count);
+	if(public_pack){
+		var result = displayCompareForField("frames_count", public_pack.emuticons_defaults.frames_count, pack.emuticons_defaults.frames_count);
+		if(!values_update){
+			values_update = result;
+		}
 	}
 	// END FRAMES COUNT
 
 	// THUMBNAIL FRAME INDEX
 	thumbnail_frame_index = document.getElementById("thumbnail_frame_index");
 	thumbnail_frame_index.value = pack.emuticons_defaults.thumbnail_frame_index;
-	if(public_pack && values_update == false){
-		values_update = displayCompareForField("thumbnail_frame_index", public_pack.emuticons_defaults.thumbnail_frame_index, pack.emuticons_defaults.thumbnail_frame_index);
+	if(public_pack){
+		var result = displayCompareForField("thumbnail_frame_index", public_pack.emuticons_defaults.thumbnail_frame_index, pack.emuticons_defaults.thumbnail_frame_index);
+		if(!values_update){
+			values_update = result;
+		}
 	}
 	// END THUMBNAIL FRAME INDEX
 
 	// ICON MASK
 	icon_maskimg = document.getElementById("icon_maskimg");
 	icon_maskimg.src = awsfolder + pack.name + "/" + pack.emuticons_defaults["source_user_layer_mask"];
-	if(public_pack && values_update == false){
-		values_update = displayCompareForField("icon_mask", public_pack.emuticons_defaults["source_user_layer_mask"], pack.emuticons_defaults["source_user_layer_mask"]);
+	if(public_pack){
+		var result = displayCompareForField("icon_mask", public_pack.emuticons_defaults["source_user_layer_mask"], pack.emuticons_defaults["source_user_layer_mask"]);
+		if(!values_update){
+			values_update = result;
+		}
 	}
 	// END ICON MASK
 
@@ -526,43 +625,57 @@ function DisplayPackage(pack) {
 	// ACTIVE
 	active = document.getElementById("active");
 	active.checked = pack.active;
-	if(public_pack && values_update == false){
-		values_update = displayCompareForField("active", public_pack.active, pack.active);
+	if(public_pack){
+		var result = displayCompareForField("active", public_pack.active, pack.active);
+		if(!values_update){
+			values_update = result;
+		}
 	}
 	// END ACTIVE
 
 	// DEV ONLY
 	dev_only = document.getElementById("dev_only");
 	dev_only.checked = pack.dev_only;
-	if(public_pack && values_update == false){
-		values_update = displayCompareForField("dev_only", public_pack.dev_only, pack.dev_only);
+	if(public_pack){
+		var result = displayCompareForField("dev_only", public_pack.dev_only, pack.dev_only);
+		if(!values_update){
+			values_update = result;
+		}
 	}
 	// END DEV ONLY
 
 	// first_published_on
-	if(public_pack != null && public_pack.first_published_on != null){
+
+	if(pack.first_published_on != null){
 		first_published_on = document.getElementById("first_published_on");
 		first_published_on.checked = true;
 	}
-	// END ACTIVE
+
+	// END first_published_on
 
 	// notification_text
 	notification_text = document.getElementById("notification_text");
 	if(pack.notification_text && pack.notification_text != ""){
 		notification_text.value = pack.notification_text;
 	}
-	if(public_pack && values_update == false){
-		values_update = displayCompareForField("notification_text", public_pack.notification_text, pack.notification_text);
+	if(public_pack){
+		var result = displayCompareForField("notification_text", public_pack.notification_text, pack.notification_text);
+		if(!values_update){
+			values_update = result;
+		}
 	}
 	// END notification_text
-
-	if(values_update == false){
-		// Check emuticons values
-		if(public_pack != null){
-			values_update = emuticonsValuesUpdate(pack, public_pack);
+	
+	// Check emuticons values
+	if(public_pack != null){
+		var result = emuticonsValuesUpdate(pack, public_pack);
+		if(!values_update){
+			values_update = result;
 		}
-		else
-		{
+	}
+	else
+	{
+		if(!values_update){
 			values_update = true;
 		}
 	}
@@ -574,7 +687,12 @@ function DisplayPackage(pack) {
 		document.getElementById("deployButton").disabled = true;
 	}
 
-	if(pack.cms_last_zip_file_name == null || pack.cms_proccessing == true || pack.cms_state == "zip" || pack.emuticons.length < 6){
+	// Validations
+	if(pack.zipped_package_file_name == null || pack.cms_proccessing == true || pack.cms_state == "zip" || pack.emuticons.length < 6){
+		document.getElementById("deployButton").disabled = true;
+	}
+
+	if(!emuticonsValidated(pack)){
 		document.getElementById("deployButton").disabled = true;
 	}
 
@@ -619,8 +737,8 @@ try {
 		query += "?name=" + pack_name;
 	}
 
-	if (!/^[a-z0-9_\-\ ]+$/.test(pack_name) || pack_name == ""){
-		alert("fuck you! pack_name must contain only lowercase letters, numbers, - , _ , space");
+	if (!/^[a-z0-9_\-]+$/.test(pack_name) || pack_name == ""){
+		alert("pack_name must contain only lowercase letters, numbers, - , _");
 		return;
 	}
 
@@ -638,7 +756,7 @@ try {
 	query += "&label=" + pack_label;
 
 	if (pack_label == ""){ //!/^[A-Za-z0-9_\-\ ]+$/.test(pack_label) || 
-		alert("fuck you! label cannot be empty"); // must contain only letters, numbers, - , _ , space");
+		alert("label may not be empty"); // must contain only letters, numbers, - , _ , space");
 		return;
 	}
 
@@ -672,7 +790,7 @@ try {
 	}
 
 	if(method == 'POST' && updateIcons < 2){
-		alert("Cannot create only one icon size or no icons at all you fucking bastard!");
+		alert("Cannot create only one icon size or no icons at all");
 		return;
 	}
 
@@ -697,6 +815,11 @@ try {
 	thumbnail_frame_index = document.getElementById("thumbnail_frame_index").value;
 	query += "&thumbnail_frame_index=" + thumbnail_frame_index;
 
+	if(duration == "" || frames_count == "" || thumbnail_frame_index == ""){
+		alert("Must fill in Duration, frames_count, thumbnail_frame_index in defaults")
+		return;
+	}
+
 	active = document.getElementById("active").checked;
 	
 	if(active){
@@ -715,6 +838,14 @@ try {
 		query += "&dev_only=" + "false";
 	}
 
+	first_published_on = document.getElementById("first_published_on").checked;
+	
+	if(first_published_on){
+		query += "&first_published_on=" + "true";
+	}
+	else{
+		query += "&first_published_on=" + "false";
+	}
 
 	notification_text = document.getElementById("notification_text").value;
 	if(notification_text != ""){
@@ -775,7 +906,7 @@ try{
 	// Validations
 
 	if(pack.emuticons.length < 6){
-		alert("Trying to zip with less than 6 emuticons? who the fuck do you think you are? Chuck norris??!@#$");
+		alert("Trying to zip with less than 6 emuticons?");
 		return;
 	}
 
@@ -875,15 +1006,6 @@ try{
 
 	query = "?package_name=" + pack_name;
 
-	first_published_on = document.getElementById("first_published_on").checked;
-	
-	if(first_published_on){
-		query += "&first_published_on=" + "true";
-	}
-	else{
-		query += "&first_published_on=" + "false";
-	}
-
 	var theUrl = "/emuconsole/deploy" + query;
 
 	var xmlHttp = null;
@@ -954,7 +1076,7 @@ function DisplayEmuticons(pack){
 			newemuticonButton.className = "btn btn-default newemuButton";
 			newemuticonButton.type = "button";
 			newemuticonButton.id = "new-emuticon-button"
-			newemuticonButton.innerHTML = "Add +";
+			newemuticonButton.innerHTML = "Add New";
 			$(newemuticonButton).data("pack", pack);
 
 		emuticonsdiv.appendChild(newemuticonButton);
@@ -1127,17 +1249,23 @@ function CreateEmuticonFields(pack, method){
 
 	// END NAME
 
+	parent_form.appendChild(document.createElement('br'));
+
 	// source_back_layer
 
 	parent_form.appendChild(createInputOrLabelRowElementDiv(method, "source_back_layer", "source_back_layer", 'input', "file", false, true, "image/*", "input_file"));
 
 	// END source_back_layer
 
+	parent_form.appendChild(document.createElement('br'));
+
 	// source_front_layer
 
 	parent_form.appendChild(createInputOrLabelRowElementDiv(method, "source_front_layer", "source_front_layer", 'input', "file", false, true, "image/*", "input_file"));
 
 	// END source_front_layer
+
+	parent_form.appendChild(document.createElement('br'));
 
 	// source_user_layer_mask
 
@@ -1152,11 +1280,15 @@ function CreateEmuticonFields(pack, method){
 	parent_form.appendChild(createInputOrLabelRowElementDiv(method, "Duration", "duration", 'input', "text", false, false, "", ""));
 	// END DURATION
 
+	parent_form.appendChild(document.createElement('br'));
+
 	// FRAMES COUNT
 
 	parent_form.appendChild(createInputOrLabelRowElementDiv(method, "Frames Count", "frames_count", 'input', "text", false, false, "", ""));
 
 	// END FRAMES COUNT
+
+	parent_form.appendChild(document.createElement('br'));
 
 	// THUMBNAIL FRAME INDEX
 
@@ -1164,17 +1296,23 @@ function CreateEmuticonFields(pack, method){
 
 	// END THUMBNAIL FRAME INDEX
 
+	parent_form.appendChild(document.createElement('br'));
+
 	// palette
 
 	parent_form.appendChild(createInputOrLabelRowElementDiv(method, "palette", "palette", "input", "text", false, false, "", ""));
 
 	// END palette
 
+	parent_form.appendChild(document.createElement('br'));
+
 	// tags
 
 	parent_form.appendChild(createInputOrLabelRowElementDiv(method, "tags", "tags", "input", "text", false, false, "", ""));
 
 	// END tags
+
+	parent_form.appendChild(document.createElement('br'));
 
 	// use_for_preview
 
@@ -1229,8 +1367,8 @@ try{
 		query += "&name=" + emuticon_name;
 	}
 
-	if (!/^[a-z0-9_\-\ ]+$/.test(emuticon_name) || emuticon_name == ""){
-		alert("emuticon_name must contain only lowercase letters, numbers, - , _ , space")
+	if (!/^[a-z0-9_\-]+$/.test(emuticon_name) || emuticon_name == ""){
+		alert("emuticon_name must contain only lowercase letters, numbers, - , _ ")
 		return
 	}
 
@@ -1256,8 +1394,8 @@ try{
 		formData.append('source_front_layer', source_front_layerfile.files[0]);
 	}
 
-	if(method == 'POST' && source_back_layerfile.files.length == 0 && source_front_layerfile.files.length == 0){
-		alert("Must have at least one file for background or foreground");
+	if(method == 'POST' && source_back_layerfile.files.length == 0){
+		alert("Must have a background layer");
 		return;
 	}
 
@@ -1307,7 +1445,7 @@ try{
 	query += "&tags=" + escape(tags);
 
 	if (!/^[a-z0-9\,]+$/.test(tags) || tags == ""){
-		alert("tags may contain only lowercase letters, numbers, seperated by commas and must have at least one value fok yuuuu")
+		alert("tags may contain only lowercase letters, numbers, seperated by commas and must have at least one value")
 		return
 	}
 	
