@@ -1,5 +1,6 @@
 require 'net/http'
 require 'json'
+require 'mongo'
 
 def get_translations_uri(locale)
 	format = 'json'
@@ -9,9 +10,18 @@ def get_translations_uri(locale)
 	return URI.parse(url)
 end
 
-locale = 'en'#ARGV[0]
+locale = 'fr'#ARGV[0]
 uri = get_translations_uri(locale)
 translation_json = Net::HTTP.get(uri)
 translation_hash = JSON.parse(translation_json)
+translation_hash["_id"] = locale
 puts translation_hash
+
+db_scratchpad = Mongo::MongoClient.from_uri("mongodb://Homage:homageIt12@dogen.mongohq.com:10073/emu-test").db()
+translations = db_scratchpad.collection("translations")
+x = translations.update({_id: locale}, translation_hash, {upsert:true})
+puts x
+
+
+
 
