@@ -496,7 +496,7 @@ function CreatePackageFields(method, pack){
 		deployButton.innerHTML = "Deploy";
 		deployButton.id = "deployButton";
 		deployButton.setAttribute("data-package", JSON.stringify(pack));
-		if(pack.cms_proccessing == true || pack.cms_state == "zip" || pack.emuticons.length < 6){
+		if(pack.cms_proccessing == true || pack.cms_state == "zip" || (pack.emuticons != null && pack.emuticons.length < 6)){
 			deployButton.disabled = true;
 		}
 
@@ -544,7 +544,7 @@ function DisplayPackage(pack) {
 	// LABEL
 	pack_label = document.getElementById("pack_label");
 	pack_label.value = pack.label;
-	if(public_pack){
+	if(public_pack != null){
 		var result = displayCompareForField("pack_label", public_pack.label, pack.label);
 		if(!values_update){
 			values_update = result;
@@ -555,7 +555,7 @@ function DisplayPackage(pack) {
 	// ICON2X
 	img2xname = document.getElementById("icon2ximg");
 	img2xname.src = awsfolder + pack.name + "/" + pack.cms_icon_2x;
-	if(public_pack){
+	if(public_pack != null){
 		var result = displayCompareForField("icon2x", public_pack.cms_icon_2x, pack.cms_icon_2x);
 		if(!values_update){
 			values_update = result;
@@ -566,7 +566,7 @@ function DisplayPackage(pack) {
 	// ICON3X
 	img3xname = document.getElementById("icon3ximg");
 	img3xname.src = awsfolder + pack.name + "/" + pack.cms_icon_3x;
-	if(public_pack){
+	if(public_pack != null){
 		var result = displayCompareForField("icon3x", public_pack.cms_icon_3x, pack.cms_icon_3x);
 		if(!values_update){
 			values_update = result;
@@ -579,7 +579,7 @@ function DisplayPackage(pack) {
   	// DURATION
 	duration = document.getElementById("duration");
 	duration.value = pack.emuticons_defaults.duration;
-	if(public_pack){
+	if(public_pack != null){
 		var result = displayCompareForField("duration", public_pack.emuticons_defaults.duration, pack.emuticons_defaults.duration);
 		if(!values_update){
 			values_update = result;
@@ -590,7 +590,7 @@ function DisplayPackage(pack) {
 	// FRAMES COUNT
 	frames_count = document.getElementById("frames_count");
 	frames_count.value = pack.emuticons_defaults.frames_count;
-	if(public_pack){
+	if(public_pack != null){
 		var result = displayCompareForField("frames_count", public_pack.emuticons_defaults.frames_count, pack.emuticons_defaults.frames_count);
 		if(!values_update){
 			values_update = result;
@@ -601,7 +601,7 @@ function DisplayPackage(pack) {
 	// THUMBNAIL FRAME INDEX
 	thumbnail_frame_index = document.getElementById("thumbnail_frame_index");
 	thumbnail_frame_index.value = pack.emuticons_defaults.thumbnail_frame_index;
-	if(public_pack){
+	if(public_pack != null){
 		var result = displayCompareForField("thumbnail_frame_index", public_pack.emuticons_defaults.thumbnail_frame_index, pack.emuticons_defaults.thumbnail_frame_index);
 		if(!values_update){
 			values_update = result;
@@ -612,7 +612,7 @@ function DisplayPackage(pack) {
 	// ICON MASK
 	icon_maskimg = document.getElementById("icon_maskimg");
 	icon_maskimg.src = awsfolder + pack.name + "/" + pack.emuticons_defaults["source_user_layer_mask"];
-	if(public_pack){
+	if(public_pack != null){
 		var result = displayCompareForField("icon_mask", public_pack.emuticons_defaults["source_user_layer_mask"], pack.emuticons_defaults["source_user_layer_mask"]);
 		if(!values_update){
 			values_update = result;
@@ -625,7 +625,7 @@ function DisplayPackage(pack) {
 	// ACTIVE
 	active = document.getElementById("active");
 	active.checked = pack.active;
-	if(public_pack){
+	if(public_pack != null){
 		var result = displayCompareForField("active", public_pack.active, pack.active);
 		if(!values_update){
 			values_update = result;
@@ -636,7 +636,7 @@ function DisplayPackage(pack) {
 	// DEV ONLY
 	dev_only = document.getElementById("dev_only");
 	dev_only.checked = pack.dev_only;
-	if(public_pack){
+	if(public_pack != null){
 		var result = displayCompareForField("dev_only", public_pack.dev_only, pack.dev_only);
 		if(!values_update){
 			values_update = result;
@@ -658,7 +658,7 @@ function DisplayPackage(pack) {
 	if(pack.notification_text && pack.notification_text != ""){
 		notification_text.value = pack.notification_text;
 	}
-	if(public_pack){
+	if(public_pack != null){
 		var result = displayCompareForField("notification_text", public_pack.notification_text, pack.notification_text);
 		if(!values_update){
 			values_update = result;
@@ -688,7 +688,7 @@ function DisplayPackage(pack) {
 	}
 
 	// Validations
-	if(pack.zipped_package_file_name == null || pack.cms_proccessing == true || pack.cms_state == "zip" || pack.emuticons.length < 6){
+	if(pack.zipped_package_file_name == null || pack.cms_proccessing == true || pack.cms_state == "zip" || (pack.emuticons != null && pack.emuticons.length < 6)){
 		document.getElementById("deployButton").disabled = true;
 	}
 
@@ -905,7 +905,7 @@ function zipPackage(pack, p_scratchpad, p_public){
 try{
 	// Validations
 
-	if(pack.emuticons.length < 6){
+	if(pack.emuticons != null && pack.emuticons.length < 6){
 		alert("Trying to zip with less than 6 emuticons?");
 		return;
 	}
