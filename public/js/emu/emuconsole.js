@@ -473,7 +473,7 @@ function CreatePackageFields(method, pack){
 		zipButton.innerHTML = "Zip";
 		zipButton.id = "zipButton";
 		zipButton.setAttribute("data-package", JSON.stringify(pack));
-		if(pack.cms_proccessing == true || pack.cms_state != "zip" || pack.emuticons.length < 6){
+		if(pack.cms_proccessing == true || pack.cms_state != "zip" || (pack.emuticons != null && pack.emuticons.length < 6)){
 			zipButton.disabled = true;
 		}
 
