@@ -645,10 +645,16 @@ function DisplayPackage(pack) {
 	// END DEV ONLY
 
 	// first_published_on
-
+	first_published_on = document.getElementById("first_published_on");
 	if(pack.first_published_on != null){
-		first_published_on = document.getElementById("first_published_on");
 		first_published_on.checked = true;
+	}
+	if(public_pack != null){
+		var result = ((first_published_on.checked == true && public_pack.first_published_on == null) || 
+						(first_published_on.checked == false && public_pack.first_published_on != null));
+		if(!values_update){
+			values_update = result;
+		}
 	}
 
 	// END first_published_on
@@ -850,6 +856,11 @@ try {
 	notification_text = document.getElementById("notification_text").value;
 	if(notification_text != ""){
 		query += "&notification_text=" + notification_text;
+	}
+
+	if(first_published_on && notification_text == ""){
+		alert("if notify users selected must fill in notification text")
+		return;
 	}
 
 
