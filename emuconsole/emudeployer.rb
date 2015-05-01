@@ -98,9 +98,12 @@ end
 def updatePackageOnProduction(production_package, scratchpad_package)
 	currenttime = Time.now.utc.iso8601
 
-	
-	if(production_package.first_published_on == nil)
-		scratchpad_package.first_published_on = currenttime
+	if(scratchpad_package.first_published_on != nil)
+		if(production_package.first_published_on == nil)
+			scratchpad_package.first_published_on = currenttime
+		else
+			scratchpad_package.first_published_on = production_package.first_published_on
+		end
 	end
 	
 
