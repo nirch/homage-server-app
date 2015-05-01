@@ -98,67 +98,23 @@ end
 def updatePackageOnProduction(production_package, scratchpad_package)
 	currenttime = Time.now.utc.iso8601
 
-	if (scratchpad_package.first_published_on != nil)
-		if(production_package.first_published_on == nil)
-			production_package.first_published_on = currenttime
-		end
-	else (production_package.first_published_on != nil)
-		production_package.first_published_on = nil
+	
+	if(production_package.first_published_on == nil)
+		scratchpad_package.first_published_on = currenttime
 	end
+	
 
 	if(production_package.cms_first_published == nil)
-		production_package.cms_first_published = currenttime
+		scratchpad_package.cms_first_published = currenttime
 	end
 
-	if (scratchpad_package.notification_text != nil)
-		production_package.notification_text = scratchpad_package.notification_text
-	elsif production_package.notification_text != nil
-		production_package.notification_text = nil
-	end
+	scratchpad_package.cms_last_published = currenttime
 
-	if (scratchpad_package.meta_data_last_update != nil)
-		production_package.meta_data_last_update = scratchpad_package.meta_data_last_update
-	elsif production_package.meta_data_last_update != nil
-		production_package.meta_data_last_update = nil
-	end
-
-	if (scratchpad_package.last_update != nil)
-		production_package.last_update = scratchpad_package.last_update
-	end
-
-	if (scratchpad_package.zipped_package_file_name != nil)
-		production_package.zipped_package_file_name = scratchpad_package.zipped_package_file_name
-	end
-
-	if (scratchpad_package.icon_name != nil)
-		production_package.icon_name = scratchpad_package.icon_name
-	end
-
-	if (scratchpad_package.cms_icon_2x != nil)
-		production_package.cms_icon_2x = scratchpad_package.cms_icon_2x
-	end
-
-	if (scratchpad_package.cms_icon_3x != nil)
-		production_package.cms_icon_3x = scratchpad_package.cms_icon_3x
-	end
-
-	if (scratchpad_package.label != nil)
-		production_package.label = scratchpad_package.label
-	end
-
-	if (scratchpad_package.active != nil)
-		production_package.active = scratchpad_package.active
-	end
-
-	if (scratchpad_package.dev_only != nil)
-		production_package.dev_only = scratchpad_package.dev_only
-	end
+	production_package = scratchpad_package
 
 	production_package.emuticons_defaults = scratchpad_package.emuticons_defaults
 
 	production_package.emuticons = scratchpad_package.emuticons
-
-	production_package.cms_last_published = currenttime
 
 	message = "production_package.save"
 	production_package.save
@@ -189,6 +145,7 @@ def createPackageOnProduction(production_package, scratchpad_package)
 	for emuticon in scratchpad_package.emuticons do
 
 		production_package.emuticons << Emuticon.new(
+			:id => emuticon.id,
 			:name => emuticon.name, 
 			:source_back_layer => emuticon.source_back_layer, 
 			:source_front_layer => emuticon.source_front_layer,

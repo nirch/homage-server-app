@@ -854,7 +854,7 @@ try {
 
 
 	saveButton.disabled = true;
-	saveButton.innerHTML = "Saving Please Fking wait..";
+	saveButton.innerHTML = "Saving Please wait..";
 
 	var theUrl = form.getAttribute('action') + query;
 
@@ -923,7 +923,7 @@ try{
 	zipButton = document.getElementById("zipButton");
 	zipButtonstate = zipButton.disabled;
 	zipButton.disabled = true;
-	zipButton.innerHTML = "Zipping Please Fking wait..";
+	zipButton.innerHTML = "Zipping Please wait..";
 	deployButton = document.getElementById("deployButton");
 	deployButtonState = deployButton.disabled;
 	deployButton.disabled = true;
@@ -1000,7 +1000,7 @@ try{
 	deployButton = document.getElementById("deployButton");
 	deployButtonState = deployButton.disabled;
 	deployButton.disabled = true;
-	deployButton.innerHTML = "Deploying Please Fking wait..";
+	deployButton.innerHTML = "Deploying Please wait..";
 
 	var pack_name = document.getElementById("pack_name").innerHTML;
 
@@ -1422,21 +1422,21 @@ try{
 	}
 
 	palette = document.getElementById("palette").value;
-	if(palette != null || palette != ""){
+	if(palette != null && palette != ""){
 		query += "&palette=" + escape(palette);
 	}
 
-	if(duration != null || duration != ""){
+	if(duration != null && duration != ""){
 		duration = document.getElementById("duration").value;
 		query += "&duration=" + duration;
 	}
 
-	if(frames_count != null || frames_count != ""){
+	if(frames_count != null && frames_count != ""){
 		frames_count = document.getElementById("frames_count").value;
 		query += "&frames_count=" + frames_count;
 	}
 
-	if(thumbnail_frame_index != null || thumbnail_frame_index != ""){
+	if(thumbnail_frame_index != null && thumbnail_frame_index != ""){
 		thumbnail_frame_index = document.getElementById("thumbnail_frame_index").value;
 		query += "&thumbnail_frame_index=" + thumbnail_frame_index;
 	}
@@ -1459,7 +1459,7 @@ try{
 	}
 
 	saveButton.disabled = true;
-	saveButton.innerHTML = "Saving Please Fking wait..";
+	saveButton.innerHTML = "Saving Please wait..";
 
 	var theUrl = form.getAttribute('action') + query;
 
