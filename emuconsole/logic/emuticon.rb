@@ -3,7 +3,6 @@ require_relative '../model/emuticon'
 require_relative '../model/package'
 require_relative '../../utils/aws/aws_manager'
 require_relative 'helper'
-require 'byebug'
 
 def getEmuticonByName(connection, package_name,name)
 	package = getPackageByName(package_name,connection)
@@ -18,47 +17,12 @@ def getEmuticonByName(connection, package_name,name)
 	return nil
 end
 
-def setUseForPreviewEmuticon(connection, package_name, emuticon_name)
-	package = getPackageByName(package_name,connection)
+def setUseForPreviewEmuticon(connection, package, emuticon_name)
 	emuticons = package.emuticons
 	for emu in emuticons
 		if emu.name != emuticon_name
 
-			begin
-
-				id = emu.id
-				name = emu.name 
-				source_back_layer = emu.source_back_layer 
-				source_front_layer = emu.source_front_layer 
-				source_user_layer_mask = emu.source_user_layer_mask 
-				duration = emu.duration 
-				frames_count = emu.frames_count 
-				thumbnail_frame_index = emu.thumbnail_frame_index 
-				palette = emu.palette 
-				patched_on = emu.patched_on 
-				tags = emu.tags
-
-				package.emuticons.delete_if {|pemuticon| pemuticon.name == emu.name}
-				package.save
-				package = getPackageByName(package_name,connection)
-				createNewEmuticon(package, id, name, source_back_layer, source_front_layer, source_user_layer_mask, duration, frames_count, thumbnail_frame_index, palette, patched_on, tags, nil)
-				package.save
-
-			rescue StandardError => e
-
-				lastemuticon = getEmuticonByName(connection, package_name,emu.name)
-				if lastemuticon == nil
-					package.emuticons << emu
-					package.save
-				end
-
-				return " use_for_preview: " + e.to_s
-
-			ensure
-				package = getPackageByName(package_name,connection)
-				package.cms_proccessing = false
-				package.save
-			end
+			emu.use_for_preview = false
 
 		end
 	end
@@ -80,10 +44,6 @@ def addEmuticon(mongoconnection, awsconnection, package_name,name,source_back_la
 	package.save
 
 	begin
-
-		if(use_for_preview == "true")
-			setUseForPreviewEmuticon(mongoconnection, package_name, name)
-		end
 
 		package = getPackageByName(package_name,mongoconnection)
 		emuticon = getEmuticonByName(mongoconnection, package_name,name)
@@ -122,8 +82,9 @@ def addEmuticon(mongoconnection, awsconnection, package_name,name,source_back_la
 			if(use_for_preview != nil)
 				if(use_for_preview == "true")
 					use_for_preview = true
+					setUseForPreviewEmuticon(mongoconnection, package, name)
 				elsif use_for_preview == "false"
-					use_for_preview = nil
+					use_for_preview = false
 				end
 			end
 
@@ -169,10 +130,6 @@ def updateEmuticon(mongoconnection, awsconnection, package_name,name,source_back
 	package.save
 
 	begin
-
-		if(use_for_preview == "true")
-			setUseForPreviewEmuticon(mongoconnection, package_name, name)
-		end
 
 		package = getPackageByName(package_name,mongoconnection)
 		emuticon = getEmuticonByName(mongoconnection, package_name,name)
@@ -248,12 +205,12 @@ def updateEmuticon(mongoconnection, awsconnection, package_name,name,source_back
 			if(use_for_preview != nil)
 				if(use_for_preview == "true")
 					use_for_preview = true
+					setUseForPreviewEmuticon(mongoconnection, package, name)
 				elsif use_for_preview == "false"
-					if emuticon.use_for_preview != nil
-						use_for_preview = nil
-					end
+					use_for_preview = false
 				end
 			end
+
 			if(success == true)
 				
 				id = emuticon.id
@@ -262,7 +219,6 @@ def updateEmuticon(mongoconnection, awsconnection, package_name,name,source_back
 				package = getPackageByName(package_name,mongoconnection)
 				createNewEmuticon(package, id, name, source_back_layer, source_front_layer, source_user_layer_mask, duration, frames_count, thumbnail_frame_index, palette, patched_on, tags, use_for_preview)
 				package.save
-
 
 				package = getPackageByName(package_name,mongoconnection)
 				if(patched && package.emuticons.length >= 6)
