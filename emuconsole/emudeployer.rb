@@ -108,7 +108,11 @@ def updatePackageOnProduction(production_package, scratchpad_package)
 	
 
 	if(production_package.cms_first_published == nil)
-		scratchpad_package.cms_first_published = currenttime
+		if(production_package.first_published_on == nil)
+			scratchpad_package.cms_first_published = currenttime
+		else
+			scratchpad_package.cms_first_published = production_package.first_published_on
+		end
 	end
 
 	scratchpad_package.cms_last_published = currenttime

@@ -731,6 +731,11 @@ function DisplayPackage(pack) {
 		document.getElementById("deployButton").disabled = true;
 	}
 
+	if(first_published_on.checked && notification_text.value == ""){
+		alert("if notify users selected must fill in notification text")
+		document.getElementById("deployButton").disabled = true;
+	}
+
 }
 
 function CreatePackage() {
