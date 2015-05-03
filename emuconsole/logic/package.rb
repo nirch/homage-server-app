@@ -21,15 +21,6 @@ def get_all_packages(connection)
 	return Package.sort(:name).all
 end
 
-def checkIfCopyPastedPackge(production_package,scratchpad_package, first_published_on)
-
-	if (first_published_on == "false" && production_package != nil && scratchpad_package.cms_first_published == nil && production_package.first_published_on != nil)
-		return true
-	else
-		return false
-	end
-end
-
 def createNewPackage(mongoconnection, awsconnection, name,label,duration,frames_count,thumbnail_frame_index,source_user_layer_mask,active,dev_only,icon_2x,icon_3x,first_published_on, notification_text)
 	
 	success = true
@@ -130,136 +121,123 @@ def createNewPackage(mongoconnection, awsconnection, name,label,duration,frames_
 	end
 end
 
-def updatePackage(mongoconnection,awsconnection, name,label,duration,frames_count,thumbnail_frame_index,source_user_layer_mask,removesource_user_layer_mask,active,dev_only,icon_2x,removeicon_2x,icon_3x,removeicon_3x, first_published_on, notification_text)
+def updatePackage(mongoconnection,awsconnection, name,label,duration,frames_count,thumbnail_frame_index,source_user_layer_mask,removesource_user_layer_mask,active,dev_only,icon_2x,icon_3x, first_published_on, notification_text)
 	success = true
 	production_package = getPackageByName(name,settings.emu_public)
-	if(production_package != nil)
+	package = getPackageByName(name,mongoconnection)
+	package.cms_proccessing = true
+	package.save
+
+	currenttime = Time.now.utc.iso8601
+
+	begin
 		package = getPackageByName(name,mongoconnection)
-		package.cms_proccessing = true
+
+		updateResources = false
+		
+		if label != nil
+			package.label = label
+		end
+		if duration != nil
+			package.emuticons_defaults["duration"] = duration.to_i
+		end
+		if frames_count != nil
+			package.emuticons_defaults["frames_count"] = frames_count.to_i
+		end
+		if thumbnail_frame_index != nil
+			package.emuticons_defaults["thumbnail_frame_index"] = thumbnail_frame_index.to_i
+		end
+		if notification_text != nil
+			package.notification_text = notification_text
+		elsif package.notification_text != nil
+			package.notification_text = nil
+		end
+		if active != nil
+			if(active == "true")
+				package.active = true
+			elsif active == "false"
+				package.active = false
+			end
+		end
+		if dev_only != nil
+			if(dev_only == "true")
+				package.dev_only = true
+			elsif dev_only == "false"
+				package.dev_only = false
+			end
+		end
+
+		package.meta_data_last_update = currenttime
+		icon_name = package.icon_name
+		if icon_2x != nil
+			filename = make_icon_name(icon_name + "@2x", File.extname(icon_2x[:filename]), true, false)
+			upload_file_to_s3(package.name, icon_2x, filename, awsconnection)
+			package.icon_name = filename.rpartition('@').first
+			package.cms_icon_2x = filename
+		elsif package.cms_icon_2x == nil
+			filename = make_icon_name(icon_name + "@2x", ".png", false, false)
+			package.icon_name = filename.rpartition('@').first
+			package.cms_icon_2x = filename
+		end
+
+		if icon_3x != nil
+			filename = make_icon_name(icon_name + "@3x", File.extname(icon_3x[:filename]), true, false)
+			upload_file_to_s3(package.name, icon_3x, filename, awsconnection)
+			package.icon_name = filename.rpartition('@').first
+			package.cms_icon_3x = filename
+		elsif package.cms_icon_3x == nil
+			filename = make_icon_name(icon_name + "@3x", ".png", false, false)
+			package.icon_name = filename.rpartition('@').first
+			package.cms_icon_3x = filename
+		end
+
+		if source_user_layer_mask != nil
+			filename = make_icon_name(name + "-mask", File.extname(source_user_layer_mask[:filename]), true, false)
+			upload_file_to_s3(package.name, source_user_layer_mask, filename, awsconnection)
+			package.emuticons_defaults["source_user_layer_mask"] = filename
+			updateResources = true
+		elsif package.emuticons_defaults["source_user_layer_mask"] != nil  && removesource_user_layer_mask == "true"
+			package.emuticons_defaults["source_user_layer_mask"] = nil
+			updateResources = true
+		end
+
+		if package.zipped_package_file_name == nil && package.last_update != nil
+			zip_file_name = create_zip_file_name(package.name, package.last_update.iso8601)
+			package.zipped_package_file_name = zip_file_name + ".zip"
+		end
+
+		if (updateResources == true && package.emuticons.length >= 6)
+			package.cms_state = "zip"
+		end
+
+		
+		if(first_published_on == "true" || first_published_on == "on")
+			if(production_package != nil && production_package.first_published_on != nil)
+				package.first_published_on = production_package.first_published_on
+			else
+				package.first_published_on = currenttime
+			end
+		elsif package.first_published_on != nil
+			package.first_published_on = nil
+		end
+		
+
+		if(production_package != nil && production_package.cms_first_published != nil)
+			package.cms_first_published = production_package.cms_first_published
+		end
+
 		package.save
 
-		currenttime = Time.now.utc.iso8601
+		return success
 
-		begin
-			package = getPackageByName(name,mongoconnection)
+	rescue StandardError => e
 
-			copyPastedPackageAndNotifyUsers = checkIfCopyPastedPackge(production_package,package,first_published_on)
+		return "updatePackage: " + e.to_s
 
-			updateResources = false
-			
-			if label != nil
-				package.label = label
-			end
-			if duration != nil
-				package.emuticons_defaults["duration"] = duration.to_i
-			end
-			if frames_count != nil
-				package.emuticons_defaults["frames_count"] = frames_count.to_i
-			end
-			if thumbnail_frame_index != nil
-				package.emuticons_defaults["thumbnail_frame_index"] = thumbnail_frame_index.to_i
-			end
-			if notification_text != nil
-				package.notification_text = notification_text
-			elsif package.notification_text != nil
-				package.notification_text = nil
-			end
-			if active != nil
-				if(active == "true")
-					package.active = true
-				elsif active == "false"
-					package.active = false
-				end
-			end
-			if dev_only != nil
-				if(dev_only == "true")
-					package.dev_only = true
-				elsif dev_only == "false"
-					package.dev_only = false
-				end
-			end
-
-			package.meta_data_last_update = currenttime
-
-			icon_name = package.icon_name
-			if icon_2x != nil
-				filename = make_icon_name(icon_name + "@2x", File.extname(icon_2x[:filename]), true, false)
-				upload_file_to_s3(package.name, icon_2x, filename, awsconnection)
-				package.icon_name = filename.rpartition('@').first
-				package.cms_icon_2x = filename
-			elsif package.cms_icon_2x != nil && removeicon_2x == "true"
-				package.cms_icon_2x = nil
-			elsif package.cms_icon_2x == nil
-				filename = make_icon_name(icon_name + "@2x", ".png", false, false)
-				package.icon_name = filename.rpartition('@').first
-				package.cms_icon_2x = filename
-			end
-
-			if icon_3x != nil
-				filename = make_icon_name(icon_name + "@3x", File.extname(icon_3x[:filename]), true, false)
-				upload_file_to_s3(package.name, icon_3x, filename, awsconnection)
-				package.icon_name = filename.rpartition('@').first
-				package.cms_icon_3x = filename
-			elsif package.cms_icon_3x != nil  && removeicon_3x == "true"
-				package.cms_icon_3x = nil
-			elsif package.cms_icon_3x == nil
-				filename = make_icon_name(icon_name + "@3x", ".png", false, false)
-				package.icon_name = filename.rpartition('@').first
-				package.cms_icon_3x = filename
-			end
-
-			if source_user_layer_mask != nil
-				filename = make_icon_name(name + "-mask", File.extname(source_user_layer_mask[:filename]), true, false)
-				upload_file_to_s3(package.name, source_user_layer_mask, filename, awsconnection)
-				package.emuticons_defaults["source_user_layer_mask"] = filename
-				updateResources = true
-			elsif package.emuticons_defaults["source_user_layer_mask"] != nil  && removesource_user_layer_mask == "true"
-				package.emuticons_defaults["source_user_layer_mask"] = nil
-				updateResources = true
-			end
-
-			if package.zipped_package_file_name == nil && package.last_update != nil
-				zip_file_name = create_zip_file_name(package.name, package.last_update.iso8601)
-				package.zipped_package_file_name = zip_file_name + ".zip"
-			end
-
-			if (updateResources == true && package.emuticons.length >= 6)
-				package.cms_state = "zip"
-			end
-
-			if(!copyPastedPackageAndNotifyUsers)
-				if(first_published_on == "true" || first_published_on == "on")
-					if(production_package != nil && production_package.first_published_on != nil)
-						package.first_published_on = production_package.first_published_on
-					else
-						package.first_published_on = currenttime
-					end
-				elsif package.first_published_on != nil
-					package.first_published_on = nil
-				end
-			else
-				package.first_published_on = production_package.first_published_on
-			end
-
-			if(production_package.cms_first_published != nil)
-				package.cms_first_published = production_package.cms_first_published
-			end
-
-			package.save
-
-			return success
-
-		rescue StandardError => e
-
-			return "updatePackage: " + e.to_s
-
-		ensure
-			package = getPackageByName(name,mongoconnection)
-			package.cms_proccessing = false
-			package.save
-		end
-	else
-		return "No production package!"
+	ensure
+		package = getPackageByName(name,mongoconnection)
+		package.cms_proccessing = false
+		package.save
 	end
 
 end
