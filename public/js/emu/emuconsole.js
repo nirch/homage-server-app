@@ -19,9 +19,28 @@ function setAllPacks(p_scratchpad, p_public){
 	packs_public = p_public;
 }
 
+function paintPackageButtons(){
+	for(i in packs_scratchpad){
+		for(j in packs_public){
+			scratchpad_pack_name = packs_scratchpad[i].name
+			public_pack_name = packs_public[j].name
+			var packButton = document.getElementById(scratchpad_pack_name + '-button')
+
+			if(public_pack_name == scratchpad_pack_name){
+				packButton.className = "btn btn-default packButton buttonDeployed";
+				break;
+			}else{
+				packButton.className = "btn btn-default packButton buttonUndeployed";
+			}
+		}
+	}
+}
+
 $(document).on("ready", function(){
 
 	setAllPacks($("#mydata").data("pscratchpad"), $("#mydata").data("ppublic"));
+
+	paintPackageButtons();
 
 	$("body").on("click", ".emuButton", function(){
 			var pack = $(this).data("pack");
@@ -277,13 +296,23 @@ function emuticonsValuesUpdate(pack, public_pack){
 
 function emuticonsValidated(pack){
 	var validated = true;
+	var message = "";
 	for (i in  pack.emuticons) {
 		emuticon = pack.emuticons[i];
 		if(emuticon.source_back_layer == null || emuticon.source_back_layer == ""){
 			validated = false;
-			alert("emuticon: " + emuticon.name + " does not have a back layer");
+			message += "\nemuticon: " + emuticon.name + " does not have a back layer";
+		}
+		if(emuticon.tags == null || emuticon.tags == ""){
+			validated = false;
+			message +=  "\nemuticon: " + emuticon.name + " does not have tags";
 		}
 	}
+	if(message != ""){
+		message +=  "\nYou will not be aloud to deploy until you fix these errors";
+		alert(message);
+	}
+	
 	return validated;
 }
 

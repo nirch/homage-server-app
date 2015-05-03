@@ -27,3 +27,11 @@ body{
 .comparelabel{
 	color: #FF00FF;
 }
+
+.buttonUndeployed{
+	background-color: #A0A0A0;
+}
+
+.buttonDeployed{
+	background-color: #33FF99;
+}

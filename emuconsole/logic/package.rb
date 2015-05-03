@@ -21,6 +21,15 @@ def get_all_packages(connection)
 	return Package.sort(:name).all
 end
 
+def checkIfCopyPastedPackge(production_package,scratchpad_package, first_published_on)
+
+	if (first_published_on == "false" && production_package != nil && scratchpad_package.cms_first_published == nil && production_package.first_published_on != nil)
+		return true
+	else
+		return false
+	end
+end
+
 def createNewPackage(mongoconnection, awsconnection, name,label,duration,frames_count,thumbnail_frame_index,source_user_layer_mask,active,dev_only,icon_2x,icon_3x,first_published_on, notification_text)
 	
 	success = true
@@ -133,6 +142,8 @@ def updatePackage(mongoconnection,awsconnection, name,label,duration,frames_coun
 	begin
 		package = getPackageByName(name,mongoconnection)
 
+		copyPastedPackageAndNotifyUsers = checkIfCopyPastedPackge(production_package,package,first_published_on)
+
 		updateResources = false
 		
 		if label != nil
@@ -215,14 +226,18 @@ def updatePackage(mongoconnection,awsconnection, name,label,duration,frames_coun
 			package.cms_state = "zip"
 		end
 
-		if(first_published_on == "true" || first_published_on == "on")
-			if(production_package != nil && production_package.first_published_on != nil)
-				package.first_published_on = production_package.first_published_on
-			else
-				package.first_published_on = currenttime
+		if(!copyPastedPackageAndNotifyUsers)
+			if(first_published_on == "true" || first_published_on == "on")
+				if(production_package != nil && production_package.first_published_on != nil)
+					package.first_published_on = production_package.first_published_on
+				else
+					package.first_published_on = currenttime
+				end
+			elsif package.first_published_on != nil
+				package.first_published_on = nil
 			end
-		elsif package.first_published_on != nil
-			package.first_published_on = nil
+		else
+			package.first_published_on = production_package.first_published_on
 		end
 
 		package.save

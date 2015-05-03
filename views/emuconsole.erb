@@ -49,7 +49,7 @@
 
                                 <% for pack in @packs_scratchpad  do %>
                                     <div class="pack">
-                                        <button type="button" class="btn btn-default packButton" data-package='<%= pack.to_json %>'><%= pack["name"] %></button>
+                                        <button id="<%= pack["name"] + '-button' %>" type="button" class="btn btn-default packButton" data-package='<%= pack.to_json %>'><%= pack["name"] %></button>
                                         <button id="<%= pack["name"] + '-plus-button' %>" type="button" class="btn btn-default emuticonsButton" data-package='<%= pack.to_json %>'>+</button>
                                         <div id="<%= pack["name"] + '-emuticons' %>" >
 
