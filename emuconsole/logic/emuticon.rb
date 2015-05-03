@@ -226,6 +226,8 @@ def updateEmuticon(mongoconnection, awsconnection, package_name,name,source_back
 					package.save
 				end
 			end
+		else
+			return "No emuticon found!"
 		end
 
 		return success
