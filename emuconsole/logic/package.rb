@@ -240,6 +240,10 @@ def updatePackage(mongoconnection,awsconnection, name,label,duration,frames_coun
 			package.first_published_on = production_package.first_published_on
 		end
 
+		if(production_package.cms_first_published != nil)
+			package.cms_first_published = production_package.cms_first_published
+		end
+
 		package.save
 
 		return success
