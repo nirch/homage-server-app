@@ -172,7 +172,7 @@ function readURL(input,imgid) {
         }
     }
 
-function createInputOrLabelRowElementDiv(method, label, element_id, element_type, input_type, cantChangeOnUpdate, isFile, content_type, classname){
+function createInputOrLabelRowElementDiv(method, label, element_id, element_type, input_type, cantChangeOnUpdate, isFile, content_type, classname, fileRemovable){
 	var rownamediv = document.createElement('div');
 	rownamediv.className = "row";
 
@@ -193,7 +193,7 @@ function createInputOrLabelRowElementDiv(method, label, element_id, element_type
 		imgname.id = element_id + "img"
 		imgname.className = "input_img"
 		
-		if(method == 'PUT' ){
+		if(fileRemovable && method == 'PUT' ){
 			imgchkbxlbl = document.createElement('label');
 			imgchkbxlbl.innerHTML = " remove image: "
 			imgchkbx = document.createElement('input');
@@ -363,26 +363,26 @@ function CreatePackageFields(method, pack){
 	parent_form.enctype = "multipart/form-data";
 
 	// NAME
-	parent_form.appendChild(createInputOrLabelRowElementDiv(method, "Name", "pack_name", "input", "text", true, false, "", ""));
+	parent_form.appendChild(createInputOrLabelRowElementDiv(method, "Name", "pack_name", "input", "text", true, false, "", "",false));
 	// END NAME
 
 	parent_form.appendChild(document.createElement('br'));
 
 	// LABEL
-	parent_form.appendChild(createInputOrLabelRowElementDiv(method, "Label", "pack_label", "input", "text", false, false, "", ""));
+	parent_form.appendChild(createInputOrLabelRowElementDiv(method, "Label", "pack_label", "input", "text", false, false, "", "",false));
 	// END LABEL
 
 	parent_form.appendChild(document.createElement('br'));
 
 	// ICON2X
 
-	parent_form.appendChild(createInputOrLabelRowElementDiv(method, "Icon2x", "icon2x", 'input', "file", false, true, "image/*", "input_file"));
+	parent_form.appendChild(createInputOrLabelRowElementDiv(method, "Icon2x", "icon2x", 'input', "file", false, true, "image/*", "input_file",false));
 	// END ICON2X
 
 	parent_form.appendChild(document.createElement('br'));
 
 	// ICON3X
-	parent_form.appendChild(createInputOrLabelRowElementDiv(method, "Icon3x", "icon3x", 'input', "file", false, true, "image/*", "input_file"));
+	parent_form.appendChild(createInputOrLabelRowElementDiv(method, "Icon3x", "icon3x", 'input', "file", false, true, "image/*", "input_file",false));
 
 	// END ICON3X
 
@@ -399,14 +399,14 @@ function CreatePackageFields(method, pack){
 
   	// DURATION
 
-	fieldset.appendChild(createInputOrLabelRowElementDiv(method, "Duration", "duration", 'input', "text", false, false, "", ""));
+	fieldset.appendChild(createInputOrLabelRowElementDiv(method, "Duration", "duration", 'input', "text", false, false, "", "",false));
 	// END DURATION
 
 	fieldset.appendChild(document.createElement('br'));
 
 	// FRAMES COUNT
 
-	fieldset.appendChild(createInputOrLabelRowElementDiv(method, "Frames Count", "frames_count", 'input', "text", false, false, "", ""));
+	fieldset.appendChild(createInputOrLabelRowElementDiv(method, "Frames Count", "frames_count", 'input', "text", false, false, "", "",false));
 
 	// END FRAMES COUNT
 
@@ -414,7 +414,7 @@ function CreatePackageFields(method, pack){
 
 	// THUMBNAIL FRAME INDEX
 
-	fieldset.appendChild(createInputOrLabelRowElementDiv(method, "Thumbnail Frame Index", "thumbnail_frame_index", 'input', "text", false, false, "", ""));
+	fieldset.appendChild(createInputOrLabelRowElementDiv(method, "Thumbnail Frame Index", "thumbnail_frame_index", 'input', "text", false, false, "", "",false));
 
 	// END THUMBNAIL FRAME INDEX
 
@@ -422,7 +422,7 @@ function CreatePackageFields(method, pack){
 
 	// ICON MASK
 
-	fieldset.appendChild(createInputOrLabelRowElementDiv(method, "Source Layer User Mask", "icon_mask", 'input', "file", false, true, "image/*", "input_file"));
+	fieldset.appendChild(createInputOrLabelRowElementDiv(method, "Source Layer User Mask", "icon_mask", 'input', "file", false, true, "image/*", "input_file",true));
 
 	// END ICON MASK
 	parent_form.appendChild(fieldset);
@@ -433,7 +433,7 @@ function CreatePackageFields(method, pack){
 
 	// ACTIVE
 
-	parent_form.appendChild(createInputOrLabelRowElementDiv(method, "Active", "active", "input", "checkbox", false, false, "", ""));
+	parent_form.appendChild(createInputOrLabelRowElementDiv(method, "Active", "active", "input", "checkbox", false, false, "", "",false));
 
 	// END ACTIVE
 
@@ -441,7 +441,7 @@ function CreatePackageFields(method, pack){
 
 	// DEV ONLY
 
-	parent_form.appendChild(createInputOrLabelRowElementDiv(method, "Dev Only", "dev_only", "input", "checkbox", false, false, "", ""));
+	parent_form.appendChild(createInputOrLabelRowElementDiv(method, "Dev Only", "dev_only", "input", "checkbox", false, false, "", "",false));
 
 	// END DEV ONLY
 
@@ -449,7 +449,7 @@ function CreatePackageFields(method, pack){
 
 	// notification_text
 
-		parent_form.appendChild(createInputOrLabelRowElementDiv(method, "Notifiy text", "notification_text", 'input', "text", false, false, "", ""));
+		parent_form.appendChild(createInputOrLabelRowElementDiv(method, "Notifiy text", "notification_text", 'input', "text", false, false, "", "",false));
 
 		// END notification_text
 
@@ -677,10 +677,12 @@ function DisplayPackage(pack) {
 	first_published_on = document.getElementById("first_published_on");
 	if(pack.first_published_on != null){
 		first_published_on.checked = true;
+	}else if(public_pack != null && pack.cms_icon_2x == null && public_pack.first_published_on != null){
+		// first time update of a copy pasted package
+		first_published_on.checked = true;
 	}
-	if(public_pack != null){
-		var result = ((first_published_on.checked == true && public_pack.first_published_on == null) || 
-						(first_published_on.checked == false && public_pack.first_published_on != null));
+	else if(public_pack != null){
+		var result = displayCompareForField("first_published_on", public_pack.first_published_on, pack.first_published_on);
 		if(!values_update){
 			values_update = result;
 		}
@@ -723,7 +725,10 @@ function DisplayPackage(pack) {
 	}
 
 	// Validations
-	if(pack.zipped_package_file_name == null || pack.cms_proccessing == true || pack.cms_state == "zip" || (pack.emuticons != null && pack.emuticons.length < 6)){
+	if(pack.zipped_package_file_name == null 
+		|| pack.cms_proccessing == true 
+		|| pack.cms_state == "zip" 
+		|| (pack.emuticons != null && pack.emuticons.length < 6)){
 		document.getElementById("deployButton").disabled = true;
 	}
 
@@ -735,6 +740,12 @@ function DisplayPackage(pack) {
 		alert("if notify users selected must fill in notification text")
 		document.getElementById("deployButton").disabled = true;
 	}
+
+	if(pack.cms_icon_2x == null){
+		alert("you must save this copy pasted package once, in order to deploy")
+		document.getElementById("deployButton").disabled = true;
+	}
+	
 
 }
 
@@ -808,25 +819,11 @@ try {
 		formData.append('icon_2x', icon2xfile.files[0]);
 		updateIcons++;
 	}
-
-	if(method == 'PUT'){
-		icon2xfilecheckbox = document.getElementById("icon2xcheckbox");
-		if (icon2xfilecheckbox.checked){
-			query += "&removeicon2x=" + "true";
-		}
-	}
 	
 	icon3xfile = document.getElementById("icon3xfile");
 	if(icon3xfile.files.length > 0 && icon3xfile.files[0]){
 		formData.append('icon_3x', icon3xfile.files[0]);
 		updateIcons++;
-	}
-
-	if(method == 'PUT'){
-		icon3xfilecheckbox = document.getElementById("icon3xcheckbox");
-		if (icon3xfilecheckbox.checked){
-			query += "&removeicon3x=" + "true";
-		}
 	}
 
 	if(method == 'POST' && updateIcons < 2){
@@ -1290,7 +1287,7 @@ function CreateEmuticonFields(pack, method){
 
 	// NAME
 
-	parent_form.appendChild(createInputOrLabelRowElementDiv(method, "Name", "emuticon_name", "input", "text", true, false, "", ""));
+	parent_form.appendChild(createInputOrLabelRowElementDiv(method, "Name", "emuticon_name", "input", "text", true, false, "", "",false));
 
 	// END NAME
 
@@ -1298,7 +1295,7 @@ function CreateEmuticonFields(pack, method){
 
 	// source_back_layer
 
-	parent_form.appendChild(createInputOrLabelRowElementDiv(method, "source_back_layer", "source_back_layer", 'input', "file", false, true, "image/*", "input_file"));
+	parent_form.appendChild(createInputOrLabelRowElementDiv(method, "source_back_layer", "source_back_layer", 'input', "file", false, true, "image/*", "input_file",true));
 
 	// END source_back_layer
 
@@ -1306,7 +1303,7 @@ function CreateEmuticonFields(pack, method){
 
 	// source_front_layer
 
-	parent_form.appendChild(createInputOrLabelRowElementDiv(method, "source_front_layer", "source_front_layer", 'input', "file", false, true, "image/*", "input_file"));
+	parent_form.appendChild(createInputOrLabelRowElementDiv(method, "source_front_layer", "source_front_layer", 'input', "file", false, true, "image/*", "input_file",true));
 
 	// END source_front_layer
 
@@ -1314,7 +1311,7 @@ function CreateEmuticonFields(pack, method){
 
 	// source_user_layer_mask
 
-	parent_form.appendChild(createInputOrLabelRowElementDiv(method, "source_user_layer_mask", "source_user_layer_mask", 'input', "file", false, true, "image/*", "input_file"));
+	parent_form.appendChild(createInputOrLabelRowElementDiv(method, "source_user_layer_mask", "source_user_layer_mask", 'input', "file", false, true, "image/*", "input_file",true));
 
 	// END source_user_layer_mask
 
@@ -1322,14 +1319,14 @@ function CreateEmuticonFields(pack, method){
 
 	// DURATION
 
-	parent_form.appendChild(createInputOrLabelRowElementDiv(method, "Duration", "duration", 'input', "text", false, false, "", ""));
+	parent_form.appendChild(createInputOrLabelRowElementDiv(method, "Duration", "duration", 'input', "text", false, false, "", "",false));
 	// END DURATION
 
 	parent_form.appendChild(document.createElement('br'));
 
 	// FRAMES COUNT
 
-	parent_form.appendChild(createInputOrLabelRowElementDiv(method, "Frames Count", "frames_count", 'input', "text", false, false, "", ""));
+	parent_form.appendChild(createInputOrLabelRowElementDiv(method, "Frames Count", "frames_count", 'input', "text", false, false, "", "",false));
 
 	// END FRAMES COUNT
 
@@ -1337,7 +1334,7 @@ function CreateEmuticonFields(pack, method){
 
 	// THUMBNAIL FRAME INDEX
 
-	parent_form.appendChild(createInputOrLabelRowElementDiv(method, "Thumbnail Frame Index", "thumbnail_frame_index", 'input', "text", false, false, "", ""));
+	parent_form.appendChild(createInputOrLabelRowElementDiv(method, "Thumbnail Frame Index", "thumbnail_frame_index", 'input', "text", false, false, "", "",false));
 
 	// END THUMBNAIL FRAME INDEX
 
@@ -1345,7 +1342,7 @@ function CreateEmuticonFields(pack, method){
 
 	// palette
 
-	parent_form.appendChild(createInputOrLabelRowElementDiv(method, "palette", "palette", "input", "text", false, false, "", ""));
+	parent_form.appendChild(createInputOrLabelRowElementDiv(method, "palette", "palette", "input", "text", false, false, "", "",false));
 
 	// END palette
 
@@ -1353,7 +1350,7 @@ function CreateEmuticonFields(pack, method){
 
 	// tags
 
-	parent_form.appendChild(createInputOrLabelRowElementDiv(method, "tags", "tags", "input", "text", false, false, "", ""));
+	parent_form.appendChild(createInputOrLabelRowElementDiv(method, "tags", "tags", "input", "text", false, false, "", "",false));
 
 	// END tags
 
@@ -1361,7 +1358,7 @@ function CreateEmuticonFields(pack, method){
 
 	// use_for_preview
 
-	parent_form.appendChild(createInputOrLabelRowElementDiv(method, "use for preview", "use_for_preview", "input", "checkbox", false, false, "", ""));
+	parent_form.appendChild(createInputOrLabelRowElementDiv(method, "use for preview", "use_for_preview", "input", "checkbox", false, false, "", "",false));
 
 	// END use_for_preview
 
