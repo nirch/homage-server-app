@@ -23,7 +23,7 @@ def deployEmuPackage(package_name)
 		production_package = getPackageByName(package_name, settings.emu_public)
 		scratchpad_package = getPackageByName(package_name, settings.emu_scratchpad)
 		message = "input_files"
-		input_files = getResourcesFromPackage(scratchpad_package.name, true, message)
+		input_files = getResourcesFromPackage(scratchpad_package.name, true, message, true)
 
 		# THE DOWNLOAD FROM SCRATCHPAD
 		message = "download_from_aws"

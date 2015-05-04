@@ -36,7 +36,7 @@ def delete_download_folder(folder)
 end
 
 # get files to download from aws
-def getResourcesFromPackage(package_name, getOnlyNew, message)
+def getResourcesFromPackage(package_name, getOnlyNew, message, deploy)
 	public_package = nil
 	if(getOnlyNew)
 		public_package = getPackageByName(package_name, settings.emu_public)
@@ -48,10 +48,12 @@ def getResourcesFromPackage(package_name, getOnlyNew, message)
 
 	input_files = []
 
-	# icon2x = package.cms_icon_2x
-	# input_files.push icon2x
-	# icon3x = package.cms_icon_3x
-	# input_files.push icon3x
+	if deploy
+		icon2x = package.cms_icon_2x
+		input_files.push icon2x
+		icon3x = package.cms_icon_3x
+		input_files.push icon3x
+	end
 	message = "package.emuticons_defaults[]"
 	source_user_layer_mask = package.emuticons_defaults["source_user_layer_mask"]
 	if source_user_layer_mask != nil && source_user_layer_mask != ""
