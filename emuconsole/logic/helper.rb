@@ -145,6 +145,26 @@ def getResourcesFromPackage(package_name, getOnlyNew, message, deploy)
 	return input_files
 end
 
+def checkFilesOnS3(package_name, input_files, connection)
+	success = true
+	for f in input_files do
+		if(f != nil)
+			filename = package_name + "/" + f
+			object_key = "packages/" + filename
+			object = connection.get_object(object_key)
+			if(object == nil)
+				success = false
+			end
+			if(success != true)
+				return f + " did not deploy successfully to s3"
+			end
+		end
+	end
+
+	return success
+	
+end
+
 # download files
 def download_from_aws(package_name, input_files, download_folder, connection)
 

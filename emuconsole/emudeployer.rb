@@ -54,6 +54,11 @@ def deployEmuPackage(package_name)
 				end
 			end
 
+			if(success == true)
+				message = "checkFilesOnS3"
+				success = checkFilesOnS3(package_name, input_files, settings.emu_s3_prod)
+			end
+
 			if (success == true)
 				if(production_package != nil)
 					# UPDATE package
