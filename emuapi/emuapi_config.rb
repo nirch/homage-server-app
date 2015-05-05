@@ -19,7 +19,12 @@ configure :test do
   set :emu_s3_test, AWSManager::S3Manager.emu_dev_test
   set :emu_s3_prod, AWSManager::S3Manager.emu_dev_prod
 
+  set :emumixpanel_token, "090553b00ef0bbe21ba634c651dc272f"
+  set :emumixpanel, Mixpanel::Tracker.new(settings.emumixpanel_token)
+
   set :enviornment, "test"
+
+  set :logging, Logger::DEBUG
 end
 
 #
@@ -38,5 +43,10 @@ configure :production do
   set :emu_s3_test, AWSManager::S3Manager.emu_test
   set :emu_s3_prod, AWSManager::S3Manager.emu_prod
 
+  set :emumixpanel_token, "25847b0e1fc41bc665d204be1a2c96ee"
+  set :emumixpanel, Mixpanel::Tracker.new(settings.emumixpanel_token)
+
   set :enviornment, "production"
+
+  set :logging, Logger::INFO
 end

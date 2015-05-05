@@ -2,6 +2,7 @@
 require_relative 'emuapi_config'
 require_relative 'emuapi_sampled_content'
 require_relative '../emuconsole/logic/package'
+require 'logger'
 
 module BSON
     class ObjectId
@@ -35,6 +36,15 @@ before do
     MongoMapper.database = settings.emu_public.db().name
   end
   # else public
+end
+
+get '/emu/iosstore' do
+  shared_from = params[:src]
+
+  info = Hash.new
+  info["shared_from"] = shared_from
+  reportToEmuMixpanel("LandingPageIosStoreLink",info)
+  redirect 'https://itunes.apple.com/app/id969789079', 302
 end
 
 # get '/test/bson' do
@@ -224,4 +234,12 @@ end
 
 def oops_500
   return "oops... 500 internal server error."
+end
+
+def reportToEmuMixpanel(event_name,info={})
+  begin
+    settings.emumixpanel.track("12345", event_name, info) if settings.respond_to?(:emumixpanel)
+  rescue => error
+    logger.error "mixpanel error: " + error.to_s
+  end
 end
