@@ -24,6 +24,8 @@ configure :test do
 
   set :enviornment, "test"
 
+  set :emu_link, "http://app-test.emu.im"
+
   set :logging, Logger::DEBUG
 end
 
@@ -47,6 +49,8 @@ configure :production do
   set :emumixpanel, Mixpanel::Tracker.new(settings.emumixpanel_token)
 
   set :enviornment, "production"
+
+  set :emu_link, "http://app.emu.im"
 
   set :logging, Logger::INFO
 end

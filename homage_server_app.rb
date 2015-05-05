@@ -145,7 +145,6 @@ configure :production do
 
 	set :play_subdomain, :play
 
-	set :emu_env, "http://app.emu.im"
 end
 
 configure :test do
@@ -189,7 +188,6 @@ configure :test do
 	
 	set :play_subdomain, :'play-test'
 
-	set :emu_env, "http://app-test.emu.im"
 end
 
 before do
@@ -295,7 +293,7 @@ get '/' do
 	host_name = request.env["HTTP_HOST"]
 	if (host_name =~ /emu.im/i) then 
 		reportToMixpanel("EmuLandingPageView")
-		@emu_env = settings.emu_env
+		@emu_env = settings.emu_link
 		erb :emu_landing_page
 	elsif host_name then
 		getMinisiteForCampaign(host_name)
@@ -304,13 +302,13 @@ get '/' do
 	end
 end
 
-get '/danemu' do
-	# info = Hash.new
-	# info["EMU_ENTERED"] = "production"
-	# reportToMixpanel("EmuLandingPageView",info)
-	@emu_env = settings.emu_env
-	erb :emu_landing_page
-end
+# get '/danemu' do
+# 	# info = Hash.new
+# 	# info["EMU_ENTERED"] = "production"
+# 	# reportToMixpanel("EmuLandingPageView",info)
+# 	@emu_env = settings.emu_link
+# 	erb :emu_landing_page
+# end
 
 get '/test/cgi' do
 	x = "Don't bla bla cgi"
