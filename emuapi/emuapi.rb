@@ -39,9 +39,11 @@ before do
 end
 
 get '/emu/iosstore' do
+  userAgentStr = request.env["HTTP_USER_AGENT"].to_s
   shared_from = params[:src]
 
   info = Hash.new
+  info["user_agent"] = userAgentStr
   info["shared_from"] = shared_from
   reportToEmuMixpanel("LandingPageIosStoreLink",info)
   redirect 'https://itunes.apple.com/app/id969789079', 302
