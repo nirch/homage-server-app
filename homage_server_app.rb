@@ -144,6 +144,8 @@ configure :production do
 	set :share_link_prefix, "http://play.homage.it"
 
 	set :play_subdomain, :play
+
+	set :emu_env, "http://app.emu.im"
 end
 
 configure :test do
@@ -186,6 +188,8 @@ configure :test do
 	set :mixpanel, Mixpanel::Tracker.new(settings.mixpanel_token)
 	
 	set :play_subdomain, :'play-test'
+
+	set :emu_env, "http://app-test.emu.im"
 end
 
 before do
@@ -291,6 +295,7 @@ get '/' do
 	host_name = request.env["HTTP_HOST"]
 	if (host_name =~ /emu.im/i) then 
 		reportToMixpanel("EmuLandingPageView")
+		@emu_env = settings.emu_env
 		erb :emu_landing_page
 	elsif host_name then
 		getMinisiteForCampaign(host_name)
@@ -303,7 +308,8 @@ get '/danemu' do
 	# info = Hash.new
 	# info["EMU_ENTERED"] = "production"
 	# reportToMixpanel("EmuLandingPageView",info)
-	erb :'emu/emuconsole'
+	@emu_env = settings.emu_env
+	erb :emu_landing_page
 end
 
 get '/test/cgi' do
