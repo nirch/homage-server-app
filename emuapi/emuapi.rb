@@ -45,7 +45,7 @@ get '/emu/ios' do
   info = Hash.new
   info["user_agent"] = userAgentStr
   info["shared_from"] = shared_from
-  reportToEmuMixpanel("LandingPageIosStoreLink",info)
+  reportToEmuMixpanel("iosStoreLink",info)
   redirect 'https://itunes.apple.com/app/id969789079', 302
 end
 
@@ -240,7 +240,8 @@ end
 
 def reportToEmuMixpanel(event_name,info={})
   begin
-    settings.emumixpanel.track("12345", event_name, info) if settings.respond_to?(:emumixpanel)
+    ip_addr = request.env['REMOTE_ADDR']
+    settings.emumixpanel.track(ip_addr.to_s, event_name, info) if settings.respond_to?(:emumixpanel)
   rescue => error
     logger.error "mixpanel error: " + error.to_s
   end
