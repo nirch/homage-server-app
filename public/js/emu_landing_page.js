@@ -46,6 +46,14 @@ $(window).on("load",function(){
         }
     });
 
+$(document).on("ready", function(){
+
+    mixpanel.track(
+            "EmuLandingPageView"
+        );
+
+});
+
 // $(window).on("load",function(){
 
 //         var winwidth = $(window).width();

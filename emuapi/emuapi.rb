@@ -38,17 +38,6 @@ before do
   # else public
 end
 
-get '/emu/ios' do
-  userAgentStr = request.env["HTTP_USER_AGENT"].to_s
-  shared_from = params[:src]
-
-  info = Hash.new
-  info["user_agent"] = userAgentStr
-  info["shared_from"] = shared_from
-  reportToEmuMixpanel("iosStoreLink",info)
-  redirect 'https://itunes.apple.com/app/id969789079', 302
-end
-
 # get '/test/bson' do
 #   packages = settings.emu_test.db().collection("packages").find({})
 #   packages.to_json
@@ -238,10 +227,9 @@ def oops_500
   return "oops... 500 internal server error."
 end
 
-def reportToEmuMixpanel(event_name,info={})
+def reportToEmuMixpanel(event_name,info={}, distinct_id)
   begin
-    ip_addr = request.env['REMOTE_ADDR']
-    settings.emumixpanel.track(ip_addr.to_s, event_name, info) if settings.respond_to?(:emumixpanel)
+    settings.emumixpanel.track(distinct_id.to_s, event_name, info) if settings.respond_to?(:emumixpanel)
   rescue => error
     logger.error "mixpanel error: " + error.to_s
   end
