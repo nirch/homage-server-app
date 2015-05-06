@@ -24,7 +24,7 @@ configure :test do
 
   set :enviornment, "test"
 
-  set :emu_link, "http://app-test.emu.im"
+  set :emu_link, "http://app-test.emu.im/emu/ios?src="
 
   set :logging, Logger::DEBUG
 end
@@ -50,7 +50,7 @@ configure :production do
 
   set :enviornment, "production"
 
-  set :emu_link, "http://app.emu.im"
+  set :emu_link, "http://app.emu.im/emu/ios?src="
 
   set :logging, Logger::INFO
 end

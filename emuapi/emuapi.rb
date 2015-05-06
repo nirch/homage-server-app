@@ -38,7 +38,7 @@ before do
   # else public
 end
 
-get '/emu/iosstore' do
+get '/emu/ios' do
   userAgentStr = request.env["HTTP_USER_AGENT"].to_s
   shared_from = params[:src]
 
