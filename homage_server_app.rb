@@ -293,7 +293,6 @@ get '/' do
 	host_name = request.env["HTTP_HOST"]
 	if (host_name =~ /emu.im/i) then 
 		@mixpanel_token = settings.emumixpanel_token
-		@emu_link = settings.emu_link
 		erb :emu_landing_page
 	elsif host_name then
 		getMinisiteForCampaign(host_name)
