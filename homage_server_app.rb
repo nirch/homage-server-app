@@ -292,7 +292,7 @@ end
 get '/' do
 	host_name = request.env["HTTP_HOST"]
 	if (host_name =~ /emu.im/i) then 
-		reportToMixpanel("EmuLandingPageView")
+		reportToEmuMixpanel("EmuLandingPageView")
 		@emu_link = settings.emu_link
 		erb :emu_landing_page
 	elsif host_name then
@@ -306,6 +306,7 @@ end
 # 	# info = Hash.new
 # 	# info["EMU_ENTERED"] = "production"
 # 	# reportToMixpanel("EmuLandingPageView",info)
+# 	reportToEmuMixpanel("EmuLandingPageView")
 # 	@emu_link = settings.emu_link
 # 	erb :emu_landing_page
 # end
