@@ -2707,8 +2707,7 @@ end
 
 def reportToMixpanel(event_name,info={})
 	begin
-		ip_addr = request.env['REMOTE_ADDR']
-		settings.mixpanel.track(ip_addr.to_s, event_name, info) if settings.respond_to?(:mixpanel)
+		settings.mixpanel.track('12345', event_name, info) if settings.respond_to?(:mixpanel)
 	rescue => error
 		logger.error "mixpanel error: " + error.to_s
 	end

@@ -38,6 +38,19 @@ before do
   # else public
 end
 
+get '/emu/ios' do
+  userAgentStr = request.env["HTTP_USER_AGENT"].to_s
+  ip_addr = request.env['REMOTE_ADDR'].to_s
+  shared_from = params[:src] ? params[:src] : 'undefined'
+
+  info = Hash.new
+  info["user_agent"] = userAgentStr
+  info["shared_from"] = shared_from
+  reportToEmuMixpanel("iosStoreLink", info, ip_addr)
+  redirect 'https://itunes.apple.com/app/id969789079', 302
+end
+
+
 # get '/test/bson' do
 #   packages = settings.emu_test.db().collection("packages").find({})
 #   packages.to_json
