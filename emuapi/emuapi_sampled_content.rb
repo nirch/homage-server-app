@@ -38,7 +38,7 @@ def handle_upload_user_content(config, connection, already_sampled=false)
         {"$set"=>{
           "first_sample_time_for_today"=>right_now,
           "last_sample_time"=>right_now,
-          "today_sampled_users_count"=>666
+          "today_sampled_users_count"=>1
         }}
       )
     return
