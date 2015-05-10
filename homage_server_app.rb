@@ -290,7 +290,12 @@ module RemakesSaveToDevice
 end
 
 get '/' do
+
 	host_name = request.env["HTTP_HOST"]
+
+	logger.info "Host name: " + host_name.to_s if host_name
+	logger.info "Request: " + request.env.to_s if request.env
+
 	if (host_name =~ /emu.im/i) then 
 		@mixpanel_token = settings.emumixpanel_token
 		erb :emu_landing_page
