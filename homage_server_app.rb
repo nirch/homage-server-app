@@ -311,8 +311,11 @@ end
 # 	# info["EMU_ENTERED"] = "production"
 # 	# reportToMixpanel("EmuLandingPageView",info)
 # 	# reportToEmuMixpanel("EmuLandingPageView")
+# 	host_name = request.env["HTTP_HOST"]
+
+# 	logger.info "Host name: " + host_name.to_s if host_name
+# 	logger.info "Request: " + request.env.to_s if request.env
 # 	@mixpanel_token = settings.emumixpanel_token
-# 	@emu_link = settings.emu_link
 # 	erb :emu_landing_page
 # end
 
