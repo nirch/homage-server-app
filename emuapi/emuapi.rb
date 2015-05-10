@@ -46,7 +46,7 @@ get '/emu/ios' do
   info = Hash.new
   info["user_agent"] = userAgentStr
   info["shared_from"] = shared_from
-  reportToEmuMixpanel("iosStoreLink", info, ip_addr)
+  reportToEmuMixpanel("weblp_:iosStoreLink", info, ip_addr)
   redirect 'https://itunes.apple.com/app/id969789079', 302
 end
 

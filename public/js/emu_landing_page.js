@@ -49,7 +49,7 @@ $(window).on("load",function(){
 $(document).on("ready", function(){
 
     mixpanel.track(
-            "EmuLandingPageView"
+            "weblp_:EmuLandingPageView"
         );
 
 });
