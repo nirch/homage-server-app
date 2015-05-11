@@ -104,6 +104,15 @@ get '/emuapi/packages/:verbosity' do
   end
   config = config.to_a[0]
 
+  # Get the configured mixed emus screen information
+  mixed_screen = connection.db().collection("config").find({"config_type"=> "mixed screen", "client_name"=>"Emu iOS"}).to_a
+  if (mixed_screen.count != 1)
+    mixed_screen = {"enabled"=>false, "reason"=>"invalid config or disabled"}
+  else
+    mixed_screen = mixed_screen.to_a[0]  
+  end
+  
+
   # Handle sampled user content
   already_sampled_header = request.env['HTTP_USER_SAMPLED_BY_SERVER'].to_s
   already_sampled = already_sampled_header=="true"
@@ -118,6 +127,7 @@ get '/emuapi/packages/:verbosity' do
   result = result.merge(config)
   result["packages_count"] = packages.count
   result["packages"] = packages
+  result["mixed_screen"] = mixed_screen
   return result.to_json()
 end
 
