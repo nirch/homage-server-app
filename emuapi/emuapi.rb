@@ -1,6 +1,7 @@
 #encoding: utf-8
 require_relative 'emuapi_config'
 require_relative 'emuapi_sampled_content'
+require_relative 'emuapi_localization.rb'
 require_relative '../emuconsole/logic/package'
 require 'logger'
 
@@ -74,27 +75,15 @@ end
 # end
 
 
-# GET all available packages info
-# :verbosity -
-#   full - the result will also include all emuticons information for every package
-#   metadata - the result will only include meta data about the packages (excluding emuticons info)
-get '/emuapi/packages/:verbosity' do
+# GET packages info.
+# Will also include config info for the app.
+get '/emuapi/packages/full' do
 
-  # determine the verbosity of the result
+  # determine connection required (public/scratchpad)
   connection = settings.emu_public
-  use_scratchpad = request.env['HTTP_SCRATCHPAD'].to_s
+  use_scratchpad = request.env['HTTP_SCRATCHPAD'].to_s  
   if use_scratchpad == "true"
     connection = settings.emu_scratchpad
-  end
-
-  verbosity = params[:verbosity]
-  case verbosity
-    when "meta"
-      fields_projection = {"emuticons"=>false}
-    when "full"
-      fields_projection = nil
-    else
-      return oops_404
   end
 
   # Get the config information
@@ -112,22 +101,26 @@ get '/emuapi/packages/:verbosity' do
     mixed_screen = mixed_screen.to_a[0]  
   end
   
-
   # Handle sampled user content
   already_sampled_header = request.env['HTTP_USER_SAMPLED_BY_SERVER'].to_s
   already_sampled = already_sampled_header=="true"
   handle_upload_user_content(config, connection, already_sampled=already_sampled)
 
   # Get the packages
-  packages = connection.db().collection("packages").find({}, {:fields=>fields_projection})
+  packages = connection.db().collection("packages").find({})
   packages = packages.to_a
 
-  # Also include the config information with the result
+  # Add some localization info (if required)
+  preffered_languages = request.env["HTTP_ACCEPT_LANGUAGE"]
+  add_localization_info(config, connection, preffered_languages)
+
+  # Merge config info with packages info
   result = Hash.new
   result = result.merge(config)
   result["packages_count"] = packages.count
   result["packages"] = packages
   result["mixed_screen"] = mixed_screen
+  
   return result.to_json()
 end
 

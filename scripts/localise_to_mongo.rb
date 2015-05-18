@@ -10,7 +10,7 @@ def get_translations_uri(locale)
 	return URI.parse(url)
 end
 
-locale = 'fr'#ARGV[0]
+locale = ARGV[0]
 uri = get_translations_uri(locale)
 translation_json = Net::HTTP.get(uri)
 translation_hash = JSON.parse(translation_json)
