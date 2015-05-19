@@ -19,12 +19,15 @@ import json
 import requests
 from boto.s3.connection import S3Connection
 import shutil
+import copy
+import codecs
 
 
 API_PATH = None
 API_PACKAGES_PATH = "packages/full"
 API_PACKAGES_URL = None
 ONLY_THIS_PACKAGE = None
+USE_SCRATCHPAD = True
 
 HOME_PATH = None
 TEMP_FILES_PATH = None
@@ -42,6 +45,7 @@ def setup_configuration(args):
     global HOME_PATH, TEMP_FILES_PATH
     global s3, bucket, BUCKET_NAME
     global ONLY_THIS_PACKAGE
+    global USE_SCRATCHPAD
 
     if len(args) < 2:
         return False
@@ -50,10 +54,13 @@ def setup_configuration(args):
 
     if env == "dev":
         API_PATH = "http://localhost:9292/emuapi/"
+        USE_SCRATCHPAD = True
     elif env == "test":
-        API_PATH = "http://app-test.emu.im/emuapi/"
+        API_PATH = "http://app.emu.im/emuapi/"
+        USE_SCRATCHPAD = True
     elif env == "prod":
-        API_PATH = "http://localhost:9292/emuapi/"
+        API_PATH = "http://app.emu.im/emuapi/"
+        USE_SCRATCHPAD = False
     else:
         print "env parameter missing (must be test or prod)."
         return False
@@ -62,8 +69,6 @@ def setup_configuration(args):
         ONLY_THIS_PACKAGE = args[2]
     except:
         ONLY_THIS_PACKAGE = None
-
-    print ">>>>>>", ONLY_THIS_PACKAGE
 
     API_PACKAGES_URL = API_PATH + API_PACKAGES_PATH
     print "Fetching info from %s" % API_PACKAGES_URL
@@ -89,7 +94,10 @@ def ensure_temp_folder_exists():
 # region - REST API
 def fetch_packages_info():
     global BUCKET_NAME
-    resp = requests.get(url=API_PACKAGES_URL, headers={"SCRATCHPAD":"true"})
+    if USE_SCRATCHPAD:
+        resp = requests.get(url=API_PACKAGES_URL, headers={"SCRATCHPAD":"true"})
+    else:
+        resp = requests.get(url=API_PACKAGES_URL)
     parsed_info = json.loads(resp.text)
     BUCKET_NAME = parsed_info["bucket_name"]
     return parsed_info
@@ -261,13 +269,80 @@ What does it do:
     print info
 # endregion
 
+
+
+def create_mixed_screen_resources(info):
+    print "Recreating onboarding emus"
+    ms = info["mixed_screen"]
+    
+    # Build a dictionary of emus to include
+    included_emus_by_oid = {}
+    for emu in ms["emus"]:
+        included_emus_by_oid[emu["oid"]] = True
+
+    # now build the packages info including the required emus
+    packages_info = []
+    for package in info["packages"]:
+        p = copy.deepcopy(package)
+        emus = []
+        for emu in p["emuticons"]:
+            if emu["_id"]["$oid"] in included_emus_by_oid:
+                emus.append(emu)
+        if len(emus) > 0:
+            p["emuticons"] = emus
+            packages_info.append(p)
+    
+    json_result = copy.deepcopy(info)
+    json_result["config_type"] = "bundled local in app resources" 
+    json_result["packages"] = packages_info 
+    json_result["packages_count"] = len(packages_info) 
+
+    for k in json_result.keys():
+        if k.startswith("cms_"):
+            del json_result[k]
+
+    del json_result["tweaks"]
+    del json_result["upload_user_content"]
+
+    fname = os.path.join(TEMP_FILES_PATH,"onboarding_packages_test.json")
+    file = codecs.open(fname, "w", "utf-8")
+    file.write(json.dumps(json_result, indent=4, sort_keys=True))
+    file.close()
+    print "saved json to:", fname
+
+    # download all required resources
+    for pkg in json_result["packages"]:
+        download_resources_for_package(pkg)
+
+def download_resources_for_package(pkg):
+    print "Downloading resources: ", pkg["name"]
+
+    emuticons = pkg["emuticons"]
+    package_name = pkg["name"]
+
+    folder = download_temp_folder(package_name)
+    recreate_folder(folder)
+
+    # download resources for the package
+    i = 0
+    for emu in emuticons:
+        i += 1
+        name = emu["name"]
+        print "%d / %d - %s" %(i, len(emuticons), name)
+        download_emuticon_files(emu, package_name, folder)
+
+
+
+
+
 if __name__ == "__main__":
 
     if setup_configuration(sys.argv):
         ensure_temp_folder_exists()
         info = fetch_packages_info()
         connect_to_s3()
-        check_packages_with_info(info)
+        #check_packages_with_info(info)
+        create_mixed_screen_resources(info)
         print "Done"
     else:
         show_help_info()
