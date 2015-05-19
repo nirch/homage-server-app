@@ -36,7 +36,7 @@ def localization_info_for_language(lang, connection)
 
 	# return the localisation info
 	if info.count == 1
-		return info
+		return info[0]
 	end
 	
 	return nil
