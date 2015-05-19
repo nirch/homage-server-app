@@ -128,6 +128,9 @@ get '/emuapi/packages/:verbosity' do
   result["packages_count"] = packages.count
   result["packages"] = packages
   result["mixed_screen"] = mixed_screen
+
+  response.headers['content-type'] = 'application/json'
+
   return result.to_json()
 end
 
