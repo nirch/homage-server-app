@@ -8,8 +8,8 @@ def get_translate_uri(asset_id, locale)
 	return URI.parse(url)
 end
 
-csv_path = "/Users/nirchannes/Downloads/emu-fr.csv"#ARGV[0]
-locale = "fr"#ARGV[1]
+csv_path = "/Users/nirchannes/Documents/Emu/Translations/emu-es.csv"#ARGV[0]
+locale = "es"#ARGV[1]
 
 default_uri = get_translate_uri(nil, nil)
 http = Net::HTTP.new(default_uri.host, default_uri.port)
