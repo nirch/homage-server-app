@@ -126,6 +126,36 @@ get '/emuapi/packages/full' do
   return result.to_json()
 end
 
+# Updating the push token to 
+put '/emuapi/user/push_token' do
+  # input
+  device_identifier = BSON::ObjectId.from_string(params[:device_identifier])
+  device_name = BSON::ObjectId.from_string(params[:device_name])
+  device_os = BSON::ObjectId.from_string(params[:device_os])
+  push_token = BSON::ObjectId.from_string(params[:push_token])
+
+  connection = settings.emu_public
+  use_scratchpad = request.env['HTTP_SCRATCHPAD'].to_s  
+  if use_scratchpad == "true"
+    connection = settings.emu_scratchpad
+  end
+
+  users_collection = connection.db().collection("users")
+  existing_user = users_collection.find_one({device_identifier: device_identifier})
+  if existing_user then
+    # Update
+    users_collection.update({_id: existing_user["_id"]}, {"$set" => {push_token: push_token}})
+    logger.info "Emu: push token updated for user id " + existing_user["_id"].to_s
+  else
+    # Create
+    user_id = BSON::ObjectId.new
+    user = { _id: user_id, device_identifier: device_identifier, device_name: device_name, push_token: push_token }
+    users_collection.save(user)
+
+    logger.info "Emu: new user saved in the DB with user id " + user_id.to_s
+  end
+end
+
 
 protect do
   post '/emuapi/package' do
