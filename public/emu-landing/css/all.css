@@ -545,7 +545,7 @@ body > .jcf-select-drop.jcf-drop-flipped {margin: 1px 0 0;}
 	}
 	.logo {
 		width:306px;
-		height:108px;
+		height:245px;
 		bottom:75px;
 		margin-right:9px;
 	}
@@ -574,9 +574,9 @@ body > .jcf-select-drop.jcf-drop-flipped {margin: 1px 0 0;}
 	.logo 
 	{
 		width:306px;
-		height:108px;
+		height:245px;
 		bottom:25px;
-		margin-right:-40px;
+		margin-right:40px;
 	}
 	
 	.btn-holder {padding:44px 43px;}
