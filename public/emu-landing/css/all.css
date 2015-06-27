@@ -294,6 +294,14 @@ p {margin: 0 0 9px;}
 	margin-left:30px;
 	
 }
+.playstore
+{
+	width:350px; 
+	margin-top:-20px; 
+	margin-left:30px;
+	
+}
+
 .phone-block .video-holder > div {
 	width:100% !important;
 	/* height:auto !important; */
@@ -565,11 +573,18 @@ body > .jcf-select-drop.jcf-drop-flipped {margin: 1px 0 0;}
 	.comingsoon
 	{
 	width:350px; 
-	margin-top:-20px; 
+	margin-top:0px; 
 	margin-left:90px;
 	
 	}
 	
+	.playstore
+	{
+	width:350px; 
+	margin-top:-90px; 
+	margin-left:90px;
+	
+	}
 		
 	.logo 
 	{
