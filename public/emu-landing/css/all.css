@@ -501,7 +501,7 @@ body > .jcf-select-drop.jcf-drop-flipped {margin: 1px 0 0;}
 }
 @media only screen and (max-height:860px) {
 	#header {
-		height:280px;
+		height:380px;
 		overflow:hidden;
 	}
 	#header > span img {
@@ -512,13 +512,13 @@ body > .jcf-select-drop.jcf-drop-flipped {margin: 1px 0 0;}
 }
 @media only screen and (max-height:860px) and (max-width:1365px) {
 	#header > span img {
-		height:280px;
+		height:380px;
 		min-height:0;
 		width:auto;
 	}
 }
 @media only screen and (max-width:959px) {
-	#header > span img {height:280px;}
+	#header > span img {height:380px;}
 }
 @media only screen and (max-width:959px), (max-height:860px) {
 	body {
