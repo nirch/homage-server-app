@@ -306,6 +306,10 @@ get '/' do
 	end
 end
 
+get '/test/emu' do
+	erb :emulanding
+end
+
 # get '/danemu' do
 # 	# info = Hash.new
 # 	# info["EMU_ENTERED"] = "production"
