@@ -298,7 +298,7 @@ get '/' do
 
 	if (host_name =~ /emu.im/i) then 
 		@mixpanel_token = settings.emumixpanel_token
-		erb :emu_landing_page
+		erb :emulanding
 	elsif host_name then
 		getMinisiteForCampaign(host_name)
 	else 
@@ -307,6 +307,7 @@ get '/' do
 end
 
 get '/test/emu' do
+	@mixpanel_token = settings.emumixpanel_token
 	erb :emulanding
 end
 
