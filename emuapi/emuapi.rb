@@ -60,7 +60,7 @@ get '/emu/android' do
   info["user_agent"] = userAgentStr
   info["shared_from"] = shared_from
   reportToEmuMixpanel("Server:PlayStore", info, ip_addr)
-  redirect 'https://itunes.apple.com/app/id969789079', 302
+  redirect 'https://play.google.com/store/apps/details?id=im.emu.app.emu.prod', 302
 end
 
 
