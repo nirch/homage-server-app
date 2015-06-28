@@ -184,8 +184,8 @@ p {margin: 0 0 9px;}
 	text-indent:-9999px;
 	overflow:hidden;
 }
-.socials .mail a {
-	background: url(../img/icon-mail.png) no-repeat;
+.socials .tumblr a {
+	background: url(../img/icon-tumblr.png) no-repeat;
 	background-size:100% auto;
 }
 .socials .facebook a {
