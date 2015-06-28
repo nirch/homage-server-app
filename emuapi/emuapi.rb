@@ -47,7 +47,19 @@ get '/emu/ios' do
   info = Hash.new
   info["user_agent"] = userAgentStr
   info["shared_from"] = shared_from
-  reportToEmuMixpanel("weblp_:iosStoreLink", info, ip_addr)
+  reportToEmuMixpanel("Server:AppStore", info, ip_addr)
+  redirect 'https://itunes.apple.com/app/id969789079', 302
+end
+
+get '/emu/android' do
+  userAgentStr = request.env["HTTP_USER_AGENT"].to_s
+  ip_addr = request.env['REMOTE_ADDR'].to_s
+  shared_from = params[:src] ? params[:src] : 'undefined'
+
+  info = Hash.new
+  info["user_agent"] = userAgentStr
+  info["shared_from"] = shared_from
+  reportToEmuMixpanel("Server:PlayStore", info, ip_addr)
   redirect 'https://itunes.apple.com/app/id969789079', 302
 end
 
@@ -277,6 +289,7 @@ end
 
 def reportToEmuMixpanel(event_name,info={}, distinct_id)
   begin
+    puts distinct_id.to_s, event_name, info
     settings.emumixpanel.track(distinct_id.to_s, event_name, info) if settings.respond_to?(:emumixpanel)
   rescue => error
     logger.error "mixpanel error: " + error.to_s
