@@ -2,19 +2,19 @@
 jQuery(function () {
     if (navigator.userAgent.match(/(iPod|iPhone|iPad)/)) {
        // location.href = 'http://app.appsflyer.com/id916554012?pid=HOMEPAGE&c=feb_24';
-	   location.href = 'http://bit.ly/1JXtmq7'
+	   location.href = '/emu/ios?src=landing_page'
     }
 	else if (navigator.userAgent.match(/(Android)/) && navigator.userAgent.match(/(Chrome)/)) {
 		//$('#playBtn img').trigger('click');
         //location.href = 'https://play.google.com/store/apps/details?id=com.slipnote.android&hl=en';// http://app.appsflyer.com/com.slipnote.android?pid=homepage';
 		//location.href = 'https://twitter.com/kitcutapp';
-		location.href = 'http://bit.ly/droidhomepageredirect'
+		location.href = '/emu/android?src=landing_page'
 		
     }
 	else if (navigator.userAgent.match(/(Android)/)) {
         //location.href = 'http://app.appsflyer.com/com.slipnote.android?pid=homepage';// http://app.appsflyer.com/com.slipnote.android?pid=homepage';
 		//location.href = 'https://twitter.com/kitcutapp';
-		location.href = 'http://bit.ly/droidhomepageredirect'
+		location.href = '/emu/android?src=landing_page'
     }
 	
 	initLoader();
