@@ -169,7 +169,6 @@ p {margin: 0 0 9px;}
 	margin:-10px 0  0;
 	padding:25px 0 0 22px;
 	float:right;
-	background: url(../imagesKitCut/bg-socials.png) no-repeat;
 	background-size:100% auto;
 	width:210px;
 	height:103px;
@@ -234,20 +233,6 @@ p {margin: 0 0 9px;}
 	width:50%;
 	padding:55px 53px 0;
 	margin:0 0 20px;
-}
-
-
-.socials {
-	.socials {
-	list-style:none;
-	margin:-10px 0 0;
-	padding:25px 0 0 22px;
-	float:right;
-	background: url(../imagesKitCut/bg-socials.png) no-repeat;
-	background-size:100% auto;
-	width:210px;
-	height:103px;
-}
 }
 .btn {
 
