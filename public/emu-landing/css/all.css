@@ -164,9 +164,9 @@ p {margin: 0 0 9px;}
 	display:block;
 	clear:both;
 }
-#header .socials {
+.socials {
 	list-style:none;
-	margin:-10px 0 0;
+	margin:-10px 0  0;
 	padding:25px 0 0 22px;
 	float:right;
 	background: url(../imagesKitCut/bg-socials.png) no-repeat;
@@ -174,30 +174,30 @@ p {margin: 0 0 9px;}
 	width:210px;
 	height:103px;
 }
-#header .socials li {
+.socials li {
 	float:left;
 	margin:0 13px 0 0;
 }
-#header .socials li a {
+.socials li a {
 	width:42px;
 	height:42px;
 	display:block;
 	text-indent:-9999px;
 	overflow:hidden;
 }
-#header .socials .mail a {
+.socials .mail a {
 	background: url(../img/icon-mail.png) no-repeat;
 	background-size:100% auto;
 }
-#header .socials .facebook a {
+.socials .facebook a {
 	background: url(../img/icon-facebook.png) no-repeat;
 	background-size:100% auto;
 }
-#header .socials .twitter a {
+.socials .twitter a {
 	background: url(../img/icon-twitter.png) no-repeat;
 	background-size:100% auto;
 }
-#header .socials li a:hover {opacity:0.8;}
+.socials li a:hover {opacity:0.8;}
 .logo{
 	position:absolute;
 	right:50%;
@@ -237,8 +237,8 @@ p {margin: 0 0 9px;}
 }
 
 
-#header .socials {
-	#header .socials {
+.socials {
+	.socials {
 	list-style:none;
 	margin:-10px 0 0;
 	padding:25px 0 0 22px;
@@ -533,14 +533,14 @@ body > .jcf-select-drop.jcf-drop-flipped {margin: 1px 0 0;}
 		font-size:21px;
 		line-height:28px;
 	}
-	#header .socials {
+	.socials {
 		width:168px;
 		height:83px;
 		padding:20px 0 0 18px;
 		margin-top:-8px;
 	}
-	#header .socials li {margin-right:10px;}
-	#header .socials li a {
+	.socials li {margin-right:10px;}
+	.socials li a {
 		width:33px;
 		height:33px;
 	}
