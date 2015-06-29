@@ -89,13 +89,19 @@ end
 
 # GET packages info.
 # Will also include config info for the app.
-get '/emuapi/packages/full' do
+get '/emuapi/packages/:filter' do
 
   # determine connection required (public/scratchpad)
   connection = settings.emu_public
   use_scratchpad = request.env['HTTP_SCRATCHPAD'].to_s  
   if use_scratchpad == "true"
     connection = settings.emu_scratchpad
+  end
+
+  # Validate filter used
+  filter = params["filter"]
+  if (filter !='full' && filter !='update')
+    return oops_404
   end
 
   # Get the config information
@@ -118,8 +124,17 @@ get '/emuapi/packages/full' do
   already_sampled = already_sampled_header=="true"
   handle_upload_user_content(config, connection, already_sampled=already_sampled)
 
-  # Get the packages
-  packages = connection.db().collection("packages").find({})
+  # Get the packages (filtered or all)
+  if filter == "update"
+    begin 
+      after = Integer(params[:after])
+    rescue
+      return oops_404
+    end
+    packages = connection.db().collection("packages").find({"last_update_timestamp"=>{"$gt"=>after}})
+  else
+    packages = connection.db().collection("packages").find({})
+  end
   packages = packages.to_a
 
   # Add some localization info (if required)
