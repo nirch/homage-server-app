@@ -101,11 +101,23 @@ def createNewPackage(mongoconnection, awsconnection, name,label,duration,frames_
 			first_published_on = nil
 		end
 
-		package = Package.create({ :first_published_on => first_published_on,
-			:meta_data_created_on => meta_data_created_on, :notification_text => notification_text,
-		 :meta_data_last_update => meta_data_last_update, :last_update => last_update,:name => name, 
-		 :icon_name => icon_name, :cms_icon_2x => icon2xName, :cms_icon_3x => icon3xName, :cms_state => "save",
-		 :label => label, :active => active, :dev_only => dev_only, :emuticons_defaults => emuticons_defaults_hash })
+		package = Package.create({ 
+			:first_published_on => first_published_on,
+			:data_update_time_stamp => meta_data_created_on.to_time.to_i,
+			:meta_data_created_on => meta_data_created_on, 
+			:notification_text => notification_text,
+		 	:meta_data_last_update => meta_data_last_update, 
+		 	:last_update => last_update,
+		 	:name => name, 
+		 	:icon_name => icon_name, 
+		 	:cms_icon_2x => icon2xName, 
+		 	:cms_icon_3x => icon3xName, 
+		 	:cms_state => "save",
+		 	:label => label, 
+		 	:active => active, 
+		 	:dev_only => dev_only, 
+		 	:emuticons_defaults => emuticons_defaults_hash 
+		 	})
 
 		if(package == nil)
 			success = "Problem creating package: " + find_by_name
@@ -168,6 +180,7 @@ def updatePackage(mongoconnection,awsconnection, name,label,duration,frames_coun
 		end
 
 		package.meta_data_last_update = currenttime
+		package.data_update_time_stamp = currenttime.to_time.to_i
 		icon_name = package.icon_name
 		if icon_2x != nil
 			filename = make_icon_name(icon_name + "@2x", File.extname(icon_2x[:filename]), true, false)
