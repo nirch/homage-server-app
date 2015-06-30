@@ -400,11 +400,11 @@ p {margin: 0 0 9px;}
 	body {
 		font-size:15px;
 		line-height:19px;
-		background:#0fb4e3;
+		background:#67B946;
 		color:#fff;
 	}
 	#header {
-		height:87px;
+		height:175px;
 		overflow:hidden;
 	}
 	#header > span img {
