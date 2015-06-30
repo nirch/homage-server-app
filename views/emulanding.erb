@@ -62,9 +62,9 @@
 			</div>
 			<div class="phone-holder">
 				<div class="phone-block">
-					<div class="video-holder">
+					<div class="video-holder" style="background-color:black">
 
-						<video id="video" autoplay="autoplay" preload="none" loop="loop" Xsrc="/emu-landing/media/video1.mp4">
+						<video id="video" autoplay="autoplay" preload="none" loop="loop">
 							<source type="video/webm" src="/emu-landing/media/video1.webm">
 							<source type="video/mp4" src="/emu-landing/media/video1.mp4">
 						</video>
@@ -89,7 +89,12 @@
     <script type="text/javascript">
 		$(document).on("ready", function(){
     		mixpanel.track("Web:EmuLandingPageView");
+    		$('#video').hide();
 
+			var vid = document.getElementById("video");
+			vid.onplay = function() {
+			    $('#video').delay( 0 ).fadeIn( 400 );
+			};
 		});                                
 	</script>
 
