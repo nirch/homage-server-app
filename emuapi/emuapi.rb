@@ -40,27 +40,18 @@ before do
 end
 
 get '/emu/ios' do
-  userAgentStr = request.env["HTTP_USER_AGENT"].to_s
-  ip_addr = request.env['REMOTE_ADDR'].to_s
-  shared_from = params[:src] ? params[:src] : 'undefined'
-
-  info = Hash.new
-  info["user_agent"] = userAgentStr
-  info["shared_from"] = shared_from
-  reportToEmuMixpanel("Server:AppStore", info, ip_addr)
-  redirect 'https://itunes.apple.com/app/id969789079', 302
+  @mixpanel_token = settings.emumixpanel_token
+  @mixpanel_event = "Web:Emu:AppStoreRedirect"
+  @redirect_url = "https://itunes.apple.com/app/id969789079"
+  erb :redirect
 end
 
 get '/emu/android' do
-  userAgentStr = request.env["HTTP_USER_AGENT"].to_s
-  ip_addr = request.env['REMOTE_ADDR'].to_s
-  shared_from = params[:src] ? params[:src] : 'undefined'
+  @mixpanel_token = settings.emumixpanel_token
+  @mixpanel_event = "Web:Emu:PlayStoreRedirect"
+  @redirect_url = "https://play.google.com/store/apps/details?id=im.emu.app.emu.prod"
+  erb :redirect
 
-  info = Hash.new
-  info["user_agent"] = userAgentStr
-  info["shared_from"] = shared_from
-  reportToEmuMixpanel("Server:PlayStore", info, ip_addr)
-  redirect 'https://play.google.com/store/apps/details?id=im.emu.app.emu.prod', 302
 end
 
 

@@ -54,9 +54,9 @@
 
                 	<img class="place-text" src="/emu-landing/img/place-yourslef-text.png">
 
-					<a href="/emu/ios?src=landing_page"><img class="appstore" src="/emu-landing/img/app-store.png" alt="image description"></a>
+					<a id="appstore-link" href="/emu/ios?ref=landing_page"><img class="appstore" src="/emu-landing/img/app-store.png" alt="image description"></a>
 
-					<a href="/emu/android?src=landing_page"><img class="playstore" src="/emu-landing/img/play-store.png" alt="image description"></a>
+					<a id="playstore-link" href="/emu/android?ref=landing_page"><img class="playstore" src="/emu-landing/img/play-store.png" alt="image description"></a>
 
 				</div>
 			</div>
@@ -87,22 +87,51 @@
 	<script type="text/javascript" src="/emu-landing/js/jquery.main.js"></script>
 	<script type="text/javascript" src="/emu-landing/js/mediaelement-and-player.min.js"></script>
     <script type="text/javascript">
+
+    	function getUrlParameter(sParam)
+		{
+		    var sPageURL = window.location.search.substring(1);
+		    var sURLVariables = sPageURL.split('&');
+		    for (var i = 0; i < sURLVariables.length; i++) 
+		    {
+		        var sParameterName = sURLVariables[i].split('=');
+		        if (sParameterName[0] == sParam) 
+		        {
+		            return sParameterName[1];
+		        }
+		    }
+		}    
+
 		$(document).on("ready", function(){
-    		mixpanel.track("Web:EmuLandingPageView");
-    		$('#video').hide();
+
+			var ref = getUrlParameter('ref')
+			if (!ref)
+			{
+    			ref = 'undefined';
+    		}
+    		mixpanel.track("Web:EmuLandingPage:View", { "Reference":ref });
+
+			mixpanel.track_links("#appstore-link", "Web:EmuLandingPage:AppStoreLinkPressed", {"Reference":ref, "referrer": document.referrer});
+			mixpanel.track_links("#playstore-link", "Web:EmuLandingPage:PlayStoreLinkPressed", {"Reference":ref, "referrer": document.referrer});
+			mixpanel.track_links("#tumblr-link", "Web:EmuLandingPage:TumblrLinkPressed", {"Reference":ref, "referrer": document.referrer});
+			mixpanel.track_links("#facebook-link", "Web:EmuLandingPage:FacebookLinkPressed", {"Reference":ref, "referrer": document.referrer});
+ 			mixpanel.track_links("#twitter-link", "Web:EmuLandingPage:TwitterLinkPressed", {"Reference":ref, "referrer": document.referrer});
+
+     		$('#video').hide();
 
 			var vid = document.getElementById("video");
 			vid.onplay = function() {
 			    $('#video').delay( 0 ).fadeIn( 400 );
 			};
+
 		});                                
 	</script>
 
 	<footer>
 		<ul class="socials">
-			<li class="tumblr"><a href="http://emu-gifs.tumblr.com">tumblr</a></li>
-			<li class="facebook"><a href="https://www.facebook.com/EmuSelfieStickers">facebook</a></li>
-			<li class="twitter"><a href="https://twitter.com/EMU_app">twitter</a></li>
+			<li class="tumblr"><a id="tumblr-link" href="http://emu-gifs.tumblr.com">tumblr</a></li>
+			<li class="facebook"><a id="facebook-link" href="https://www.facebook.com/EmuSelfieStickers">facebook</a></li>
+			<li class="twitter"><a id="twitter-link" href="https://twitter.com/EMU_app">twitter</a></li>
 		</ul>
 	</footer>
 
