@@ -122,7 +122,7 @@ get '/emuapi/packages/:filter' do
     rescue
       return oops_404
     end
-    packages = connection.db().collection("packages").find({"last_update_timestamp"=>{"$gt"=>after}})
+    packages = connection.db().collection("packages").find({"data_update_time_stamp"=>{"$gt"=>after}})
   else
     packages = connection.db().collection("packages").find({})
   end
