@@ -53,6 +53,7 @@ require File.expand_path '../mongo scripts/Analytics.rb', __FILE__
 #   end
 
 # emu api related
+require_relative 'emupages/shares'
 require_relative 'emuapi/emuapi'
 require_relative 'emuconsole/emuconsole'
 
