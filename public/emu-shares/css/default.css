@@ -58,8 +58,10 @@ img.gif
 #shares-container
 {
 	width: 80%;
-	height: 44px;
-	margin: auto;
+	height: 60px;
+	margin-left: auto;
+	margin-right: auto;
+	margin-top: 16px;
 }
 
 a.s-facebook 	{background: #5265A2 url('../img/facebook.png');}
@@ -78,8 +80,8 @@ a.share
 	width: 44px;
 	height: 44px;
 	display: inline-block;
-	margin-left: 3px;
-	margin-right: 3px;
+	margin-left: 4px;
+	margin-right: 4px;
 	border-radius: 28px;
 	border: 3px solid white;
 }
@@ -138,6 +140,14 @@ span.copyright
   }
 
   #footer img
+  {
+  	opacity:0;
+  	pointer-events:none;
+  }
+}
+
+@media screen and (max-height: 400px) {
+  #footer
   {
   	opacity:0;
   	pointer-events:none;
