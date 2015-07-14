@@ -1,5 +1,5 @@
 
-function bind_gif_loading()
+function bind_gif_loading(missing_gif_url)
 {
     $("#gif")
     .load(function() { 
@@ -10,7 +10,7 @@ function bind_gif_loading()
         var gif = $("#gif");
         gif.unbind("load");
         gif.unbind("error");
-        gif.attr("src", "<%= @missing_gif_url %>");
+        gif.attr("src", missing_gif_url);
         gif.fadeIn();
         $('#shares-container').fadeOut();
     });
