@@ -115,6 +115,7 @@ def createNewPackage(mongoconnection, awsconnection, name,label,duration,frames_
 		 	:cms_state => "save",
 		 	:label => label, 
 		 	:active => active, 
+		 	:is_active => active, # deprecated. Backward compatibility - old clients use is_active field.
 		 	:dev_only => dev_only, 
 		 	:emuticons_defaults => emuticons_defaults_hash 
 		 	})
