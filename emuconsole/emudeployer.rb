@@ -69,6 +69,7 @@ def deployEmuPackage(package_name)
 					end
 					package.cms_last_published = currenttime
 					package.is_active = package.active # backwards compatibility with old clients using the is_active field
+					package.data_update_time_stamp = currenttime.to_time.to_i
 					package.save
 
 				else
@@ -78,6 +79,7 @@ def deployEmuPackage(package_name)
 					package.cms_first_published = currenttime
 					package.cms_last_published = currenttime
 					package.is_active = package.active # backwards compatibility with old clients using the is_active field
+					package.data_update_time_stamp = currenttime.to_time.to_i
 					package.save
 				end
 			end
