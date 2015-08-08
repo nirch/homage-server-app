@@ -1,6 +1,5 @@
 #encoding: utf-8
 require 'mongo_mapper'
-require 'redis'
 require 'maxminddb'
 require_relative '../utils/aws/aws_manager'
 #
