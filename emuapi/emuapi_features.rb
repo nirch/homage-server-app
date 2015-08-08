@@ -18,7 +18,6 @@
 def supported_features_filter_for_client(client_name, client_version)
 	# by default, will return only packages that have no "required version" set.
 	version_string = formatted_version_string(client_version)
-	puts "SDFGSDFG:", version_string
 	if (client_name != "Emu iOS" and client_name !="Emu Android") or version_string == nil
 		filter = {
 			"required_ios_version"=>{"$exists"=>false}, 
