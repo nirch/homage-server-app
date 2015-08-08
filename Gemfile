@@ -17,5 +17,6 @@ gem 'rubyzip'
 gem 'sinatra-basic-auth'
 gem 'mixpanel_client'
 gem 'mongo_mapper'
-gem 'geocoder'
+
+gem 'maxminddb', '~> 0.1.7'
 gem 'redis'

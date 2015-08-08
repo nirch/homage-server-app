@@ -68,22 +68,17 @@ get '/emuapi/packages/:filter' do
   country_code = nil
   forced_location = params["l"]
   clear_gl_cache = params["glc"]
-  geo_location_service = nil
+  geo_location_service = "localdb"
   client_version = request.env['HTTP_APP_VERSION_INFO'].to_s
   client_name = request.env['HTTP_APP_CLIENT_NAME'].to_s
 
   #
   # Geo location / country code
   #
-  if clear_gl_cache == "clear"
-    # clear the cache
-    Geocoder::Lookup.get(Geocoder.config.lookup).cache.expire(:all)
-  end
   if forced_location == nil
     # look up user location using request ip address.
-    geo_location_service = Geocoder.config.lookup
-    location = Geocoder.search(request.ip)[0] rescue nil
-    if location != nil then country_code = location.country_code end
+    geodb = settings.geodb
+    country_code = geodb.lookup("77.127.29.131")['country']['iso_code'] rescue nil
   else
     country_code = forced_location
     geo_location_service = "forced_param"

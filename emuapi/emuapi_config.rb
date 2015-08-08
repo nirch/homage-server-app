@@ -1,7 +1,7 @@
 #encoding: utf-8
 require 'mongo_mapper'
-require 'geocoder'
 require 'redis'
+require 'maxminddb'
 require_relative '../utils/aws/aws_manager'
 #
 # Emu test configurations
@@ -28,13 +28,9 @@ configure :test do
 
   set :logging, Logger::DEBUG
 
+  # geo location data
+  set :geodb, MaxMindDB.new('geoip/GeoLite2-Country.mmdb')
 
-  # Geo location config
-  Geocoder.configure(
-    lookup: :google,
-    #api_key: "AmUJwO8i_JnWpO8rHcaraYlPC8K1D2LWmzwaIWJgUMtNo_p6zN5XGNWdLG1GkbXD",
-    timeout: 5
-  )
 end
 
 #
@@ -60,10 +56,7 @@ configure :production do
 
   set :logging, Logger::INFO
 
-  # Geo location config
-  Geocoder.configure(
-    lookup: :google,
-    #api_key: "AmUJwO8i_JnWpO8rHcaraYlPC8K1D2LWmzwaIWJgUMtNo_p6zN5XGNWdLG1GkbXD",
-    timeout: 5
-  )
+  # geo location data
+  set :geodb, MaxMindDB.new('geoip/GeoLite2-Country.mmdb')
+
 end
