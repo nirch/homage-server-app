@@ -1,5 +1,6 @@
 #encoding: utf-8
 require 'mongo_mapper'
+require 'geocoder'
 require_relative '../utils/aws/aws_manager'
 #
 # Emu test configurations
@@ -25,6 +26,14 @@ configure :test do
   set :enviornment, "test"
 
   set :logging, Logger::DEBUG
+
+  # Geo location config
+  Geocoder.configure(
+    lookup: :bing,
+    api_key: "AmUJwO8i_JnWpO8rHcaraYlPC8K1D2LWmzwaIWJgUMtNo_p6zN5XGNWdLG1GkbXD",
+    timeout: 3,
+    units: :km
+  )
 end
 
 #
@@ -49,4 +58,13 @@ configure :production do
   set :enviornment, "production"
 
   set :logging, Logger::INFO
+
+  # Geo location config
+  Geocoder.configure(
+    lookup: :bing,
+    api_key: "AmUJwO8i_JnWpO8rHcaraYlPC8K1D2LWmzwaIWJgUMtNo_p6zN5XGNWdLG1GkbXD",
+    timeout: 3,
+    units: :km,
+    cache: Redis.new
+  )
 end
