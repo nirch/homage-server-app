@@ -33,8 +33,7 @@ configure :test do
   Geocoder.configure(
     lookup: :bing,
     api_key: "AmUJwO8i_JnWpO8rHcaraYlPC8K1D2LWmzwaIWJgUMtNo_p6zN5XGNWdLG1GkbXD",
-    timeout: 20,
-    cache: Redis.new
+    timeout: 20
   )
 end
 
@@ -65,7 +64,6 @@ configure :production do
   Geocoder.configure(
     lookup: :bing,
     api_key: "AmUJwO8i_JnWpO8rHcaraYlPC8K1D2LWmzwaIWJgUMtNo_p6zN5XGNWdLG1GkbXD",
-    timeout: 20,
-    cache: Redis.new
+    timeout: 20
   )
 end
