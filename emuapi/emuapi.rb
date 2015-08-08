@@ -78,7 +78,7 @@ get '/emuapi/packages/:filter' do
   if forced_location == nil
     # look up user location using request ip address.
     geodb = settings.geodb
-    country_code = geodb.lookup("77.127.29.131")['country']['iso_code'] rescue nil
+    country_code = geodb.lookup(request.ip)['country']['iso_code'] rescue nil
   else
     country_code = forced_location
     geo_location_service = "forced_param"
