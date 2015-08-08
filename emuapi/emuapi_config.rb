@@ -27,12 +27,13 @@ configure :test do
 
   set :logging, Logger::DEBUG
 
+
   # Geo location config
   Geocoder.configure(
-    lookup: :bing,
-    api_key: "AmUJwO8i_JnWpO8rHcaraYlPC8K1D2LWmzwaIWJgUMtNo_p6zN5XGNWdLG1GkbXD",
-    timeout: 8,
-    units: :km
+    lookup: :freegeoip,
+    # api_key: "AmUJwO8i_JnWpO8rHcaraYlPC8K1D2LWmzwaIWJgUMtNo_p6zN5XGNWdLG1GkbXD",
+    timeout: 20
+    # units: :km
   )
 end
 
@@ -61,10 +62,9 @@ configure :production do
 
   # Geo location config
   Geocoder.configure(
-    lookup: :bing,
-    api_key: "AmUJwO8i_JnWpO8rHcaraYlPC8K1D2LWmzwaIWJgUMtNo_p6zN5XGNWdLG1GkbXD",
-    timeout: 8,
-    units: :km,
-    cache: Redis.new
+    lookup: :freegeoip,
+    # api_key: "AmUJwO8i_JnWpO8rHcaraYlPC8K1D2LWmzwaIWJgUMtNo_p6zN5XGNWdLG1GkbXD",
+    timeout: 20
+    # units: :km
   )
 end
