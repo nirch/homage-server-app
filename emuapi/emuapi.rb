@@ -129,11 +129,10 @@ get '/emuapi/packages/:filter' do
   end
 
   # Filter by country code (geo location)
-  # Always show packs marked as "country_code"=="any"
-  # If country code recognized, also include packs related to that country code.
-  packs_for_countries = ["any"]
-  if country_code then packs_for_countries.push(country_code) end
-  filter_predicate["country_code"] = {"$in"=>packs_for_countries}
+  countries_filter = countries_filter_by_country_code(country_code)
+  if countries_filter != nil
+    filter_predicate = filter_predicate.merge(countries_filter)
+  end
 
   # Filter by features 
   # Packs can be marked with required_<platform>_version field
@@ -146,6 +145,7 @@ get '/emuapi/packages/:filter' do
   end
 
   # Get the packages
+  logger.info "Packs filter: " + filter_predicate.to_s
   packages = connection.db().collection("packages").find(filter_predicate)
   packages = packages.to_a
 
@@ -161,7 +161,6 @@ get '/emuapi/packages/:filter' do
   result["mixed_screen"] = mixed_screen
   result["country_code"] = country_code
   result["geo_location_service"] = geo_location_service
-  result["packs_for_countries"] = packs_for_countries
   
   response.headers['content-type'] = 'application/json'
 

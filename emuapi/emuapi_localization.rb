@@ -50,3 +50,16 @@ def less_specific_language(lang)
 	return ls_lang if ls_lang.count > 1
 	return nil
 end
+
+
+def countries_filter_by_country_code(country_code)
+	if country_code == nil
+		filter = {"country_code" => {"$in"=>["any"]}}
+	else
+		filter = {
+			"country_code" =>			{"$in" 	=>	["any", country_code]},
+			"blocked_country_code" =>	{"$nin" => 	[country_code]}
+		}
+	end
+	return filter
+end
