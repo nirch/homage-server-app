@@ -54,7 +54,9 @@ end
 
 def countries_filter_by_country_code(country_code)
 	if country_code == nil
-		filter = {"country_code" => {"$in"=>["any"]}}
+		filter = {
+			"country_code" => {"$in"=>["any"]}
+		}
 	else
 		filter = {
 			"country_code" =>			{"$in" 	=>	["any", country_code]},
