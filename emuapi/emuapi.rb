@@ -228,7 +228,7 @@ end
 protect do
   put '/emuapi/package' do
     #  get params 
-    
+
     name = params[:name]
     first_published_on = params[:first_published_on]
     notification_text = params[:notification_text]
@@ -242,9 +242,29 @@ protect do
     dev_only = params[:dev_only]
     icon_2x = params[:icon_2x]
     icon_3x = params[:icon_3x]
+    country_code = params[:country_code]
+    blocked_country_code = params[:blocked_country_code]
 
     # upload to s3 and save to mongo
-    success = updatePackage(settings.emu_scratchpad, settings.emu_s3_test, name,label,duration,frames_count,thumbnail_frame_index,source_user_layer_mask,removesource_user_layer_mask,active,dev_only,icon_2x,icon_3x,first_published_on, notification_text)
+    success = updatePackage(
+      settings.emu_scratchpad, 
+      settings.emu_s3_test, 
+      name,
+      label,
+      duration,
+      frames_count,
+      thumbnail_frame_index,
+      source_user_layer_mask,
+      removesource_user_layer_mask,
+      active,
+      dev_only,
+      icon_2x,
+      icon_3x,
+      first_published_on, 
+      notification_text,
+      country_code,
+      blocked_country_code
+      )
     
     result = Hash.new
     result['error'] = success
