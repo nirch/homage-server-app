@@ -43,6 +43,35 @@ def localization_info_for_language(lang, connection)
 end
 
 
+def add_localization_for_packs(packages, preffered_languages)
+	if preffered_languages == nil then return end
+	preffered_languages = preffered_languages.split(",")
+	most_preffered_language = preffered_languages[0]
+
+	for pack in packages
+		if pack["localized_emuticons"] == nil 
+			next
+		end
+
+		localized_emuticons = pack["localized_emuticons"][most_preffered_language]
+		if localized_emuticons == nil then return end
+
+		for emu in pack["emuticons"]
+			oid = emu["_id"].to_s
+
+			localized_emu = localized_emuticons[oid]
+			if localized_emu == nil then next end
+			
+			# We have localized fields for this emu
+			# these fields will be merged to this emu in current response
+			localized_emu.each do |field_name, field_value|
+				emu[field_name] = field_value
+			end
+		end
+	end
+end
+
+
 # If language is specific (en-us, es-mx etc) take the less specific part and return it.
 # Otherwise will return nil
 def less_specific_language(lang)

@@ -8,9 +8,9 @@
 		gray scale effect on the user layer
 		dynamic mask effect on the user layer
 
-		planned:
-		colfx	- color tint effect on user layer 
-		afx 	- alpha channel effect on user layer
+		planned on future versions:
+			color tint effect on user layer 
+			alpha channel effect on user layer
 =end
 
 # Given a client name and a client_version, returns a filter on packages

@@ -149,9 +149,12 @@ get '/emuapi/packages/:filter' do
   packages = connection.db().collection("packages").find(filter_predicate)
   packages = packages.to_a
 
-  # Add some localization info (if required)
+  # Add some localisation info (if required)
   preffered_languages = request.env["HTTP_ACCEPT_LANGUAGE"]
   add_localization_info(config, connection, preffered_languages)
+
+  # Localisation per emu
+  add_localization_for_packs(packages, preffered_languages)
 
   # Merge config info with packages info
   result = Hash.new

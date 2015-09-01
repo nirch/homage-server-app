@@ -95,7 +95,7 @@ def ensure_temp_folder_exists():
 def fetch_packages_info():
     global BUCKET_NAME
     if USE_SCRATCHPAD:
-        resp = requests.get(url=API_PACKAGES_URL, headers={"SCRATCHPAD":"true"})
+        resp = requests.get(url=API_PACKAGES_URL, headers={"SCRATCHPAD":"true","APP_CLIENT_NAME":"Emu iOS","APP_VERSION_INFO":"1.9"})
     else:
         resp = requests.get(url=API_PACKAGES_URL)
     parsed_info = json.loads(resp.text)
@@ -192,6 +192,8 @@ def download_emuticon_files(emu, package_name, folder):
     download(package_name, emu.get("source_back_layer"), folder)
     download(package_name, emu.get("source_front_layer"), folder)
     download(package_name, emu.get("source_user_layer_mask"), folder)
+    download(package_name, emu.get("source_user_dynamic_mask"), folder)
+
 
 
 def download(package_name, file_name, folder):
@@ -336,13 +338,17 @@ def download_resources_for_package(pkg):
 
 
 if __name__ == "__main__":
-
     if setup_configuration(sys.argv):
-        ensure_temp_folder_exists()
-        info = fetch_packages_info()
-        connect_to_s3()
+        # ensure_temp_folder_exists()
+        # info = fetch_packages_info()
+        # connect_to_s3()
+        # for pack in info["packages"]:
+        #     print pack["name"]
+        #     if pack["name"] == "traffic":
+        #         print pack
+        #         download_resources_for_package(pack)
         #check_packages_with_info(info)
-        create_mixed_screen_resources(info)
-        print "Done"
+        #create_mixed_screen_resources(info)
+        # print "Done"
     else:
         show_help_info()

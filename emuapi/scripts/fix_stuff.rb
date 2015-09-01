@@ -6,7 +6,7 @@ require 'time'
 #$db = Mongo::MongoClient.from_uri("mongodb://Homage:homageIt12@dogen.mongohq.com:10073/emu-test").db
 
 #$db = Mongo::MongoClient.from_uri("mongodb://Homage:homageIt12@dogen.mongohq.com:10009/emu-dev-test").db
-$db = Mongo::MongoClient.from_uri("mongodb://Homage:homageIt12@dogen.mongohq.com:10008/emu-dev-prod").db
+#$db = Mongo::MongoClient.from_uri("mongodb://Homage:homageIt12@dogen.mongohq.com:10008/emu-dev-prod").db
 
 def fix_timestamps()
 	packages = $db.collection("packages")
