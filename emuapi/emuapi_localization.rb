@@ -24,6 +24,16 @@ end
 #	2. if not found, the less specific language related to the provided id (for example: es if nothing found for es-mx)
 #   3. if still not found, fallbacks to en
 def localization_info_for_language(lang, connection)
+	# Starting iOS9, the localization format is <language>-<country_code>
+	# For example he-IL : he (hebrew language preffered) and IL (Israel)
+	# We only care here about the preffered language.
+	if lang =~ /-/i
+		lang = lang.split("-")[0]
+	end
+
+	# Some android devices send "iw" when hebrew is the preffered language
+	if lang == "iw" then lang = "he" end
+	
 	# Search for the exact language
 	info = connection.db().collection("translations").find({"_id"=>lang}).to_a	
 	
