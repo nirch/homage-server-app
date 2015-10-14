@@ -199,7 +199,8 @@ get '/emuapi/unhide/packages/:code' do
   # specifically.
   interesting_fields = { 
     "name" => true, 
-    "last_update_timestamp" => true 
+    "last_update_timestamp" => true,
+    "label" => true
   }
   list_of_packs_oids = response["unhides_packages"].map{ |oid| BSON::ObjectId.from_string(oid) }
   packs_predicate = {"_id"=> {"$in"=>list_of_packs_oids}}
