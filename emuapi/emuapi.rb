@@ -56,10 +56,11 @@ get '/emu/android' do
 end
 
 
+# ---------------------------------------------
+# /emuapi/packages/:filter 
 #
 # GET packages info.
 # Will also include config info for the app.
-#
 get '/emuapi/packages/:filter' do
   #
   # prepare some required vars
@@ -87,9 +88,7 @@ get '/emuapi/packages/:filter' do
   #
   # determine connection required (public/scratchpad)
   #
-  connection = settings.emu_public
-  use_scratchpad = request.env['HTTP_SCRATCHPAD'].to_s  
-  if use_scratchpad == "true" then connection = settings.emu_scratchpad end
+  connection = scratchppad_or_produdction_connection(request)
 
   #
   # Validate filter used
@@ -169,6 +168,49 @@ get '/emuapi/packages/:filter' do
 
   return result.to_json()
 end
+
+
+
+# ---------------------------------------------
+# /emuapi/unhide/packages/:code
+#
+# GET request to unhide a set of packages, given a code.
+# Will return a list of packages oids to unhide + 
+# some meta info about the packages (like name and update timestamp)
+#
+# If relevant code is not enabled or available in the codes collection
+# 404 error message will be returned.
+get '/emuapi/unhide/packages/:code' do
+  connection = scratchppad_or_produdction_connection(request)
+
+  # Search for the provided unhide-packs code.
+  code = params["code"]
+  predicate = {"code_enabled"=>true, "unhide_code"=>code}
+  response = connection.db().collection("codes").find_one(predicate)
+  
+  # If no such enabled code, return a 404 error
+  if response == nil
+    oops_404
+  end
+
+  # We have a legit code. 
+  # Gather some more info about the packs and return it with the response.
+  # Can be useful for clients that don't have the packs and need to fetch them
+  # specifically.
+  interesting_fields = { 
+    "name" => true, 
+    "last_update_timestamp" => true 
+  }
+  list_of_packs_oids = response["unhides_packages"].map{ |oid| BSON::ObjectId.from_string(oid) }
+  packs_predicate = {"_id"=> {"$in"=>list_of_packs_oids}}
+  packages = connection.db().collection("packages").find(packs_predicate, {:fields=>interesting_fields})
+  response["packages_info"] = packages
+
+  return response.to_json()
+end
+
+
+
 
 # Updating the push token to 
 put '/emuapi/user/push_token' do
@@ -331,12 +373,12 @@ end
 
 
 def oops_404
-  halt 404, "oops... Not found."
+  halt 404, "404 - Not found."
 end
 
 
 def oops_500
-  halt 500, "oops... Internal server error"
+  halt 500, "500 - Internal server error"
 end
 
 def reportToEmuMixpanel(event_name,info={}, distinct_id)
