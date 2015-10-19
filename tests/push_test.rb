@@ -4,8 +4,8 @@ require 'houston'
 # conveniently use `Houston::Client.development` or `Houston::Client.production`.
 
 # Debug (Test)
-APN = Houston::Client.development
-APN.certificate = File.read("../certificates/monkey_push_notification_dev.pem")
+# APN = Houston::Client.development
+# APN.certificate = File.read("../certificates/monkey_push_notification_dev.pem")
 
 # # Prodcution
 # APN = Houston::Client.production
@@ -16,9 +16,9 @@ APN.certificate = File.read("../certificates/monkey_push_notification_dev.pem")
 # APN.certificate = File.read("../certificates/homage_push_notification_prod.pem")
 # APN.passphrase = "homage"
 
-# APN_NEW = Houston::Client.production
-# APN_NEW.certificate = File.read("../certificates/homage_push_notification_prod_150.pem")
-# APN_NEW.passphrase = "homage"
+APN_NEW = Houston::Client.production
+APN_NEW.certificate = File.read("../certificates/homage_push_notification_prod.pem")
+#APN_NEW.passphrase = "homage"
 
 # An example of the token sent back when a device registers for notifications
 # Tomer
@@ -34,7 +34,7 @@ APN.certificate = File.read("../certificates/monkey_push_notification_dev.pem")
 
 # Aviv iPhone 6 Plus
 # token = "<452d30f7 c6d1964e c5a1cda7 78be8517 b1136b42 ae154783 7fb61e3e 43dc7795>"
-token = "<9ff7be11 fe85f73b db772f96 5f2c6bbf 98087656 10b4020f 7b0b1076 7749e64f>"
+# token = "<9ff7be11 fe85f73b db772f96 5f2c6bbf 98087656 10b4020f 7b0b1076 7749e64f>"
 # Aviv iPhone 5
 #token = "<ec0ad57f 4fcea35f 03e4fab9 1572a145 a2facdef b58a8203 4acdc1d8 186cac0b>"
 #token = "<0a7b7b15 3f0fb335 0e252182 38675505 e739547b 47dd8ab2 60e39582 85fbe150>"
@@ -45,6 +45,10 @@ token = "<9ff7be11 fe85f73b db772f96 5f2c6bbf 98087656 10b4020f 7b0b1076 7749e64
 
 # Yoav production
 #token = "<6d214c84 73a8d8a9 c807cca5 3a2751b8 be8d93bd d8e04ff0 a3c07009 affde3e7>"
+
+# Nir's iPhone 6
+#token = "<607cd0ea a5bb46fe 4fba2fd7 a397b0b1 e6d81c4f 6adf8e16 b5ef918d ba072868>" Emu
+token = "<789dff12 07993bf8 da73f528 8b181830 86fb059e 279ed2af a1ed1eb0 4ba64b1f>" # Homage
 
 # Create a notification that alerts a message to the user, plays a sound, and sets the badge on the app
 notification = Houston::Notification.new(device: token)
@@ -59,5 +63,9 @@ notification.sound = "default"
 notification.custom_data = {type: 2, story_id: "53b17db89a452198f80004a6"}
 
 # And... sent! That's all it takes.
-APN.push(notification)
+puts notification.alert
+puts notification.custom_data
+puts notification.device
+#puts APN_NEW.certificate.
+APN_NEW.push(notification)
 # APN_NEW.push(notification)

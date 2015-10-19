@@ -2,13 +2,24 @@ require 'uri'
 require 'net/http'
 require 'mongo'
 
-prod_db = Mongo::MongoClient.from_uri("mongodb://Homage:homageIt12@troup.mongohq.com:10057/Homage_Prod").db
-prod_users = prod_db.collection("Users")
-prod_remakes = prod_db.collection("Remakes")
+# prod_db = Mongo::MongoClient.from_uri("mongodb://Homage:homageIt12@troup.mongohq.com:10057/Homage_Prod").db
+# prod_users = prod_db.collection("Users")
+# prod_remakes = prod_db.collection("Remakes")
 
-test_db = Mongo::MongoClient.from_uri("mongodb://Homage:homageIt12@paulo.mongohq.com:10008/Homage").db
-test_users = test_db.collection("Users")
-test_remakes = test_db.collection("Remakes")
+# test_db = Mongo::MongoClient.from_uri("mongodb://Homage:homageIt12@paulo.mongohq.com:10008/Homage").db
+# test_users = test_db.collection("Users")
+# test_remakes = test_db.collection("Remakes")
+
+
+test_db = Mongo::Client.new(['paulo.mongohq.com:10008'], :database => 'Homage', :user => 'Homage', :password => 'homageIt12', :connect => :direct)
+test_users = test_db["Users"]
+test_remakes = test_db["Remakes"]
+
+prod_db = Mongo::Client.new(['troup.mongohq.com:10057'], :database => 'Homage_Prod', :user => 'Homage', :password => 'homageIt12', :connect => :direct)
+prod_users = prod_db["Users"]
+prod_remakes = prod_db["Remakes"]
+
+Mongo::Logger.logger.level = Logger::WARN
 
 
 
@@ -16,50 +27,98 @@ prod_render = URI.parse("http://homage-server-app-prod.elasticbeanstalk.com/rend
 test_render = URI.parse("http://homage-server-app-dev.elasticbeanstalk.com/render")
 
 render_remakes = [
-"559179cacbffc2102300000d", 
-"559178d8eeb909093b000007", 
-"559163e9cbffc21023000003", 
-"55917ce5eeb9091695000003", 
-"559122deeeb90903ed00000e", 
-"559174f1eeb909093b000003", 
-"5590dce1cbffc22cff000006", 
-"559178d5cbffc2102300000b", 
-"5591ce0dcbffc22bd2000003", 
-"5591f528eeb9095f93000005", 
-"55917d88eeb90918aa000002", 
-"5591ec96cbffc232fb000002", 
-"5591cb4feeb9095c7b000001", 
-"55918426eeb90918aa000004", 
-"5591f77beeb90973ba000001", 
-"55847d5aeeb90959b2000005", 
-"55920379cbffc24725000002", 
-"5591c9b0eeb90918aa000007", 
-"559177f2eeb909093b000006", 
-"55921c32cbffc24725000004", 
-"55916c49cbffc21023000006", 
-"5591d011eeb9095f93000001", 
-"55916c9fcbffc21023000008", 
-"5591ce1beeb9095c7b000002", 
-"559162facbffc21023000002", 
-"5591743beeb909093b000002", 
-"5591f432eeb9095f93000004", 
-"55915f61eeb9090828000004", 
-"5590e868cbffc22cff000007", 
-"55920634eeb9095f93000007", 
-"55917d60eeb90918aa000001", 
-"55916c21cbffc21023000005", 
-"559277a8eeb9092413000001", 
-"55915da6eeb9090828000001", 
-"5591872ecbffc2102300000f", 
-"559205d2cbffc24725000003", 
-"559204d6eeb9095f93000006"
+"56220d9f474d58422d000001",
+"5622f6aa09719c02f4000002",
+"5623afdc09719c6ddb000001",
+"5623afdc09719c6ddb000001",
+"5623b31809719c6ff7000001",
+"5623b31809719c6ff7000001",
+"5623ee57474d584432000003",
+"5623ee57474d584432000003",
+"5623ee93474d584432000004",
+"5623ee93474d584432000004",
+"5623efcc09719c0446000008",
+"5623efcc09719c0446000008",
+"5623f43c474d584728000001",
+"5623f43c474d584728000001",
+"5623f62209719c13b6000003",
+"56242609474d5853f9000003",
+"56242609474d5853f9000003",
+"562426d9474d5853f9000005",
+"562426d9474d5853f9000005",
+"56242a1609719c2c17000001",
+"56242a1609719c2c17000001",
+"56242d43474d5853f9000007",
+"56242d43474d5853f9000007",
+"5624300709719c2c17000004",
+"5624300709719c2c17000004",
+"56245a04474d587bc9000004",
+"56245aac474d587bc9000006",
+"56247598474d587e62000001",
+"56247598474d587e62000001",
+"562479e1474d587e62000002",
+"562479e1474d587e62000002",
+"56247dea474d587e62000004",
+"56247dea474d587e62000004",
+"56220eb2474d58422d000003",
+"56225516474d586506000002",
+"5622c8fd09719c71f8000001",
+"5622c8fd09719c71f8000001",
+"562349ee09719c2c32000004",
+"562349ee09719c2c32000004",
+"5623556e474d587004000001",
+"5623ada7474d580dc6000002",
+"5623ada7474d580dc6000002",
+"5623ae55474d58244d000001",
+"5623ae55474d58244d000001",
+"5623aecf09719c5026000002",
+"5623aecf09719c5026000002",
+"5623d5f109719c0446000001",
+"5623eb04474d5842b4000001",
+"5623eb04474d5842b4000001",
+"5623ebe0474d584432000001",
+"5623ebe0474d584432000001",
+"5623ed2909719c0446000004",
+"5623ed2909719c0446000004",
+"5623ecc2474d584432000002",
+"5623ecc2474d584432000002",
+"5623ee6209719c0446000005",
+"5623ee6209719c0446000005",
+"5623ef0c09719c0446000006",
+"5623ef0c09719c0446000006",
+"5623ef5509719c0446000007",
+"5623ef5509719c0446000007",
+"5623f4bb09719c13b6000002",
+"5623f4bb09719c13b6000002",
+"5623f4e7474d584728000002",
+"5623f4e7474d584728000002",
+"5623f9ec474d584728000003",
+"5623f9ec474d584728000003",
+"5624082309719c13b6000005",
+"5624082309719c13b6000005",
+"56242697474d5853f9000004",
+"56242697474d5853f9000004",
+"56242c86474d5853f9000006",
+"56242c86474d5853f9000006",
+"56243c78474d5853f9000008",
+"56243c78474d5853f9000008",
+"56243e1209719c2c17000006",
+"56243e1209719c2c17000006",
+"56244013474d587011000001",
+"56244013474d587011000001",
+"56244316474d587011000002",
+"56244316474d587011000002",
+"562456e9474d587bc9000002",
+"5624a2f109719c5f99000006",
+"5624a2f109719c5f99000006"
 ]
 
 
 for remake_id in render_remakes do
-	remake = prod_remakes.find_one(BSON::ObjectId.from_string(remake_id))
+	#remake = prod_remakes.find_one(BSON::ObjectId.from_string(remake_id))
+	remake = prod_remakes.find({_id:BSON::ObjectId.from_string(remake_id)}).each.next
 	puts "remake: " + remake["_id"].to_s + "; status = " + remake["status"].to_s
 
-	# response = Net::HTTP.post_form(prod_render, {"remake_id" => remake_id.to_s})
-	# puts response
+	response = Net::HTTP.post_form(prod_render, {"remake_id" => remake_id.to_s})
+	puts response
 end
