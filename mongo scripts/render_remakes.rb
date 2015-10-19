@@ -119,6 +119,6 @@ for remake_id in render_remakes do
 	remake = prod_remakes.find({_id:BSON::ObjectId.from_string(remake_id)}).each.next
 	puts "remake: " + remake["_id"].to_s + "; status = " + remake["status"].to_s
 
-	response = Net::HTTP.post_form(prod_render, {"remake_id" => remake_id.to_s})
-	puts response
+	# response = Net::HTTP.post_form(prod_render, {"remake_id" => remake_id.to_s})
+	# puts response
 end
