@@ -115,8 +115,11 @@ def createNewPackage(mongoconnection, awsconnection, name,label,duration,frames_
 		 	:cms_state => "save",
 		 	:label => label, 
 		 	:active => active, 
+		 	:is_active => active, # deprecated. Backward compatibility - old clients use is_active field.
 		 	:dev_only => dev_only, 
-		 	:emuticons_defaults => emuticons_defaults_hash 
+		 	:emuticons_defaults => emuticons_defaults_hash,
+		 	:country_code => ["any"],
+		 	:blocked_country_code => []
 		 	})
 
 		if(package == nil)
@@ -133,7 +136,25 @@ def createNewPackage(mongoconnection, awsconnection, name,label,duration,frames_
 	end
 end
 
-def updatePackage(mongoconnection,awsconnection, name,label,duration,frames_count,thumbnail_frame_index,source_user_layer_mask,removesource_user_layer_mask,active,dev_only,icon_2x,icon_3x, first_published_on, notification_text)
+def updatePackage(
+	mongoconnection,
+	awsconnection, 
+	name,
+	label,
+	duration,
+	frames_count,
+	thumbnail_frame_index,
+	source_user_layer_mask,
+	removesource_user_layer_mask,
+	active,
+	dev_only,
+	icon_2x,
+	icon_3x, 
+	first_published_on, 
+	notification_text,
+	country_code,
+	blocked_country_code
+	)
 	success = true
 	production_package = getPackageByName(name,settings.emu_public)
 	package = getPackageByName(name,mongoconnection)
@@ -237,6 +258,22 @@ def updatePackage(mongoconnection,awsconnection, name,label,duration,frames_coun
 
 		if(production_package != nil && production_package.cms_first_published != nil)
 			package.cms_first_published = production_package.cms_first_published
+		end
+
+		if country_code == nil
+			package.country_code = ["any"]
+		else
+			country_code.strip()
+			if country_code.length < 1 then country_code = "any" end
+			country_code = country_code.split(",").map(&:strip)
+			package.country_code = country_code
+		end
+
+		if blocked_country_code == nil
+			package.blocked_country_code = []
+		else
+			blocked_country_code = blocked_country_code.strip().split(",").map(&:strip)
+			package.blocked_country_code = blocked_country_code
 		end
 
 		package.save

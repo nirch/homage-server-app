@@ -24,6 +24,16 @@ end
 #	2. if not found, the less specific language related to the provided id (for example: es if nothing found for es-mx)
 #   3. if still not found, fallbacks to en
 def localization_info_for_language(lang, connection)
+	# Starting iOS9, the localization format is <language>-<country_code>
+	# For example he-IL : he (hebrew language preffered) and IL (Israel)
+	# We only care here about the preffered language.
+	if lang =~ /-/i
+		lang = lang.split("-")[0]
+	end
+
+	# Some android devices send "iw" when hebrew is the preffered language
+	if lang == "iw" then lang = "he" end
+	
 	# Search for the exact language
 	info = connection.db().collection("translations").find({"_id"=>lang}).to_a	
 	
@@ -43,10 +53,54 @@ def localization_info_for_language(lang, connection)
 end
 
 
+def add_localization_for_packs(packages, preffered_languages)
+	if preffered_languages == nil then return end
+	preffered_languages = preffered_languages.split(",")
+	most_preffered_language = preffered_languages[0]
+
+	for pack in packages
+		if pack["localized_emuticons"] == nil 
+			next
+		end
+
+		localized_emuticons = pack["localized_emuticons"][most_preffered_language]
+		if localized_emuticons == nil then return end
+
+		for emu in pack["emuticons"]
+			oid = emu["_id"].to_s
+
+			localized_emu = localized_emuticons[oid]
+			if localized_emu == nil then next end
+			
+			# We have localized fields for this emu
+			# these fields will be merged to this emu in current response
+			localized_emu.each do |field_name, field_value|
+				emu[field_name] = field_value
+			end
+		end
+	end
+end
+
+
 # If language is specific (en-us, es-mx etc) take the less specific part and return it.
 # Otherwise will return nil
 def less_specific_language(lang)
 	ls_lang = lang.split('-')
 	return ls_lang if ls_lang.count > 1
 	return nil
+end
+
+
+def countries_filter_by_country_code(country_code)
+	if country_code == nil
+		filter = {
+			"country_code" => {"$in"=>["any"]}
+		}
+	else
+		filter = {
+			"country_code" =>			{"$in" 	=>	["any", country_code]},
+			"blocked_country_code" =>	{"$nin" => 	[country_code]}
+		}
+	end
+	return filter
 end

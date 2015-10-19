@@ -447,6 +447,15 @@ function CreatePackageFields(method, pack){
 
 	parent_form.appendChild(document.createElement('br'));
 
+	// country codes and blocked country codes
+
+	parent_form.appendChild(createInputOrLabelRowElementDiv(method, "Countries", "country_code", "input", "text", false, false, "", "",false));
+	parent_form.appendChild(createInputOrLabelRowElementDiv(method, "Blocked Countries", "blocked_country_code", "input", "text", false, false, "", "",false));
+
+	// END tags
+
+	parent_form.appendChild(document.createElement('br'));
+
 	// notification_text
 
 		parent_form.appendChild(createInputOrLabelRowElementDiv(method, "Notifiy text", "notification_text", 'input', "text", false, false, "", "",false));
@@ -702,6 +711,30 @@ function DisplayPackage(pack) {
 		}
 	}
 	// END notification_text
+
+	// country_code and blocked_country_code
+	country_code_field = document.getElementById("country_code")
+	country_code = pack.country_code.join(",")
+	country_code_field.value = country_code
+	if(public_pack != null){
+		var result = displayCompareForField("country_code", public_pack.country_code.toString(), pack.country_code.toString());
+		if(!values_update){
+			values_update = result;
+		}
+	}
+
+	blocked_country_code_field = document.getElementById("blocked_country_code")
+	blocked_country_code = pack.blocked_country_code.join(",")
+	blocked_country_code_field.value = blocked_country_code
+	if(public_pack != null){
+		var result = displayCompareForField("blocked_country_code", public_pack.blocked_country_code.toString(), pack.blocked_country_code.toString());
+		if(!values_update){
+			values_update = result;
+		}
+	}
+
+
+	// end country codes
 	
 	// Check emuticons values
 	if(public_pack != null){
@@ -717,6 +750,7 @@ function DisplayPackage(pack) {
 		}
 	}
 
+	// update?
 	if(values_update == true){
 		document.getElementById("deployButton").disabled = false;
 	}
@@ -893,6 +927,14 @@ try {
 		alert("if notify users selected must fill in notification text")
 		return;
 	}
+
+	// FUCK THIS UGLY AND STUPID CODE BASE!!!
+	// Blind monkeys can write better code.
+	// What the hell?!
+	country_code = document.getElementById("country_code").value;
+	query += "&country_code=" + country_code;
+	blocked_country_code = document.getElementById("blocked_country_code").value;
+	query += "&blocked_country_code=" + blocked_country_code;
 
 
 	saveButton.disabled = true;

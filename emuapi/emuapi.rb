@@ -1,7 +1,8 @@
 #encoding: utf-8
 require_relative 'emuapi_config'
 require_relative 'emuapi_sampled_content'
-require_relative 'emuapi_localization.rb'
+require_relative 'emuapi_localization'
+require_relative 'emuapi_features'
 require_relative '../emuconsole/logic/package'
 require 'logger'
 
@@ -55,54 +56,56 @@ get '/emu/android' do
 end
 
 
-# get '/test/bson' do
-#   packages = settings.emu_test.db().collection("packages").find({})
-#   packages.to_json
-#   # for package in packages do
-#   #   x = package.to_json
-#   #   puts package["_id"].class
-#   #   break
-#   # end
-#   # x
-# end
-
-# post '/dan/test' do
-#   name = MongoMapper.connection.name
-#   "name of current db = " + name.to_s
-# end
-
-# just for testing.
-# GET route - test
-# get '/emuapi/test' do
-#   "Hello emu world! The time is " + Time.now.strftime("%d/%m/%Y %H:%M:%S")
-# end
-
-
+# ---------------------------------------------
+# /emuapi/packages/:filter 
+#
 # GET packages info.
 # Will also include config info for the app.
 get '/emuapi/packages/:filter' do
+  #
+  # prepare some required vars
+  #
+  filter_predicate = {}
+  country_code = nil
+  forced_location = params["l"]
+  clear_gl_cache = params["glc"]
+  geo_location_service = "localdb"
+  client_version = request.env['HTTP_APP_VERSION_INFO'].to_s
+  client_name = request.env['HTTP_APP_CLIENT_NAME'].to_s
 
+  #
+  # Geo location / country code
+  #
+  if forced_location == nil
+    # look up user location using request ip address.
+    geodb = settings.geodb
+    country_code = geodb.lookup(request.ip)['country']['iso_code'] rescue nil
+  else
+    country_code = forced_location
+    geo_location_service = "forced_param"
+  end
+
+  #
   # determine connection required (public/scratchpad)
-  connection = settings.emu_public
-  use_scratchpad = request.env['HTTP_SCRATCHPAD'].to_s  
-  if use_scratchpad == "true"
-    connection = settings.emu_scratchpad
-  end
+  #
+  connection = scratchppad_or_produdction_connection(request)
 
+  #
   # Validate filter used
+  #
   filter = params["filter"]
-  if (filter !='full' && filter !='update')
-    return oops_404
-  end
+  if (filter !='full' && filter !='update') then oops_404 end
 
+  #
   # Get the config information
+  #
   config = connection.db().collection("config").find({"config_type"=> "app config", "client_name"=>"Emu iOS"}).to_a
-  if (config.count != 1)
-    return oops_500
-  end
+  if (config.count < 1) then oops_500() end
   config = config.to_a[0]
 
-  # Get the configured mixed emus screen information
+  #
+  # Mixed screen (TODO: should be deprecated with new design of the app)
+  #
   mixed_screen = connection.db().collection("config").find({"config_type"=> "mixed screen", "client_name"=>"Emu iOS"}).to_a
   if (mixed_screen.count != 1)
     mixed_screen = {"enabled"=>false, "reason"=>"invalid config or disabled"}
@@ -111,26 +114,46 @@ get '/emuapi/packages/:filter' do
   end
   
   # Handle sampled user content
+  # TODO: this can be deprecated in a version or two.
   already_sampled_header = request.env['HTTP_USER_SAMPLED_BY_SERVER'].to_s
   already_sampled = already_sampled_header=="true"
   handle_upload_user_content(config, connection, already_sampled=already_sampled)
 
-  # Get the packages (filtered or all)
+  #
+  # Packages filters
+  #
   if filter == "update"
-    begin 
-      after = Integer(params[:after])
-    rescue
-      return oops_404
-    end
-    packages = connection.db().collection("packages").find({"last_update_timestamp"=>{"$gt"=>after}})
-  else
-    packages = connection.db().collection("packages").find({})
+    after = Integer(params[:after]) rescue 0
+    filter_predicate["data_update_time_stamp"] = {"$gt"=>after}
   end
+
+  # Filter by country code (geo location)
+  countries_filter = countries_filter_by_country_code(country_code)
+  if countries_filter != nil
+    filter_predicate = filter_predicate.merge(countries_filter)
+  end
+
+  # Filter by features 
+  # Packs can be marked with required_<platform>_version field
+  # For required version X.Y the value will be 0000X_0000Y
+  # For example, for a pack that requires iOS 2.13 client the pack will have the following field
+  # required_ios_version="00002_00013"
+  supported_features_filter = supported_features_filter_for_client(client_name, client_version)
+  if supported_features_filter != nil
+    filter_predicate = filter_predicate.merge(supported_features_filter)
+  end
+
+  # Get the packages
+  logger.info "Packs filter: " + filter_predicate.to_s
+  packages = connection.db().collection("packages").find(filter_predicate)
   packages = packages.to_a
 
-  # Add some localization info (if required)
+  # Add some localisation info (if required)
   preffered_languages = request.env["HTTP_ACCEPT_LANGUAGE"]
   add_localization_info(config, connection, preffered_languages)
+
+  # Localisation per emu
+  add_localization_for_packs(packages, preffered_languages)
 
   # Merge config info with packages info
   result = Hash.new
@@ -138,11 +161,57 @@ get '/emuapi/packages/:filter' do
   result["packages_count"] = packages.count
   result["packages"] = packages
   result["mixed_screen"] = mixed_screen
+  result["country_code"] = country_code
+  result["geo_location_service"] = geo_location_service
   
   response.headers['content-type'] = 'application/json'
 
   return result.to_json()
 end
+
+
+
+# ---------------------------------------------
+# /emuapi/unhide/packages/:code
+#
+# GET request to unhide a set of packages, given a code.
+# Will return a list of packages oids to unhide + 
+# some meta info about the packages (like name and update timestamp)
+#
+# If relevant code is not enabled or available in the codes collection
+# 404 error message will be returned.
+get '/emuapi/unhide/packages/:code' do
+  connection = scratchppad_or_produdction_connection(request)
+
+  # Search for the provided unhide-packs code.
+  code = params["code"]
+  predicate = {"code_enabled"=>true, "unhide_code"=>code}
+  response = connection.db().collection("codes").find_one(predicate)
+  
+  # If no such enabled code, return a 404 error
+  if response == nil
+    oops_404
+  end
+
+  # We have a legit code. 
+  # Gather some more info about the packs and return it with the response.
+  # Can be useful for clients that don't have the packs and need to fetch them
+  # specifically.
+  interesting_fields = { 
+    "name" => true, 
+    "last_update_timestamp" => true,
+    "label" => true
+  }
+  list_of_packs_oids = response["unhides_packages"].map{ |oid| BSON::ObjectId.from_string(oid) }
+  packs_predicate = {"_id"=> {"$in"=>list_of_packs_oids}}
+  packages = connection.db().collection("packages").find(packs_predicate, {:fields=>interesting_fields})
+  response["packages_info"] = packages
+
+  return response.to_json()
+end
+
+
+
 
 # Updating the push token to 
 put '/emuapi/user/push_token' do
@@ -205,7 +274,7 @@ end
 protect do
   put '/emuapi/package' do
     #  get params 
-    
+
     name = params[:name]
     first_published_on = params[:first_published_on]
     notification_text = params[:notification_text]
@@ -219,9 +288,29 @@ protect do
     dev_only = params[:dev_only]
     icon_2x = params[:icon_2x]
     icon_3x = params[:icon_3x]
+    country_code = params[:country_code]
+    blocked_country_code = params[:blocked_country_code]
 
     # upload to s3 and save to mongo
-    success = updatePackage(settings.emu_scratchpad, settings.emu_s3_test, name,label,duration,frames_count,thumbnail_frame_index,source_user_layer_mask,removesource_user_layer_mask,active,dev_only,icon_2x,icon_3x,first_published_on, notification_text)
+    success = updatePackage(
+      settings.emu_scratchpad, 
+      settings.emu_s3_test, 
+      name,
+      label,
+      duration,
+      frames_count,
+      thumbnail_frame_index,
+      source_user_layer_mask,
+      removesource_user_layer_mask,
+      active,
+      dev_only,
+      icon_2x,
+      icon_3x,
+      first_published_on, 
+      notification_text,
+      country_code,
+      blocked_country_code
+      )
     
     result = Hash.new
     result['error'] = success
@@ -285,12 +374,12 @@ end
 
 
 def oops_404
-  return "oops... 404 error."
+  halt 404, "404 - Not found."
 end
 
 
 def oops_500
-  return "oops... 500 internal server error."
+  halt 500, "500 - Internal server error"
 end
 
 def reportToEmuMixpanel(event_name,info={}, distinct_id)

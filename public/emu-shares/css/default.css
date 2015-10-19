@@ -1,0 +1,155 @@
+body {
+	text-align: center;
+}
+
+/* 
+--------
+ Header 
+--------
+*/
+#header
+{
+	transition: opacity 0.2s ease-in-out;
+	background: url('../img/bg.jpeg');
+
+	position:absolute;
+	top:0;
+	width:100%;
+	height:80px;	
+    left: 0;
+    right: 0;
+
+    opacity: 0.8;
+
+}
+
+#smalllogo
+{
+	width:200px;
+}
+
+
+/*
+-----------
+ Main
+-----------
+*/
+#container
+{
+	width: 100%;
+    height: 300px;
+
+    position: absolute;
+    top:0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+
+    margin: auto;
+}
+
+img.gif
+{
+	width:240px;
+	height:240px;
+	margin: auto;
+}
+
+#shares-container
+{
+	width: 80%;
+	height: 60px;
+	margin-left: auto;
+	margin-right: auto;
+	margin-top: 16px;
+}
+
+a.s-facebook 	{background: #5265A2 url('../img/facebook.png');}
+a.s-twitter 	{background: #66AAED url('../img/twitter.png');}
+a.s-tumblr 		{background: #36506A url('../img/tumblr.png');}
+a.s-reddit 		{background: #EE4949 url('../img/reddit.png');}
+a.s-pin 		{background: #CA242D url('../img/pin.png');}
+
+
+a.share
+{
+	transition: all 0.2s ease-in-out;
+	background-size: cover;
+	box-shadow: 0px 0px 5px white;
+	cursor: pointer;
+	width: 44px;
+	height: 44px;
+	display: inline-block;
+	margin-left: 4px;
+	margin-right: 4px;
+	border-radius: 28px;
+	border: 3px solid white;
+}
+
+@media screen and (min-width: 450px){
+	a.share:hover
+	{
+		box-shadow: 0px 0px 25px gray;
+	}
+} 
+
+/*
+---------
+ Footer
+---------
+*/
+#footer
+{
+	transition: opacity 0.2s ease-in-out;
+	position:absolute;
+	bottom:0;
+	width:100%;
+	height:80px;	
+    left: 0;
+    right: 0;
+}
+
+#footer img
+{
+	height: 50px;
+}
+
+#footer a
+{
+	text-decoration: none;
+	color: gray;
+}
+
+span.copyright
+{
+	margin: 0;
+	font-size: 10px;
+	font-color: gray;
+}
+
+/*
+---------------
+ Medua queries
+---------------
+*/
+@media screen and (max-height: 500px) {
+  #header
+  {
+  	opacity: 0;
+  	pointer-events:none;
+  }
+
+  #footer img
+  {
+  	opacity:0;
+  	pointer-events:none;
+  }
+}
+
+@media screen and (max-height: 400px) {
+  #footer
+  {
+  	opacity:0;
+  	pointer-events:none;
+  }
+}

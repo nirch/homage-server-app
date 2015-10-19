@@ -1,5 +1,6 @@
 #encoding: utf-8
 require 'mongo_mapper'
+require 'maxminddb'
 require_relative '../utils/aws/aws_manager'
 #
 # Emu test configurations
@@ -25,6 +26,10 @@ configure :test do
   set :enviornment, "test"
 
   set :logging, Logger::DEBUG
+
+  # geo location data
+  set :geodb, MaxMindDB.new('geoip/GeoLite2-Country.mmdb')
+
 end
 
 #
@@ -49,4 +54,18 @@ configure :production do
   set :enviornment, "production"
 
   set :logging, Logger::INFO
+
+  # geo location data
+  set :geodb, MaxMindDB.new('geoip/GeoLite2-Country.mmdb')
+
+end
+
+def scratchppad_or_produdction_connection(request)
+  #
+  # determine connection required (public/scratchpad)
+  #
+  connection = settings.emu_public
+  use_scratchpad = request.env['HTTP_SCRATCHPAD'].to_s  
+  if use_scratchpad == "true" then connection = settings.emu_scratchpad end
+  return connection
 end

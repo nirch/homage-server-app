@@ -17,7 +17,10 @@ class Package
   	key :name, String
   	key :label, String
   	key :active, Boolean, :default => true
+    key :is_active, Boolean, :default => true # deprecated. remains here for backwards compatibility (old clients used the is_active field)
   	key :dev_only, Boolean, :default => false
   	key :emuticons_defaults, Hash
+    key :country_code, Array
+    key :blocked_country_code, Array
   	many :emuticons
 end
