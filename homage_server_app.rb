@@ -1,5 +1,6 @@
 #encoding: utf-8
 require 'sinatra'
+gem 'mongo', '=1.9.2'
 require 'mongo'
 require 'uri'
 require 'json'
@@ -108,15 +109,6 @@ configure :production do
 	db_connection = Mongo::MongoClient.from_uri("mongodb://Homage:homageIt12@troup.mongohq.com:10057/Homage_Prod")
 	set :db, db_connection.db()
 
-	# Push notification certificate
-	APN = Houston::Client.production
-	APN.certificate = File.read(File.expand_path("../certificates/homage_push_notification_prod.pem", __FILE__))
-	APN.passphrase = "homage"
-
-	APN_NEW = Houston::Client.production
-	APN_NEW.certificate = File.read(File.expand_path("../certificates/homage_push_notification_prod_150.pem", __FILE__))
-	APN_NEW.passphrase = "homage"
-
 	# Process Footage Queue
 	process_footage_queue_url = "https://sqs.us-east-1.amazonaws.com/509268258673/ProcessFootageQueue"
     set :process_footage_queue, AWS::SQS.new.queues[process_footage_queue_url]
@@ -152,14 +144,6 @@ configure :test do
 	# Test DB connection
 	db_connection = Mongo::MongoClient.from_uri("mongodb://Homage:homageIt12@paulo.mongohq.com:10008/Homage")
 	set :db, db_connection.db()
-
-	# Push notification certificate
-	APN = Houston::Client.development
-	APN.certificate = File.read(File.expand_path("../certificates/homage_push_notification_dev.pem", __FILE__))
-
-	APN_NEW = Houston::Client.production
-	APN_NEW.certificate = File.read(File.expand_path("../certificates/homage_push_notification_prod_150.pem", __FILE__))
-	APN_NEW.passphrase = "homage"
 
 	# Process Footage Queue
 	process_footage_queue_url = "https://sqs.us-east-1.amazonaws.com/509268258673/ProcessFootageQueueTest"

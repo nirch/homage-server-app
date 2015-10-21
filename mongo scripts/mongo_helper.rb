@@ -1,3 +1,4 @@
+gem 'mongo', '=1.9.2'
 require 'mongo'
 require 'date'
 require 'time'
