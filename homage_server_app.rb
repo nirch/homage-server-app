@@ -889,7 +889,19 @@ def handle_facebook_login(user)
 end
 
 def handle_guest_login(user)
+	campaign_id = user["campaign_id"]
+	identifier_for_vendor = user["devices"][0]["identifier_for_vendor"] if user["devices"]
+
 	users = settings.db.collection("Users")
+
+	if campaign_id && identifier_for_vendor then
+		user_exists = users.find_one({devices:{"$elemMatch"=>{identifier_for_vendor: identifier_for_vendor}}, campaign_id:campaign_id})
+		if user_exists then
+			logger.info "Guest user exists with id <" + user_exists["_id"].to_s + ">. returning existing user"
+			return user_exists["_id"], nil, false
+		end
+	end
+
 	new_user_id = users.save(user)
 	logger.info "New guest user saved in the DB with user_id <" + new_user_id.to_s + ">"
 	return new_user_id, nil, true

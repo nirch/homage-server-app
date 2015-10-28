@@ -1,40 +1,41 @@
+gem 'mongo', '=1.9.2'
 require 'mongo'
 require 'date'
 require 'time'
 require 'aws-sdk'
 require 'open-uri'
 
-# test_db = Mongo::MongoClient.from_uri("mongodb://Homage:homageIt12@paulo.mongohq.com:10008/Homage").db
-# test_users = test_db.collection("Users")
-# test_remakes = test_db.collection("Remakes")
-# test_stories = test_db.collection("Stories")
-# test_campaigns = test_db.collection("Campaigns")
-# test_views = test_db.collection("Views")
+test_db = Mongo::MongoClient.from_uri("mongodb://Homage:homageIt12@paulo.mongohq.com:10008/Homage").db
+test_users = test_db.collection("Users")
+test_remakes = test_db.collection("Remakes")
+test_stories = test_db.collection("Stories")
+test_campaigns = test_db.collection("Campaigns")
+test_views = test_db.collection("Views")
 
-# prod_db = Mongo::MongoClient.from_uri("mongodb://Homage:homageIt12@troup.mongohq.com:10057/Homage_Prod").db
-# prod_users = prod_db.collection("Users")
-# prod_remakes = prod_db.collection("Remakes")
-# prod_shares = prod_db.collection("Shares")
-# prod_sessions = prod_db.collection("Sessions")
-# prod_stories = prod_db.collection("Stories")
-# prod_campaigns = prod_db.collection("Campaigns")
-# prod_views = prod_db.collection("Views")
+prod_db = Mongo::MongoClient.from_uri("mongodb://Homage:homageIt12@troup.mongohq.com:10057/Homage_Prod").db
+prod_users = prod_db.collection("Users")
+prod_remakes = prod_db.collection("Remakes")
+prod_shares = prod_db.collection("Shares")
+prod_sessions = prod_db.collection("Sessions")
+prod_stories = prod_db.collection("Stories")
+prod_campaigns = prod_db.collection("Campaigns")
+prod_views = prod_db.collection("Views")
 
-test_db = Mongo::Client.new(['paulo.mongohq.com:10008'], :database => 'Homage', :user => 'Homage', :password => 'homageIt12', :connect => :direct)
-test_users = test_db["Users"]
-test_remakes = test_db["Remakes"]
-test_stories = test_db["Stories"]
-test_campaigns = test_db["Campaigns"]
-test_views = test_db["Views"]
+# test_db = Mongo::Client.new(['paulo.mongohq.com:10008'], :database => 'Homage', :user => 'Homage', :password => 'homageIt12', :connect => :direct)
+# test_users = test_db["Users"]
+# test_remakes = test_db["Remakes"]
+# test_stories = test_db["Stories"]
+# test_campaigns = test_db["Campaigns"]
+# test_views = test_db["Views"]
 
-prod_db = Mongo::Client.new(['troup.mongohq.com:10057'], :database => 'Homage_Prod', :user => 'Homage', :password => 'homageIt12', :connect => :direct)
-prod_users = prod_db["Users"]
-prod_remakes = prod_db["Remakes"]
-prod_shares = prod_db["Shares"]
-prod_sessions = prod_db["Sessions"]
-prod_stories = prod_db["Stories"]
-prod_campaigns = prod_db["Campaigns"]
-prod_views = prod_db["Views"]
+# prod_db = Mongo::Client.new(['troup.mongohq.com:10057'], :database => 'Homage_Prod', :user => 'Homage', :password => 'homageIt12', :connect => :direct)
+# prod_users = prod_db["Users"]
+# prod_remakes = prod_db["Remakes"]
+# prod_shares = prod_db["Shares"]
+# prod_sessions = prod_db["Sessions"]
+# prod_stories = prod_db["Stories"]
+# prod_campaigns = prod_db["Campaigns"]
+# prod_views = prod_db["Views"]
 
 
 
@@ -44,22 +45,33 @@ AWS.config(aws_config)
 s3 = AWS::S3.new
 s3_bucket = s3.buckets['homageapp']
 
-date = Time.parse("20151017Z")
-bad_remakes = prod_remakes.find(created_at:{"$gte"=>date}, share_link:{"$exists"=>false}, render_start:{"$exists"=>true})
-puts bad_remakes.count
-for bad_remake in bad_remakes do
-	puts '"' + bad_remake["_id"].to_s + '",'
 
-	can_save_remake = true
-	for footage in bad_remake["footages"] do
-		if footage["status"] != 3 then
-			can_save_remake = false
-			break
-		end
-	end
-	#puts bad_remake["_id"].to_s + " " + bad_remake["status"].to_s if can_save_remake
-	puts '"' + bad_remake["_id"].to_s + '",' if can_save_remake
-end
+identifier = "41504B16-B15A-4D63-8FE5-506D9BB0F06F"
+campaign_id = BSON::ObjectId.from_string("5624d8e33f6ba13771000002")
+user = prod_users.find_one({devices:{"$elemMatch"=>{identifier_for_vendor: identifier}}, campaign_id:campaign_id})
+puts user["_id"]
+# for user in users do
+# 	puts user["_id"].to_s
+# end
+
+
+
+# date = Time.parse("20151017Z")
+# bad_remakes = prod_remakes.find(created_at:{"$gte"=>date}, share_link:{"$exists"=>false}, render_start:{"$exists"=>true})
+# puts bad_remakes.count
+# for bad_remake in bad_remakes do
+# 	puts '"' + bad_remake["_id"].to_s + '",'
+
+# 	can_save_remake = true
+# 	for footage in bad_remake["footages"] do
+# 		if footage["status"] != 3 then
+# 			can_save_remake = false
+# 			break
+# 		end
+# 	end
+# 	#puts bad_remake["_id"].to_s + " " + bad_remake["status"].to_s if can_save_remake
+# 	puts '"' + bad_remake["_id"].to_s + '",' if can_save_remake
+# end
 
 
 # stories_to_delete = [BSON::ObjectId.from_string("54a936ad64617400b5020000"),BSON::ObjectId.from_string("53814358d4615dfffa00007f"),BSON::ObjectId.from_string("542a6799454c61e96400065b"),BSON::ObjectId.from_string("54902e1014aa8e2015000c41")]
