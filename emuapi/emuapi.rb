@@ -95,6 +95,9 @@ get '/emuapi/packages/:filter' do
   #
   filter = params["filter"]
   if (filter !='full' && filter !='update') then oops_404 end
+  if client_name == "Emu Android"
+    filter = 'full'
+  end
 
   #
   # Get the config information
