@@ -95,8 +95,17 @@ get '/emuapi/packages/:filter' do
   #
   filter = params["filter"]
   if (filter !='full' && filter !='update') then oops_404 end
+
+  #
+  # Ugly hack for android clients
+  #
   if client_name == "Emu Android"
-    filter = 'full'
+    if is_minimal_version_condition_met(client_version, "1.9")
+      # Hack not required for 1.9 and above
+    else
+      # Hack required for versions before 1.9
+      filter = 'full'
+    end
   end
 
   #

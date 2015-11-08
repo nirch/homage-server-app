@@ -55,3 +55,9 @@ end
 def formatted_version_string(v)
 	return v.split(".").map{|s|"%05d" %  s.to_i }.join("_") rescue nil
 end
+
+def is_minimal_version_condition_met(current_version, minimal_version)
+	c_version_formatted 	= formatted_version_string(current_version)
+	min_version_formatted 	= formatted_version_string(minimal_version)
+	return c_version_formatted >= min_version_formatted
+end
