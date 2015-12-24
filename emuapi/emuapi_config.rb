@@ -36,8 +36,9 @@ end
 # Emu production configurations
 #
 configure :production do
-  emu_db_connection_scratchpad = Mongo::MongoClient.from_uri("mongodb://Homage:homageIt12@dogen.mongohq.com:10073/emu-test")
+  emu_db_connection_scratchpad = Mongo::MongoClient.from_uri("mongodb://homage:homageIt10@candidate.61.mongolayer.com:10336,candidate.62.mongolayer.com:10024/emu-test?replicaSet=set-567ab3bf7965aa014500076e")
   emu_db_connection_public = Mongo::MongoClient.from_uri("mongodb://Homage:homageIt12@dogen.mongohq.com:10005/emu-prod")
+  #emu_db_connection_public = Mongo::MongoClient.from_uri("mongodb://homage:homageIt10@candidate.61.mongolayer.com:10336,candidate.62.mongolayer.com:10024/emu-prod?replicaSet=set-567ab3bf7965aa014500076e")
 
   set :emu_scratchpad, emu_db_connection_scratchpad
   set :emu_public, emu_db_connection_public
